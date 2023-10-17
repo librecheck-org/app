@@ -17,5 +17,17 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom'
+  },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'https://api.librecheck.io',
+        changeOrigin: true
+      },   
+      '/version': {
+        target: 'https://api.librecheck.io',
+        changeOrigin: true
+      }
+    }
   }
 })
