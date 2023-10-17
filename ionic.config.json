@@ -1,0 +1,7 @@
+{
+  "name": "librecheck-app",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "vue-vite"
+}
