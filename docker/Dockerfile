@@ -8,7 +8,8 @@ RUN npm run build
 
 FROM caddy:2 AS runner
 
-RUN adduser --disabled-password --uid 1000 caddy
-USER 1000
+WORKDIR /opt/app
+RUN adduser --disabled-password --uid 1000 caddy 
 COPY ./docker/Caddyfile /etc/caddy/Caddyfile
-COPY --from=builder /opt/src/dist/ /opt/app/
+COPY --from=builder /opt/src/ ./
+USER 1000

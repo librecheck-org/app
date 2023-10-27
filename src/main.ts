@@ -32,7 +32,7 @@ import { AddHeadersMiddleware } from './infrastructure';
 defineCustomElements(window);
 
 DefaultConfig.config = new Configuration({
-	basePath: import.meta.env.VITE_API_BASE_URL,
+	basePath: window.env?.API_BASE_URL ?? import.meta.env.VITE_API_BASE_URL,
 	middleware: [new AddHeadersMiddleware()]
 });
 
