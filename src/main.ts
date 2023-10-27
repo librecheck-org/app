@@ -1,8 +1,10 @@
-import { createApp } from 'vue'
-import App from './App.vue'
+import { createApp } from 'vue';
+import App from './App.vue';
 import router from './router';
+import { createPinia } from 'pinia';
 
 import { IonicVue } from '@ionic/vue';
+import { defineCustomElements } from '@ionic/pwa-elements/loader';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/vue/css/core.css';
@@ -23,10 +25,23 @@ import '@ionic/vue/css/display.css';
 /* Theme variables */
 import './theme/variables.css';
 
+/* API clients */
+import { Configuration, DefaultConfig } from './apiClients';
+import { AddHeadersMiddleware } from './infrastructure';
+
+defineCustomElements(window);
+
+DefaultConfig.config = new Configuration({
+	basePath: import.meta.env.VITE_API_BASE_URL,
+	middleware: [new AddHeadersMiddleware()]
+});
+
+const pinia = createPinia();
 const app = createApp(App)
-  .use(IonicVue)
-  .use(router);
-  
+	.use(IonicVue)
+	.use(router)
+	.use(pinia);
+
 router.isReady().then(() => {
-  app.mount('#app');
+	app.mount('#app');
 });

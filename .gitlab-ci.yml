@@ -1,0 +1,148 @@
+stages:
+  - build
+  - test
+  - publish
+  - deploy
+
+#variables:
+# GIT_VERSION_AUTO_INCREMENT: "1"
+#  SONAR_FLAGS: '/d:sonar.exclusions="tests/**/SampleFiles/*"'
+
+include:
+  # - project: pommalabs/templates
+  #   file: /.gitlab/ci_templates/dotnet/git-version.gitlab-ci.yml
+  - project: pommalabs/templates
+    file: /.gitlab/ci_templates/git/.git-archive.gitlab-ci.yml
+  #- project: pommalabs/templates
+  #  file: /.gitlab/ci_templates/dotnet/.run-tests.gitlab-ci.yml
+  #- project: pommalabs/templates
+  #  file: /.gitlab/ci_templates/dotnet/publish-sonar-report.gitlab-ci.yml
+  - project: pommalabs/templates
+    file: /.gitlab/ci_templates/docker/.publish-on-container-registry.gitlab-ci.yml
+  - project: pommalabs/templates
+    file: /.gitlab/ci_templates/kubernetes/.restart-k8s-deployment.gitlab-ci.yml
+
+#.run-thumbnailer-tests:
+#  extends: .run-tests
+#  image:
+#    name: registry.gitlab.com/pommalabs/thumbnailer/thumbnailer-base-images:sdk
+#    pull_policy: if-not-present
+#  variables:
+#    # Tests are run as root, which requires disabling QT Web Engine sandbox in order to run Calibre
+#    # (see https://doc.qt.io/qt-5/qtwebengine-platform-notes.html#sandboxing-support):
+#    QTWEBENGINE_DISABLE_SANDBOX: "1"
+#    # Integration tests environment variables:
+#    SQL_SCRIPTS_PATH: "./tests/PommaLabs.Thumbnailer.IntegrationTests/SqlScripts"
+#    THUMBNAILER_RANDOM_SAMPLE: "true"
+#    Website__Enabled: "true"
+
+#run-tests-without-db-anonymous:
+#  extends: .run-thumbnailer-tests
+#  variables:
+#    # Thumbnailer environment variables:
+#    Security__AllowAnonymousAccess: "true"
+
+# run-tests-without-db-authenticated:
+#   extends: .run-thumbnailer-tests
+#   variables:
+#     # Thumbnailer environment variables:
+#     Security__ApiKeysJson: '[{"name":"INTEGRATION TESTS","value":"__INTEGRATION_TESTS__"}]'
+#     # Integration tests environment variables:
+#     THUMBNAILER_API_KEY: "__INTEGRATION_TESTS__"
+
+# run-tests-with-mariadb:
+#   extends: .run-thumbnailer-tests
+#   services:
+#     - name: mariadb:latest
+#       pull_policy: if-not-present
+#   variables:
+#     # MySQL environment variables (https://hub.docker.com/r/_/mariadb/):
+#     MYSQL_RANDOM_ROOT_PASSWORD: "yes"
+#     MYSQL_DATABASE: "thumbnailer"
+#     MYSQL_USER: "thumbnailer"
+#     MYSQL_PASSWORD: "thumbnailer"
+#     # Thumbnailer environment variables:
+#     Database__ConnectionString: "Server=mariadb;Database=thumbnailer;Uid=thumbnailer;Pwd=thumbnailer;"
+#     Database__Provider: "MySql"
+#     # Integration tests environment variables:
+#     THUMBNAILER_API_KEY: "__INTEGRATION_TESTS__"
+#   before_script:
+#     - mysql --host=mariadb --user=$MYSQL_USER --password=$MYSQL_PASSWORD --database=$MYSQL_DATABASE < $SQL_SCRIPTS_PATH/mysql.sql
+#   needs:
+#     - run-tests-without-db-anonymous
+#     - run-tests-without-db-authenticated
+
+#run-tests-with-postgresql:
+#  extends: .run-thumbnailer-tests
+#  services:
+#    - name: postgres:latest
+#      pull_policy: if-not-present
+#  variables:
+#    # PostgreSQL environment variables (https://hub.docker.com/r/_/postgres/):
+#    POSTGRES_DB: "thumbnailer"
+#    POSTGRES_USER: "thumbnailer"
+#    POSTGRES_PASSWORD: "thumbnailer"
+#    # Thumbnailer environment variables:
+#    Database__ConnectionString: "Server=postgres;Port=5432;Database=thumbnailer;User Id=thumbnailer;Password=thumbnailer;"
+#    Database__Provider: "PostgreSql"
+#    # Integration tests environment variables:
+#    THUMBNAILER_API_KEY: "__INTEGRATION_TESTS__"
+#  before_script:
+#    - PGPASSWORD=$POSTGRES_PASSWORD psql --host=postgres --username=$POSTGRES_USER --dbname=$POSTGRES_DB --file=$SQL_SCRIPTS_PATH/postgresql.sql
+#  needs:
+#    - run-tests-without-db-anonymous
+#    # - run-tests-without-db-authenticated
+
+# run-tests-with-sqlserver:
+#   extends: .run-thumbnailer-tests
+#   services:
+#     - name: mcr.microsoft.com/mssql/server:latest
+#       pull_policy: if-not-present
+#       alias: mssql
+#   variables:
+#     # SQL Server environment variables (https://hub.docker.com/r/microsoft/mssql-server-linux/):
+#     ACCEPT_EULA: "Y"
+#     SA_PASSWORD: "thumbnailer(3!3)THUMBNAILER"
+#     MSSQL_PID: "Developer"
+#     # Thumbnailer environment variables:
+#     Database__ConnectionString: "Server=mssql;Database=thumbnailer;User Id=sa;Password=thumbnailer(3!3)THUMBNAILER;Encrypt=false;"
+#     Database__Provider: "SqlServer"
+#     # Integration tests environment variables:
+#     THUMBNAILER_API_KEY: "__INTEGRATION_TESTS__"
+#   before_script:
+#     - sqlcmd -S mssql -U sa -P "$SA_PASSWORD" -i $SQL_SCRIPTS_PATH/sqlserver.sql
+#   needs:
+#     - run-tests-without-db-anonymous
+#     - run-tests-without-db-authenticated
+
+publish-preview-on-container-registry:
+  extends: .publish-on-container-registry-multi-arch
+  variables:
+    IMAGE_TAG: "preview"
+    DOCKERFILE_LOCATION: "docker/Dockerfile"
+  only:
+    - preview
+
+publish-latest-on-container-registry:
+  extends: .publish-on-container-registry-multi-arch
+  variables:
+    IMAGE_TAG: "latest"
+    DOCKERFILE_LOCATION: "docker/Dockerfile"
+  only:
+    - main
+
+restart-preview-k8s-deployment:
+  extends: .restart-k8s-deployment
+  variables:
+    K8S_DEPLOYMENT_NAMESPACE: "librecheck-preview"
+    K8S_DEPLOYMENT_NAME: "librecheck-app"
+  only:
+    - preview
+
+restart-k8s-deployment:
+  extends: .restart-k8s-deployment
+  variables:
+    K8S_DEPLOYMENT_NAMESPACE: "librecheck"
+    K8S_DEPLOYMENT_NAME: "librecheck-app"
+  only:
+    - main

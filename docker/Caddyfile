@@ -1,0 +1,9 @@
+{
+    auto_https off
+}
+
+:8080 {
+    root * /opt/app
+    try_files {path} /
+    file_server
+}

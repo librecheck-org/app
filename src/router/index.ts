@@ -1,43 +1,51 @@
 import { createRouter, createWebHistory } from '@ionic/vue-router';
 import { RouteRecordRaw } from 'vue-router';
-import TabsPage from '@/views/TabsPage.vue'
+import HomePage from '@/views/HomePage.vue';
+import LoginPage from '@/views/LoginPage.vue';
+import { useCurrentUserStore } from '@/stores';
 
 const routes: Array<RouteRecordRaw> = [
-  {
-    path: '/',
-    redirect: '/tabs/tab1'
-  },
-  {
-    path: '/login',
-    component: () => import('@/views/LoginPage.vue')
-  },
-  {
-    path: '/tabs/',
-    component: TabsPage,
-    children: [
-      {
-        path: '',
-        redirect: '/tabs/tab1'
-      },
-      {
-        path: 'tab1',
-        component: () => import('@/views/Tab1Page.vue')
-      },
-      {
-        path: 'tab2',
-        component: () => import('@/views/Tab2Page.vue')
-      },
-      {
-        path: 'tab3',
-        component: () => import('@/views/Tab3Page.vue')
-      }
-    ]
-  }
-]
+    {
+        path: '/',
+        name: "Home",
+        component: HomePage,
+        children: [
+            {
+                path: 'submissions',
+                name: "Submissions",
+                component: () => import('@/views/SubmissionsPage.vue'),
+            },
+            {
+                path: 'definitions',
+                name: "Definitions",
+                component: () => import('@/views/DefinitionsPage.vue'),
+            },
+        ],
+    },
+    {
+        path: '/login',
+        name: "Login",
+        component: LoginPage
+    }
+];
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
-  routes
-})
+    history: createWebHistory(import.meta.env.BASE_URL),
+    routes
+});
 
-export default router
+router.beforeEach(async (to, _) => {
+    const currentUser = useCurrentUserStore();
+    await currentUser.ensureIsInitialized();
+    if (
+        // Make sure the user is authenticated.
+        !currentUser.isAuthenticated &&
+        // Avoid an infinite redirect.
+        to.name !== 'Login'
+    ) {
+        // Redirect the user to the login page.
+        return { name: 'Login' };
+    }
+});
+
+export default router;
