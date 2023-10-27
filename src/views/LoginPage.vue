@@ -3,58 +3,80 @@
         <ion-header>
             <ion-toolbar>
                 <ion-title>LibreCheck</ion-title>
+                <ion-progress-bar type="indeterminate" v-if="isBusy"></ion-progress-bar>
             </ion-toolbar>
         </ion-header>
-        <ion-content>
-            <ion-list :inset="true">
-                <ion-list-header>
-                    <ion-label>Login</ion-label>
-                </ion-list-header>
-                <ion-item>
-                    <ion-input label="Email address" label-placement="stacked" type="email" placeholder="email@domain.com"
-                        v-model="emailAddress" />
-                </ion-item>
-                <ion-item>
-                    <ion-input label="Auth code" label-placement="stacked" type="text" placeholder="ABCD1234" />
-                </ion-item>
 
-                <ion-item>
-                    <ion-input label="Input with placeholder" placeholder="Enter company name"></ion-input>
-                </ion-item>
+        <ion-content class="ion-padding">
+            <ion-grid>
+                <ion-row>
+                    <ion-col v-bind="columnSizes">
+                        <h1>Login</h1>
+                    </ion-col>
+                </ion-row>
+                <ion-row>
+                    <ion-col v-bind="columnSizes">
+                        <ion-input label="Email address" label-placement="stacked" type="email"
+                            placeholder="email@domain.com" v-model="props.emailAddress"
+                            :disabled="props.state != LoginViewState.EmailAddressCollection" />
+                    </ion-col>
+                </ion-row>
+                <ion-row v-if="props.state == LoginViewState.EmailAddressCollection">
+                    <ion-col v-bind="columnSizes">
+                        <ion-button @click="requestAuthCode()" :disabled="!canRequestAuthCode" expand="block">
+                            Send auth code
+                        </ion-button>
+                    </ion-col>
+                </ion-row>
+                <ion-row v-if="props.state == LoginViewState.AuthCodeCollection">
+                    <ion-col v-bind="columnSizes">
+                        <ion-input label="Auth code" label-placement="stacked" type="text" placeholder="ABCD1234"
+                            v-model="props.authCode" :disabled="props.state != LoginViewState.AuthCodeCollection" />
+                    </ion-col>
+                </ion-row>
+                <ion-row v-if="props.state == LoginViewState.AuthCodeCollection">
+                    <ion-col v-bind="columnSizes">
+                        <ion-button @click="verifyAuthCode()" :disabled="!canVerifyAuthCode" expand="block">
+                            Verify auth code
+                        </ion-button>
+                    </ion-col>
+                </ion-row>
+            </ion-grid>
 
-                <ion-item>
-                    <ion-input label="Input with value" value="121 S Pinckney St #300"></ion-input>
-                </ion-item>
-
-                <ion-item>
-                    <ion-input label="Readonly input" value="Madison" :readonly="true"></ion-input>
-                </ion-item>
-
-                <ion-item>
-                    <ion-input label="Disabled input" value="53703" :disabled="true"></ion-input>
-                </ion-item>
-
-            </ion-list>
-
-            <ion-button @click="login()">Default</ion-button>
+            <ion-toast :is-open="props.state == LoginViewState.LoginSucceeded"
+                message="Login succeeded, redirecting to Home" :duration="5000" />
         </ion-content>
+
+        <ion-footer>
+            <span v-if="props.apiVersion">
+                <small>API version {{ props.apiVersion.version }}</small>
+            </span>
+        </ion-footer>
     </ion-page>
 </template>
   
 <script setup lang="ts">
-import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonInput, IonItem, IonList, IonButton, IonListHeader, IonLabel } from '@ionic/vue';
-import { AppInfoApiClient, Configuration } from '@/apiClients';
+import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonInput, IonButton, IonFooter, IonProgressBar, IonGrid, IonRow, IonCol, IonToast } from '@ionic/vue';
+import { useLoginViewModel, LoginViewState } from '@/viewModels';
+import { computed } from 'vue';
 
-const httpConfig = new Configuration({ basePath: "http://localhost:8100" });
-const appInfoApiClient = new AppInfoApiClient(httpConfig);
+const columnSizes = {
+    "size": "12",
+    "size-md": "8",
+    "offset-md": "2",
+    "size-lg": "6",
+    "offset-lg": "3",
+    "size-xl": "4",
+    "offset-xl": "4"
+};
 
-let emailAddress: string
+const { props, commands } = useLoginViewModel();
+const { canExecute: canRequestAuthCode, execute: requestAuthCode } = commands.requestAuthCodeCommand;
+const { canExecute: canVerifyAuthCode, execute: verifyAuthCode } = commands.verifyAuthCodeCommand;
 
-await appInfoApiClient.getAppVersion();
-
-function login() {
-    console.log(emailAddress);
-}
-
+const isBusy = computed(() => {
+    return commands.requestAuthCodeCommand.isExecuting.value
+        || commands.verifyAuthCodeCommand.isExecuting.value;
+});
 </script>
   
