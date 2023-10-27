@@ -9,7 +9,10 @@ export default defineConfig({
   plugins: [
     vue(),
     legacy(),
-    VitePWA({ registerType: 'autoUpdate' })
+    VitePWA({ 
+      registerType: 'autoUpdate',
+      navigateFallbackDenylist: [/^\/version$/, /^\/env.js$/]
+    })
   ],
   resolve: {
     alias: {
