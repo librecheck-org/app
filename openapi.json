@@ -1,1017 +1,1017 @@
 {
-    "openapi": "3.0.1",
-    "info": {
-      "title": "LibreCheck API",
-      "description": "TODO",
-      "contact": {
-        "name": "LibreCheck Team",
-        "email": "hello@librecheck.io"
-      },
-      "license": {
-        "name": "AGPLv3+",
-        "url": "https://www.gnu.org/licenses/"
-      },
-      "version": "v1"
+  "openapi": "3.0.1",
+  "info": {
+    "title": "LibreCheck API",
+    "description": "TODO",
+    "contact": {
+      "name": "LibreCheck Team",
+      "email": "hello@librecheck.io"
     },
-    "paths": {
-      "/health": {
-        "get": {
-          "tags": [
-            "AppInfo"
-          ],
-          "summary": "Checks application health.",
-          "operationId": "AppInfoApi_CheckAppHealth",
-          "responses": {
-            "200": {
-              "description": "Success",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/HealthReport"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/source-code": {
-        "get": {
-          "tags": [
-            "AppInfo"
-          ],
-          "summary": "Returns a ZIP archive containing application source code.",
-          "operationId": "AppInfoApi_GetAppSourceCode",
-          "responses": {
-            "200": {
-              "description": "Success"
-            }
-          }
-        }
-      },
-      "/version": {
-        "get": {
-          "tags": [
-            "AppInfo"
-          ],
-          "summary": "Returns application version.",
-          "operationId": "AppInfoApi_GetAppVersion",
-          "responses": {
-            "200": {
-              "description": "Success",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/AppVersion"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/api/v1/checklists/definitions": {
-        "get": {
-          "tags": [
-            "Checklists"
-          ],
-          "operationId": "ChecklistsApi_ReadDefinitionsV1",
-          "parameters": [
-            {
-              "name": "pageSize",
-              "in": "query",
-              "required": true,
-              "style": "form",
-              "schema": {
-                "type": "integer",
-                "format": "int32"
-              }
-            },
-            {
-              "name": "pageNumber",
-              "in": "query",
-              "required": true,
-              "style": "form",
-              "schema": {
-                "type": "integer",
-                "format": "int32"
-              }
-            }
-          ],
-          "responses": {
-            "400": {
-              "description": "Bad Request",
-              "content": {
-                "application/problem+json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ProblemDetails"
-                  }
-                }
-              }
-            },
-            "200": {
-              "description": "Success",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/DefinitionSummaryPagedResult"
-                  }
-                }
-              }
-            },
-            "401": {
-              "description": "Unauthorized"
-            },
-            "403": {
-              "description": "Forbidden"
-            }
-          },
-          "security": [
-            {
-              "bearer_token": [
-                "AuthenticatedUserWithSelectedTenantPolicy"
-              ]
-            }
-          ]
-        },
-        "post": {
-          "tags": [
-            "Checklists"
-          ],
-          "operationId": "ChecklistsApi_CreateDefinitionV1",
-          "requestBody": {
+    "license": {
+      "name": "AGPLv3+",
+      "url": "https://www.gnu.org/licenses/"
+    },
+    "version": "v1"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": [
+          "AppInfo"
+        ],
+        "summary": "Checks application health.",
+        "operationId": "AppInfoApi_CheckAppHealth",
+        "responses": {
+          "200": {
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CreateDefinitionCommand"
-                }
-              }
-            },
-            "required": true
-          },
-          "responses": {
-            "400": {
-              "description": "Bad Request",
-              "content": {
-                "application/problem+json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ProblemDetails"
-                  }
-                }
-              }
-            },
-            "204": {
-              "description": "No Content"
-            },
-            "401": {
-              "description": "Unauthorized"
-            },
-            "403": {
-              "description": "Forbidden"
-            }
-          },
-          "security": [
-            {
-              "bearer_token": [
-                "AuthenticatedUserWithSelectedTenantPolicy"
-              ]
-            }
-          ]
-        }
-      },
-      "/api/v1/checklists/definitions/{uuid}": {
-        "get": {
-          "tags": [
-            "Checklists"
-          ],
-          "operationId": "ChecklistsApi_ReadDefinitionV1",
-          "parameters": [
-            {
-              "name": "uuid",
-              "in": "path",
-              "required": true,
-              "style": "simple",
-              "schema": {
-                "type": "string"
-              }
-            }
-          ],
-          "responses": {
-            "400": {
-              "description": "Bad Request",
-              "content": {
-                "application/problem+json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ProblemDetails"
-                  }
-                }
-              }
-            },
-            "200": {
-              "description": "Success",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/DefinitionDetails"
-                  }
-                }
-              }
-            },
-            "401": {
-              "description": "Unauthorized"
-            },
-            "403": {
-              "description": "Forbidden"
-            }
-          },
-          "security": [
-            {
-              "bearer_token": [
-                "AuthenticatedUserWithSelectedTenantPolicy"
-              ]
-            }
-          ]
-        }
-      },
-      "/api/v1/checklists/submissions": {
-        "get": {
-          "tags": [
-            "Checklists"
-          ],
-          "operationId": "ChecklistsApi_ReadSubmissionsV1",
-          "parameters": [
-            {
-              "name": "pageSize",
-              "in": "query",
-              "required": true,
-              "style": "form",
-              "schema": {
-                "type": "integer",
-                "format": "int32"
-              }
-            },
-            {
-              "name": "pageNumber",
-              "in": "query",
-              "required": true,
-              "style": "form",
-              "schema": {
-                "type": "integer",
-                "format": "int32"
-              }
-            }
-          ],
-          "responses": {
-            "400": {
-              "description": "Bad Request",
-              "content": {
-                "application/problem+json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ProblemDetails"
-                  }
-                }
-              }
-            },
-            "200": {
-              "description": "Success",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/SubmissionSummaryPagedResult"
-                  }
-                }
-              }
-            },
-            "401": {
-              "description": "Unauthorized"
-            },
-            "403": {
-              "description": "Forbidden"
-            }
-          },
-          "security": [
-            {
-              "bearer_token": [
-                "AuthenticatedUserWithSelectedTenantPolicy"
-              ]
-            }
-          ]
-        },
-        "post": {
-          "tags": [
-            "Checklists"
-          ],
-          "operationId": "ChecklistsApi_CreateSubmissionV1",
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CreateSubmissionCommand"
-                }
-              }
-            },
-            "required": true
-          },
-          "responses": {
-            "400": {
-              "description": "Bad Request",
-              "content": {
-                "application/problem+json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ProblemDetails"
-                  }
-                }
-              }
-            },
-            "204": {
-              "description": "No Content"
-            },
-            "401": {
-              "description": "Unauthorized"
-            },
-            "403": {
-              "description": "Forbidden"
-            }
-          },
-          "security": [
-            {
-              "bearer_token": [
-                "AuthenticatedUserWithSelectedTenantPolicy"
-              ]
-            }
-          ]
-        }
-      },
-      "/api/v1/checklists/submissions/{uuid}": {
-        "get": {
-          "tags": [
-            "Checklists"
-          ],
-          "operationId": "ChecklistsApi_ReadSubmissionV1",
-          "parameters": [
-            {
-              "name": "uuid",
-              "in": "path",
-              "required": true,
-              "style": "simple",
-              "schema": {
-                "type": "string"
-              }
-            }
-          ],
-          "responses": {
-            "400": {
-              "description": "Bad Request",
-              "content": {
-                "application/problem+json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ProblemDetails"
-                  }
-                }
-              }
-            },
-            "200": {
-              "description": "Success",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/SubmissionDetails"
-                  }
-                }
-              }
-            },
-            "401": {
-              "description": "Unauthorized"
-            },
-            "403": {
-              "description": "Forbidden"
-            }
-          },
-          "security": [
-            {
-              "bearer_token": [
-                "AuthenticatedUserWithSelectedTenantPolicy"
-              ]
-            }
-          ]
-        }
-      },
-      "/api/v1/fair-use-token": {
-        "get": {
-          "tags": [
-            "FairUseToken"
-          ],
-          "summary": "Generates and returns an encrypted fair use token.",
-          "operationId": "FairUseTokenApi_GetFairUseTokenV1",
-          "responses": {
-            "200": {
-              "description": "Success",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/FairUseToken"
-                  }
+                  "$ref": "#/components/schemas/HealthReport"
                 }
               }
             }
           }
-        }
-      },
-      "/api/v1/iam/login/request-auth-code": {
-        "post": {
-          "tags": [
-            "Iam"
-          ],
-          "operationId": "IamApi_RequestLoginAuthCodeV1",
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RequestLoginAuthCodeCommand"
-                }
-              }
-            },
-            "required": true
-          },
-          "responses": {
-            "400": {
-              "description": "Bad Request",
-              "content": {
-                "application/problem+json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ProblemDetails"
-                  }
-                }
-              }
-            },
-            "204": {
-              "description": "No Content"
-            }
-          }
-        }
-      },
-      "/api/v1/iam/login/verify-auth-code": {
-        "post": {
-          "tags": [
-            "Iam"
-          ],
-          "operationId": "IamApi_VerifyLoginAuthCodeV1",
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/VerifyLoginAuthCodeCommand"
-                }
-              }
-            },
-            "required": true
-          },
-          "responses": {
-            "400": {
-              "description": "Bad Request",
-              "content": {
-                "application/problem+json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ProblemDetails"
-                  }
-                }
-              }
-            },
-            "200": {
-              "description": "Success",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/LoginAuthCodeVerifiedResult"
-                  }
-                }
-              }
-            },
-            "404": {
-              "description": "Not Found"
-            }
-          }
-        }
-      },
-      "/api/v1/iam/users/current": {
-        "get": {
-          "tags": [
-            "Iam"
-          ],
-          "operationId": "IamApi_GetCurrentUserV1",
-          "responses": {
-            "400": {
-              "description": "Bad Request",
-              "content": {
-                "application/problem+json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ProblemDetails"
-                  }
-                }
-              }
-            },
-            "200": {
-              "description": "Success",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/UserDetails"
-                  }
-                }
-              }
-            },
-            "401": {
-              "description": "Unauthorized"
-            },
-            "403": {
-              "description": "Forbidden"
-            }
-          },
-          "security": [
-            {
-              "bearer_token": [
-                "AuthenticatedUserPolicy"
-              ]
-            }
-          ]
-        }
-      },
-      "/api/v1/iam/tenants": {
-        "get": {
-          "tags": [
-            "Iam"
-          ],
-          "operationId": "IamApi_GetTenantsV1",
-          "parameters": [
-            {
-              "name": "pageSize",
-              "in": "query",
-              "required": true,
-              "style": "form",
-              "schema": {
-                "type": "integer",
-                "format": "int32"
-              }
-            },
-            {
-              "name": "pageNumber",
-              "in": "query",
-              "required": true,
-              "style": "form",
-              "schema": {
-                "type": "integer",
-                "format": "int32"
-              }
-            }
-          ],
-          "responses": {
-            "400": {
-              "description": "Bad Request",
-              "content": {
-                "application/problem+json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ProblemDetails"
-                  }
-                }
-              }
-            },
-            "200": {
-              "description": "Success",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/TenantDetailsPagedResult"
-                  }
-                }
-              }
-            },
-            "401": {
-              "description": "Unauthorized"
-            },
-            "403": {
-              "description": "Forbidden"
-            }
-          },
-          "security": [
-            {
-              "bearer_token": [
-                "InstanceAdminUserPolicy"
-              ]
-            }
-          ]
         }
       }
     },
-    "components": {
-      "schemas": {
-        "AppVersion": {
-          "required": [
-            "version"
-          ],
-          "type": "object",
-          "properties": {
-            "version": {
-              "minLength": 1,
-              "pattern": "^\\d+(\\.\\d+)*(\\+[0-9a-f]{8})?$",
-              "type": "string",
-              "description": "Application version.",
-              "example": "1.2+abcdef12"
+    "/source-code": {
+      "get": {
+        "tags": [
+          "AppInfo"
+        ],
+        "summary": "Returns a ZIP archive containing application source code.",
+        "operationId": "AppInfoApi_GetAppSourceCode",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/version": {
+      "get": {
+        "tags": [
+          "AppInfo"
+        ],
+        "summary": "Returns application version.",
+        "operationId": "AppInfoApi_GetAppVersion",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppVersion"
+                }
+              }
             }
-          },
-          "additionalProperties": false,
-          "description": "Application version."
-        },
-        "CreateDefinitionCommand": {
-          "type": "object",
-          "properties": {
-            "uuid": {
-              "type": "string",
-              "format": "uuid"
-            },
-            "contents": {
-              "type": "string",
-              "nullable": true
-            }
-          },
-          "additionalProperties": false
-        },
-        "CreateSubmissionCommand": {
-          "type": "object",
-          "properties": {
-            "uuid": {
-              "type": "string",
-              "format": "uuid"
-            },
-            "definitionUuid": {
-              "type": "string",
-              "format": "uuid"
-            },
-            "contents": {
-              "type": "string",
-              "nullable": true
-            }
-          },
-          "additionalProperties": false
-        },
-        "DefinitionDetails": {
-          "required": [
-            "contents",
-            "title",
-            "uuid"
-          ],
-          "type": "object",
-          "properties": {
-            "uuid": {
-              "type": "string",
-              "format": "uuid"
-            },
-            "title": {
-              "minLength": 1,
-              "type": "string"
-            },
-            "contents": {
-              "minLength": 1,
-              "type": "string"
-            }
-          },
-          "additionalProperties": false
-        },
-        "DefinitionSummary": {
-          "required": [
-            "title",
-            "uuid"
-          ],
-          "type": "object",
-          "properties": {
-            "uuid": {
-              "type": "string",
-              "format": "uuid"
-            },
-            "title": {
-              "minLength": 1,
-              "type": "string"
-            }
-          },
-          "additionalProperties": false
-        },
-        "DefinitionSummaryPagedResult": {
-          "type": "object",
-          "properties": {
-            "items": {
-              "type": "array",
-              "items": {
-                "$ref": "#/components/schemas/DefinitionSummary"
-              },
-              "nullable": true
-            },
-            "pageSize": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "pageNumber": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "totalCount": {
+          }
+        }
+      }
+    },
+    "/api/v1/checklists/definitions": {
+      "get": {
+        "tags": [
+          "Checklists"
+        ],
+        "operationId": "ChecklistsApi_ReadDefinitionsV1",
+        "parameters": [
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": true,
+            "style": "form",
+            "schema": {
               "type": "integer",
               "format": "int32"
             }
           },
-          "additionalProperties": false
-        },
-        "FairUseToken": {
-          "type": "object",
-          "properties": {
-            "token": {
-              "type": "string",
-              "description": "Encrypted fair use token.",
-              "nullable": true
-            }
-          },
-          "additionalProperties": false,
-          "description": "Fair use token, used to control communication on public endpoints."
-        },
-        "HealthReport": {
-          "type": "object",
-          "properties": {
-            "status": {
-              "$ref": "#/components/schemas/HealthStatus"
-            },
-            "totalDuration": {
-              "type": "number",
-              "description": "Total duration of all health checks, expressed in seconds.",
-              "format": "double",
-              "example": 0.12
-            },
-            "results": {
-              "type": "array",
-              "items": {
-                "$ref": "#/components/schemas/HealthReportResult"
-              },
-              "description": "Results of each health check.",
-              "nullable": true
-            }
-          },
-          "additionalProperties": false,
-          "description": "Report produced after running all health checks."
-        },
-        "HealthReportResult": {
-          "type": "object",
-          "properties": {
-            "status": {
-              "$ref": "#/components/schemas/HealthStatus"
-            },
-            "description": {
-              "type": "string",
-              "description": "Human-readable description of the status of the component that was checked.",
-              "nullable": true
-            },
-            "duration": {
-              "type": "number",
-              "description": "Health check execution duration, expressed in seconds.",
-              "format": "double"
-            },
-            "data": {
-              "type": "object",
-              "additionalProperties": { },
-              "description": "Additional key-value pairs describing the health of the component.",
-              "nullable": true
-            }
-          },
-          "additionalProperties": false,
-          "description": "Represents a result in a PommaLabs.Salatino.Models.HealthReport.\r\nCorresponds to the result of a single health check."
-        },
-        "HealthStatus": {
-          "enum": [
-            0,
-            1,
-            2
-          ],
-          "type": "integer",
-          "format": "int32"
-        },
-        "LoginAuthCodeVerifiedResult": {
-          "type": "object",
-          "properties": {
-            "accessToken": {
-              "type": "string",
-              "nullable": true
-            },
-            "refreshToken": {
-              "type": "string",
-              "nullable": true
-            }
-          },
-          "additionalProperties": false
-        },
-        "ProblemDetails": {
-          "type": "object",
-          "properties": {
-            "type": {
-              "type": "string",
-              "nullable": true
-            },
-            "title": {
-              "type": "string",
-              "nullable": true
-            },
-            "status": {
-              "type": "integer",
-              "format": "int32",
-              "nullable": true
-            },
-            "detail": {
-              "type": "string",
-              "nullable": true
-            },
-            "instance": {
-              "type": "string",
-              "nullable": true
-            }
-          },
-          "additionalProperties": { }
-        },
-        "RequestLoginAuthCodeCommand": {
-          "type": "object",
-          "properties": {
-            "userEmailAddress": {
-              "type": "string",
-              "nullable": true
-            },
-            "fairUseToken": {
-              "type": "string",
-              "nullable": true
-            }
-          },
-          "additionalProperties": false
-        },
-        "SubmissionDetails": {
-          "required": [
-            "contents",
-            "definition",
-            "uuid"
-          ],
-          "type": "object",
-          "properties": {
-            "uuid": {
-              "type": "string",
-              "format": "uuid"
-            },
-            "definition": {
-              "$ref": "#/components/schemas/DefinitionSummary"
-            },
-            "contents": {
-              "minLength": 1,
-              "type": "string"
-            }
-          },
-          "additionalProperties": false
-        },
-        "SubmissionSummary": {
-          "required": [
-            "definition",
-            "uuid"
-          ],
-          "type": "object",
-          "properties": {
-            "uuid": {
-              "type": "string",
-              "format": "uuid"
-            },
-            "definition": {
-              "$ref": "#/components/schemas/DefinitionSummary"
-            }
-          },
-          "additionalProperties": false
-        },
-        "SubmissionSummaryPagedResult": {
-          "type": "object",
-          "properties": {
-            "items": {
-              "type": "array",
-              "items": {
-                "$ref": "#/components/schemas/SubmissionSummary"
-              },
-              "nullable": true
-            },
-            "pageSize": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "pageNumber": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "totalCount": {
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "required": true,
+            "style": "form",
+            "schema": {
               "type": "integer",
               "format": "int32"
             }
-          },
-          "additionalProperties": false
-        },
-        "TenantDetails": {
-          "required": [
-            "uuid"
-          ],
-          "type": "object",
-          "properties": {
-            "uuid": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          "additionalProperties": false
-        },
-        "TenantDetailsPagedResult": {
-          "type": "object",
-          "properties": {
-            "items": {
-              "type": "array",
-              "items": {
-                "$ref": "#/components/schemas/TenantDetails"
-              },
-              "nullable": true
-            },
-            "pageSize": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "pageNumber": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "totalCount": {
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          "additionalProperties": false
-        },
-        "UserDetails": {
-          "required": [
-            "emailAddress",
-            "tenants",
-            "uuid"
-          ],
-          "type": "object",
-          "properties": {
-            "uuid": {
-              "type": "string",
-              "format": "uuid"
-            },
-            "emailAddress": {
-              "minLength": 1,
-              "type": "string",
-              "format": "email"
-            },
-            "tenants": {
-              "type": "array",
-              "items": {
-                "$ref": "#/components/schemas/UserTenantElement"
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
               }
             }
           },
-          "additionalProperties": false
-        },
-        "UserTenantElement": {
-          "type": "object",
-          "properties": {
-            "tenantUuid": {
-              "type": "string",
-              "format": "uuid"
-            },
-            "tenantName": {
-              "type": "string",
-              "nullable": true
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefinitionSummaryPagedResult"
+                }
+              }
             }
           },
-          "additionalProperties": false
-        },
-        "VerifyLoginAuthCodeCommand": {
-          "type": "object",
-          "properties": {
-            "userEmailAddress": {
-              "type": "string",
-              "nullable": true
-            },
-            "fairUseToken": {
-              "type": "string",
-              "nullable": true
-            },
-            "authCode": {
-              "type": "string",
-              "nullable": true
-            }
+          "401": {
+            "description": "Unauthorized"
           },
-          "additionalProperties": false
-        }
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearer_token": [
+              "AuthenticatedUserWithSelectedTenantPolicy"
+            ]
+          }
+        ]
       },
-      "securitySchemes": {
-        "bearer_token": {
-          "type": "http",
-          "description": "Authorization header with Bearer token.",
-          "scheme": "Bearer"
+      "post": {
+        "tags": [
+          "Checklists"
+        ],
+        "operationId": "ChecklistsApi_CreateDefinitionV1",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDefinitionCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearer_token": [
+              "AuthenticatedUserWithSelectedTenantPolicy"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/checklists/definitions/{uuid}": {
+      "get": {
+        "tags": [
+          "Checklists"
+        ],
+        "operationId": "ChecklistsApi_ReadDefinitionV1",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefinitionDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearer_token": [
+              "AuthenticatedUserWithSelectedTenantPolicy"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/checklists/submissions": {
+      "get": {
+        "tags": [
+          "Checklists"
+        ],
+        "operationId": "ChecklistsApi_ReadSubmissionsV1",
+        "parameters": [
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": true,
+            "style": "form",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "required": true,
+            "style": "form",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubmissionSummaryPagedResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearer_token": [
+              "AuthenticatedUserWithSelectedTenantPolicy"
+            ]
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Checklists"
+        ],
+        "operationId": "ChecklistsApi_CreateSubmissionV1",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSubmissionCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearer_token": [
+              "AuthenticatedUserWithSelectedTenantPolicy"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/checklists/submissions/{uuid}": {
+      "get": {
+        "tags": [
+          "Checklists"
+        ],
+        "operationId": "ChecklistsApi_ReadSubmissionV1",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubmissionDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearer_token": [
+              "AuthenticatedUserWithSelectedTenantPolicy"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/fair-use-token": {
+      "get": {
+        "tags": [
+          "FairUseToken"
+        ],
+        "summary": "Generates and returns an encrypted fair use token.",
+        "operationId": "FairUseTokenApi_GetFairUseTokenV1",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FairUseToken"
+                }
+              }
+            }
+          }
         }
+      }
+    },
+    "/api/v1/iam/login/request-auth-code": {
+      "post": {
+        "tags": [
+          "Iam"
+        ],
+        "operationId": "IamApi_RequestLoginAuthCodeV1",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestLoginAuthCodeCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/v1/iam/login/verify-auth-code": {
+      "post": {
+        "tags": [
+          "Iam"
+        ],
+        "operationId": "IamApi_VerifyLoginAuthCodeV1",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyLoginAuthCodeCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginAuthCodeVerifiedResult"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/v1/iam/users/current": {
+      "get": {
+        "tags": [
+          "Iam"
+        ],
+        "operationId": "IamApi_GetCurrentUserV1",
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearer_token": [
+              "AuthenticatedUserPolicy"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/iam/tenants": {
+      "get": {
+        "tags": [
+          "Iam"
+        ],
+        "operationId": "IamApi_GetTenantsV1",
+        "parameters": [
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": true,
+            "style": "form",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "required": true,
+            "style": "form",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TenantDetailsPagedResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearer_token": [
+              "InstanceAdminUserPolicy"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AppVersion": {
+        "required": [
+          "version"
+        ],
+        "type": "object",
+        "properties": {
+          "version": {
+            "minLength": 1,
+            "pattern": "^\\d+(\\.\\d+)*(\\+[0-9a-f]{8})?$",
+            "type": "string",
+            "description": "Application version.",
+            "example": "1.2+abcdef12"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Application version."
+      },
+      "CreateDefinitionCommand": {
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "contents": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateSubmissionCommand": {
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "definitionUuid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "contents": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "DefinitionDetails": {
+        "required": [
+          "contents",
+          "title",
+          "uuid"
+        ],
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "contents": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "DefinitionSummary": {
+        "required": [
+          "title",
+          "uuid"
+        ],
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "DefinitionSummaryPagedResult": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DefinitionSummary"
+            },
+            "nullable": true
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "FairUseToken": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "Encrypted fair use token.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Fair use token, used to control communication on public endpoints."
+      },
+      "HealthReport": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/HealthStatus"
+          },
+          "totalDuration": {
+            "type": "number",
+            "description": "Total duration of all health checks, expressed in seconds.",
+            "format": "double",
+            "example": 0.12
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HealthReportResult"
+            },
+            "description": "Results of each health check.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Report produced after running all health checks."
+      },
+      "HealthReportResult": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/HealthStatus"
+          },
+          "description": {
+            "type": "string",
+            "description": "Human-readable description of the status of the component that was checked.",
+            "nullable": true
+          },
+          "duration": {
+            "type": "number",
+            "description": "Health check execution duration, expressed in seconds.",
+            "format": "double"
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Additional key-value pairs describing the health of the component.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents a result in a PommaLabs.Salatino.Models.HealthReport.\r\nCorresponds to the result of a single health check."
+      },
+      "HealthStatus": {
+        "enum": [
+          0,
+          1,
+          2
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "LoginAuthCodeVerifiedResult": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "nullable": true
+          },
+          "refreshToken": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "detail": {
+            "type": "string",
+            "nullable": true
+          },
+          "instance": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": {}
+      },
+      "RequestLoginAuthCodeCommand": {
+        "type": "object",
+        "properties": {
+          "userEmailAddress": {
+            "type": "string",
+            "nullable": true
+          },
+          "fairUseToken": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "SubmissionDetails": {
+        "required": [
+          "contents",
+          "definition",
+          "uuid"
+        ],
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "definition": {
+            "$ref": "#/components/schemas/DefinitionSummary"
+          },
+          "contents": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SubmissionSummary": {
+        "required": [
+          "definition",
+          "uuid"
+        ],
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "definition": {
+            "$ref": "#/components/schemas/DefinitionSummary"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SubmissionSummaryPagedResult": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SubmissionSummary"
+            },
+            "nullable": true
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TenantDetails": {
+        "required": [
+          "uuid"
+        ],
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TenantDetailsPagedResult": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TenantDetails"
+            },
+            "nullable": true
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "UserDetails": {
+        "required": [
+          "emailAddress",
+          "tenants",
+          "uuid"
+        ],
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "emailAddress": {
+            "minLength": 1,
+            "type": "string",
+            "format": "email"
+          },
+          "tenants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserTenantElement"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "UserTenantElement": {
+        "type": "object",
+        "properties": {
+          "tenantUuid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenantName": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "VerifyLoginAuthCodeCommand": {
+        "type": "object",
+        "properties": {
+          "userEmailAddress": {
+            "type": "string",
+            "nullable": true
+          },
+          "fairUseToken": {
+            "type": "string",
+            "nullable": true
+          },
+          "authCode": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "securitySchemes": {
+      "bearer_token": {
+        "type": "http",
+        "description": "Authorization header with Bearer token.",
+        "scheme": "Bearer"
       }
     }
   }
+}
