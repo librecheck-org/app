@@ -31,17 +31,19 @@ import { AddHeadersMiddleware } from './infrastructure';
 
 defineCustomElements(window);
 
-DefaultConfig.config = new Configuration({
-	basePath: window.env?.API_BASE_URL ?? import.meta.env.VITE_API_BASE_URL,
-	middleware: [new AddHeadersMiddleware()]
-});
-
 const pinia = createPinia();
 const app = createApp(App)
 	.use(IonicVue)
 	.use(router)
 	.use(pinia);
 
-router.isReady().then(() => {
+router.isReady().then(async () => {
+	const env = await (await fetch("/env.json")).json();
+
+	DefaultConfig.config = new Configuration({
+		basePath: env?.API_BASE_URL ?? import.meta.env.VITE_API_BASE_URL,
+		middleware: [new AddHeadersMiddleware()]
+	});
+
 	app.mount('#app');
 });

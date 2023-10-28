@@ -11,7 +11,10 @@ export default defineConfig({
     legacy(),
     VitePWA({ 
       registerType: 'autoUpdate',
-      navigateFallbackDenylist: [/^\/version$/, /^\/env.js$/]
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,png,svg,json}'],
+        navigateFallbackDenylist: [/^\/version$/]
+      }
     })
   ],
   resolve: {

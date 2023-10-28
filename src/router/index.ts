@@ -2,6 +2,8 @@ import { createRouter, createWebHistory } from '@ionic/vue-router';
 import { RouteRecordRaw } from 'vue-router';
 import HomePage from '@/views/HomePage.vue';
 import LoginPage from '@/views/LoginPage.vue';
+import SubmissionsPage from '@/views/SubmissionsPage.vue';
+import DefinitionsPage from '@/views/DefinitionsPage.vue';
 import { useCurrentUserStore } from '@/stores';
 
 const routes: Array<RouteRecordRaw> = [
@@ -13,12 +15,12 @@ const routes: Array<RouteRecordRaw> = [
             {
                 path: 'submissions',
                 name: "Submissions",
-                component: () => import('@/views/SubmissionsPage.vue'),
+                component: SubmissionsPage,
             },
             {
                 path: 'definitions',
                 name: "Definitions",
-                component: () => import('@/views/DefinitionsPage.vue'),
+                component: DefinitionsPage,
             },
         ],
     },
