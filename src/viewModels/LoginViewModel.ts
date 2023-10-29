@@ -1,7 +1,7 @@
 import * as EmailValidator from "email-validator";
 import { AppInfoApiClient, AppVersion, FairUseTokenApiClient, IamApiClient } from "@/apiClients";
 import { ViewModel, useCommand, useViewModel } from "@/infrastructure";
-import { useCurrentUserStore, useTokensStore } from "@/stores";
+import { useAppInfoStore, useCurrentUserStore, useTokensStore } from "@/stores";
 import { Command } from "@/infrastructure/Command";
 import { reactive } from "vue";
 import router from "@/router";
@@ -20,33 +20,47 @@ class LoginViewProps {
 }
 
 class LoginViewCommands {
-    constructor(public requestAuthCodeCommand: Command, public verifyAuthCodeCommand: Command) {
+    constructor(
+        public updateAppCommand: Command,
+        public requestAuthCodeCommand: Command,
+        public verifyAuthCodeCommand: Command) {
     }
 }
 
 export const useLoginViewModel = (): ViewModel<LoginViewProps, LoginViewCommands> => {
-    const props = reactive(new LoginViewProps());
-    const tokensStore = useTokensStore();
-    const currentUserStore = useCurrentUserStore();
+    const _appInfoStore = useAppInfoStore();
+    const _tokensStore = useTokensStore();
+    const _currentUserStore = useCurrentUserStore();
 
-    const initialize = async () => {
+    const props = reactive(new LoginViewProps());
+
+    async function initialize() {
         const appInfoApiClient = new AppInfoApiClient();
         props.apiVersion = await appInfoApiClient.getAppVersion();
-    };
+    }
 
-    const getFairUseToken = async () => {
+    function _canUpdateApp(): boolean {
+        return props.state == LoginViewState.EmailAddressCollection
+            && _appInfoStore.updatesAreAvailable;
+    }
+
+    async function _updateApp(): Promise<void> {
+        _appInfoStore.applyUpdates();
+    }
+
+    async function _getFairUseToken() {
         const fairUseTokenApiClient = new FairUseTokenApiClient();
         return await fairUseTokenApiClient.getFairUseTokenV1();
-    };
+    }
 
-    const canRequestAuthCode = () => {
+    function _canRequestAuthCode(): boolean {
         return props.state == LoginViewState.EmailAddressCollection
             && props.emailAddress !== undefined
             && EmailValidator.validate(props.emailAddress);
-    };
+    }
 
-    const requestAuthCode = async () => {
-        const fairUseToken = await getFairUseToken();
+    async function _requestAuthCode() {
+        const fairUseToken = await _getFairUseToken();
 
         const iamApiClient = new IamApiClient();
         await iamApiClient.requestLoginAuthCodeV1({
@@ -57,16 +71,16 @@ export const useLoginViewModel = (): ViewModel<LoginViewProps, LoginViewCommands
         });
 
         props.state = LoginViewState.AuthCodeCollection;
-    };
+    }
 
-    const canVerifyAuthCode = () => {
+    function _canVerifyAuthCode(): boolean {
         return props.state == LoginViewState.AuthCodeCollection
             && props.authCode !== undefined
             && props.authCode.trim().length > 0;
-    };
+    }
 
-    const verifyAuthCode = async () => {
-        const fairUseToken = await getFairUseToken();
+    async function _verifyAuthCode() {
+        const fairUseToken = await _getFairUseToken();
         const iamApiClient = new IamApiClient();
 
         const tokens = await iamApiClient.verifyLoginAuthCodeV1({
@@ -76,19 +90,20 @@ export const useLoginViewModel = (): ViewModel<LoginViewProps, LoginViewCommands
                 authCode: props.authCode!.trim()
             }
         });
-        await tokensStore.update(tokens);
+        await _tokensStore.update(tokens);
 
         const currentUser = await iamApiClient.getCurrentUserV1();
-        await currentUserStore.update(currentUser);
+        await _currentUserStore.update(currentUser);
 
         props.state = LoginViewState.LoginSucceeded;
 
         router.push({ name: "Home" });
-    };
+    }
 
-    const requestAuthCodeCommand = useCommand(canRequestAuthCode, requestAuthCode);
-    const verifyAuthCodeCommand = useCommand(canVerifyAuthCode, verifyAuthCode);
-    const commands = new LoginViewCommands(requestAuthCodeCommand, verifyAuthCodeCommand);
+    const _updateAppCommand = useCommand(_canUpdateApp, _updateApp);
+    const _requestAuthCodeCommand = useCommand(_canRequestAuthCode, _requestAuthCode);
+    const _verifyAuthCodeCommand = useCommand(_canVerifyAuthCode, _verifyAuthCode);
+    const commands = new LoginViewCommands(_updateAppCommand, _requestAuthCodeCommand, _verifyAuthCodeCommand);
 
     return useViewModel({ props, commands, initialize });
 };

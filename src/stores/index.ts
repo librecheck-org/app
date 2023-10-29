@@ -3,6 +3,8 @@ import { computed, ref } from "vue";
 import { defineIonicStore, useIonicStorage } from "@/infrastructure";
 import { UserDetails } from "@/apiClients";
 
+export * from "./AppInfoStore";
+
 export function useTokensStore() {
     const storageKey = StorageKey.Tokens;
     return defineIonicStore(storageKey, () => {

@@ -29,12 +29,16 @@ import "./theme/variables.css";
 /* API clients */
 import { Configuration, DefaultConfig } from "./apiClients";
 import { AddHeadersMiddleware } from "./infrastructure";
+import { useAppInfoStore } from "./stores";
 
 defineCustomElements(window);
 
-registerSW({
+const updateSW = registerSW({
     onNeedRefresh() {
         console.info("App should be refreshed to apply updates");
+
+        const appInfo = useAppInfoStore();
+        appInfo.setUpdatesAreAvailable(updateSW);
     },
     onOfflineReady() {
         console.info("App is ready to work offline");

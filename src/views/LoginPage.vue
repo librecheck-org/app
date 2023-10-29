@@ -43,6 +43,12 @@
                 </ion-row>
             </ion-grid>
 
+            <ion-fab v-if="canUpdateApp">
+                <ion-fab-button @click="updateApp()">
+                    <ion-icon :icon="add"></ion-icon>
+                </ion-fab-button>
+            </ion-fab>
+
             <ion-toast :is-open="props.state == LoginViewState.LoginSucceeded"
                 message="Login succeeded, redirecting to Home" :duration="5000" />
         </ion-content>
@@ -56,8 +62,9 @@
 </template>
   
 <script setup lang="ts">
-import { IonButton, IonCol, IonContent, IonFooter, IonGrid, IonHeader, IonInput, IonPage, IonProgressBar, IonRow, IonTitle, IonToast, IonToolbar } from "@ionic/vue";
+import { IonButton, IonCol, IonContent, IonFab, IonFabButton, IonFooter, IonGrid, IonHeader, IonIcon, IonInput, IonPage, IonProgressBar, IonRow, IonTitle, IonToast, IonToolbar } from "@ionic/vue";
 import { LoginViewState, useLoginViewModel } from "@/viewModels";
+import { add } from "ionicons/icons";
 import { computed } from "vue";
 
 const columnSizes = {
@@ -71,6 +78,7 @@ const columnSizes = {
 };
 
 const { props, commands } = useLoginViewModel();
+const { canExecute: canUpdateApp, execute: updateApp } = commands.updateAppCommand;
 const { canExecute: canRequestAuthCode, execute: requestAuthCode } = commands.requestAuthCodeCommand;
 const { canExecute: canVerifyAuthCode, execute: verifyAuthCode } = commands.verifyAuthCodeCommand;
 
