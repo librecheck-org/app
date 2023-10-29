@@ -5,8 +5,8 @@ stages:
   - deploy
 
 include:
-  # - project: pommalabs/templates
-  #   file: /.gitlab/ci_templates/dotnet/git-version.gitlab-ci.yml
+  - project: pommalabs/templates
+    file: /.gitlab/ci_templates/node/git-version.gitlab-ci.yml
   - project: pommalabs/templates
     file: /.gitlab/ci_templates/git/.git-archive.gitlab-ci.yml
   - project: pommalabs/templates
