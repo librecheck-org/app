@@ -6,24 +6,33 @@ import vue from "@vitejs/plugin-vue";
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [
-    vue(),
-    legacy(),
-    VitePWA({
-      registerType: "prompt",
-      includeAssets: ["env.json", "favicon.png"],
-      workbox: {
-        navigateFallbackDenylist: [/^\/version$/]
-      }
-    })
-  ],
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
+    plugins: [
+        vue(),
+        legacy(),
+        VitePWA({
+            registerType: "prompt",
+            includeAssets: ["favicon.png"],
+            workbox: {
+                navigateFallbackDenylist: [/^\/version$/],
+                runtimeCaching: [
+                    {
+                        urlPattern: /\/env\.json/,
+                        handler: "NetworkFirst",
+                    }
+                ]
+            },
+            devOptions: {
+                enabled: true
+            }
+        })
+    ],
+    resolve: {
+        alias: {
+            "@": path.resolve(__dirname, "./src"),
+        },
     },
-  },
-  test: {
-    globals: true,
-    environment: "jsdom"
-  }
+    test: {
+        globals: true,
+        environment: "jsdom"
+    }
 });
