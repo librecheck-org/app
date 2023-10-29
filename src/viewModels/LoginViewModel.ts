@@ -1,11 +1,10 @@
-import { AppInfoApiClient, AppVersion, FairUseTokenApiClient, IamApiClient } from "@/apiClients";
-import { ViewModel, useCommand, useViewModel, writeToStorage } from "@/infrastructure";
-import { reactive } from "vue";
 import * as EmailValidator from "email-validator";
-import { Command } from "@/infrastructure/Command";
-import router from "@/router";
-import { StorageKey } from "@/models";
+import { AppInfoApiClient, AppVersion, FairUseTokenApiClient, IamApiClient } from "@/apiClients";
+import { ViewModel, useCommand, useViewModel } from "@/infrastructure";
 import { useCurrentUserStore, useTokensStore } from "@/stores";
+import { Command } from "@/infrastructure/Command";
+import { reactive } from "vue";
+import router from "@/router";
 
 export enum LoginViewState {
     EmailAddressCollection,
@@ -38,13 +37,13 @@ export const useLoginViewModel = (): ViewModel<LoginViewProps, LoginViewCommands
     const getFairUseToken = async () => {
         const fairUseTokenApiClient = new FairUseTokenApiClient();
         return await fairUseTokenApiClient.getFairUseTokenV1();
-    }
+    };
 
     const canRequestAuthCode = () => {
         return props.state == LoginViewState.EmailAddressCollection
             && props.emailAddress !== undefined
             && EmailValidator.validate(props.emailAddress);
-    }
+    };
 
     const requestAuthCode = async () => {
         const fairUseToken = await getFairUseToken();
@@ -58,13 +57,13 @@ export const useLoginViewModel = (): ViewModel<LoginViewProps, LoginViewCommands
         });
 
         props.state = LoginViewState.AuthCodeCollection;
-    }
+    };
 
     const canVerifyAuthCode = () => {
         return props.state == LoginViewState.AuthCodeCollection
             && props.authCode !== undefined
             && props.authCode.trim().length > 0;
-    }
+    };
 
     const verifyAuthCode = async () => {
         const fairUseToken = await getFairUseToken();
@@ -85,11 +84,11 @@ export const useLoginViewModel = (): ViewModel<LoginViewProps, LoginViewCommands
         props.state = LoginViewState.LoginSucceeded;
 
         router.push({ name: "Home" });
-    }
+    };
 
     const requestAuthCodeCommand = useCommand(canRequestAuthCode, requestAuthCode);
     const verifyAuthCodeCommand = useCommand(canVerifyAuthCode, verifyAuthCode);
     const commands = new LoginViewCommands(requestAuthCodeCommand, verifyAuthCodeCommand);
 
     return useViewModel({ props, commands, initialize });
-}
+};

@@ -22,7 +22,7 @@ export const useCommand = (canExecute: () => boolean, execute: () => Promise<voi
                 isExecutingRef.value = false;
             }
         }
-    }
+    };
 
     return { isExecuting: isExecutingRef, canExecute: canExecuteCmp, execute: executeWrapper };
-}
+};

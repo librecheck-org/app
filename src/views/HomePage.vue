@@ -43,9 +43,9 @@
 </template>
   
 <script setup lang="ts">
-import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonSplitPane, IonRouterOutlet, IonMenu, IonMenuButton, IonButtons, IonAvatar, IonLabel, IonItem, IonList } from '@ionic/vue';
+import { IonAvatar, IonButtons, IonContent, IonHeader, IonItem, IonLabel, IonList, IonMenu, IonMenuButton, IonPage, IonRouterOutlet, IonSplitPane, IonTitle, IonToolbar } from "@ionic/vue";
 import router from "@/router";
-import { useCurrentUserStore } from '@/stores';
+import { useCurrentUserStore } from "@/stores";
 
 const currentUser = useCurrentUserStore();
 </script>

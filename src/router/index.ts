@@ -1,31 +1,31 @@
-import { createRouter, createWebHistory } from '@ionic/vue-router';
-import { RouteRecordRaw } from 'vue-router';
-import HomePage from '@/views/HomePage.vue';
-import LoginPage from '@/views/LoginPage.vue';
-import SubmissionsPage from '@/views/SubmissionsPage.vue';
-import DefinitionsPage from '@/views/DefinitionsPage.vue';
-import { useCurrentUserStore } from '@/stores';
+import { createRouter, createWebHistory } from "@ionic/vue-router";
+import DefinitionsPage from "@/views/DefinitionsPage.vue";
+import HomePage from "@/views/HomePage.vue";
+import LoginPage from "@/views/LoginPage.vue";
+import { RouteRecordRaw } from "vue-router";
+import SubmissionsPage from "@/views/SubmissionsPage.vue";
+import { useCurrentUserStore } from "@/stores";
 
 const routes: Array<RouteRecordRaw> = [
     {
-        path: '/',
+        path: "/",
         name: "Home",
         component: HomePage,
         children: [
             {
-                path: 'submissions',
+                path: "submissions",
                 name: "Submissions",
                 component: SubmissionsPage,
             },
             {
-                path: 'definitions',
+                path: "definitions",
                 name: "Definitions",
                 component: DefinitionsPage,
             },
         ],
     },
     {
-        path: '/login',
+        path: "/login",
         name: "Login",
         component: LoginPage
     }
@@ -36,17 +36,17 @@ const router = createRouter({
     routes
 });
 
-router.beforeEach(async (to, _) => {
+router.beforeEach(async to => {
     const currentUser = useCurrentUserStore();
     await currentUser.ensureIsInitialized();
     if (
         // Make sure the user is authenticated.
         !currentUser.isAuthenticated &&
         // Avoid an infinite redirect.
-        to.name !== 'Login'
+        to.name !== "Login"
     ) {
         // Redirect the user to the login page.
-        return { name: 'Login' };
+        return { name: "Login" };
     }
 });
 

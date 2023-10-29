@@ -7,6 +7,6 @@
 </template>
   
 <script setup lang="ts">
-import { IonPage, IonLabel, IonContent } from '@ionic/vue';
+import { IonContent, IonLabel, IonPage } from "@ionic/vue";
 </script>
   

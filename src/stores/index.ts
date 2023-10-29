@@ -1,7 +1,7 @@
-import { UserDetails } from '@/apiClients';
-import { defineIonicStore, useIonicStorage } from '@/infrastructure';
-import { StorageKey, Tokens } from '@/models';
-import { computed, ref } from 'vue';
+import { StorageKey, Tokens } from "@/models";
+import { computed, ref } from "vue";
+import { defineIonicStore, useIonicStorage } from "@/infrastructure";
+import { UserDetails } from "@/apiClients";
 
 export function useTokensStore() {
     const storageKey = StorageKey.Tokens;
@@ -17,7 +17,7 @@ export function useTokensStore() {
 export function useCurrentUserStore() {
     const storageKey = StorageKey.CurrentUser;
     return defineIonicStore(storageKey, () => {
-        const value = ref<UserDetails | undefined>();        
+        const value = ref<UserDetails | undefined>();
         const isAuthenticated = computed(() => value.value !== undefined);
 
         const { ensureIsInitialized, update } = useIonicStorage(storageKey, value);

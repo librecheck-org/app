@@ -56,9 +56,9 @@
 </template>
   
 <script setup lang="ts">
-import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonInput, IonButton, IonFooter, IonProgressBar, IonGrid, IonRow, IonCol, IonToast } from '@ionic/vue';
-import { useLoginViewModel, LoginViewState } from '@/viewModels';
-import { computed } from 'vue';
+import { IonButton, IonCol, IonContent, IonFooter, IonGrid, IonHeader, IonInput, IonPage, IonProgressBar, IonRow, IonTitle, IonToast, IonToolbar } from "@ionic/vue";
+import { LoginViewState, useLoginViewModel } from "@/viewModels";
+import { computed } from "vue";
 
 const columnSizes = {
     "size": "12",

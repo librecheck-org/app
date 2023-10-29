@@ -8,13 +8,13 @@
 </template>
   
 <script setup lang="ts">
-import { useCurrentUserStore } from '@/stores';
-import { IonPage, IonLabel, IonContent, IonButton } from '@ionic/vue';
+import { IonButton, IonContent, IonLabel, IonPage } from "@ionic/vue";
+import { useCurrentUserStore } from "@/stores";
 
 const currentUser = useCurrentUserStore();
 
 async function updateEmailAddress() {
-    await currentUser.update({emailAddress: new Date().getSeconds().toString()});
+    await currentUser.update({ emailAddress: new Date().getSeconds().toString() });
 }
 
 </script>

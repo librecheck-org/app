@@ -1,7 +1,7 @@
-import { Storage } from '@ionic/storage';
+import { Ref, ref } from "vue";
+import { Storage } from "@ionic/storage";
 import { StorageKey } from "@/models";
-import { Ref, ref } from 'vue';
-import { defineStore } from 'pinia';
+import { defineStore } from "pinia";
 
 class IonicStorageWrapper {
     private readonly _store = new Storage();
@@ -51,9 +51,9 @@ export function useIonicStorage<T>(storageKey: StorageKey, value: Ref<T | undefi
         }
         isInitialized.value = true;
     }
-    
+
     async function update(updates: Partial<T> | undefined) {
-        const updated = updates !== undefined ? <T>{...value.value, ...updates} : undefined;
+        const updated = updates !== undefined ? <T>{ ...value.value, ...updates } : undefined;
         await _writeToStorage(storageKey, updated);
         value.value = updated;
     }
