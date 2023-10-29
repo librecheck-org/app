@@ -11,7 +11,7 @@ export default defineConfig({
     legacy(),
     VitePWA({
       registerType: "prompt",
-      includeAssets: ["favicon.png"],
+      includeAssets: ["env.json", "favicon.png"],
       workbox: {
         navigateFallbackDenylist: [/^\/version$/]
       }

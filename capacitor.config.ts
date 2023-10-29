@@ -1,8 +1,8 @@
 import { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
-  appId: "io.ionic.starter",
-  appName: "librecheck-app",
+  appId: "io.librecheck.app",
+  appName: "LibreCheck",
   webDir: "dist",
   server: {
     androidScheme: "https"
