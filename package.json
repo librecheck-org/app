@@ -11,7 +11,9 @@
     "preview": "vite preview",
     "test:e2e": "cypress run",
     "test:unit": "vitest",
-    "lint": "eslint"
+    "lint": "eslint",
+    "openapi:generate": "openapi-generator-cli generate",
+    "openapi:version-list": "openapi-generator-cli version-manager list"
   },
   "dependencies": {
     "@capacitor/app": "5.0.6",
