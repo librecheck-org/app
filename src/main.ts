@@ -40,10 +40,21 @@ const updateSW = registerSW({
         const appInfo = useAppInfoStore();
         appInfo.setUpdatesAreAvailable(updateSW);
     },
+
     onOfflineReady() {
         console.info("App is ready to work offline");
-    },
+    }
 });
+
+const appWorker = new Worker("worker.js");
+
+async function check() {
+    console.log(new Date());
+}
+
+appWorker.onmessage = () => {
+    setInterval(() => { check(); }, 10000);
+};
 
 const pinia = createPinia();
 const app = createApp(App)
@@ -60,4 +71,6 @@ router.isReady().then(async () => {
     });
 
     app.mount("#app");
+
+    appWorker.postMessage("start");
 });
