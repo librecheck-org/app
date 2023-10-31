@@ -33,7 +33,7 @@ class IonicStorageWrapper {
 
 const _ionicStorage = new IonicStorageWrapper();
 
-async function _readFromStorage<T>(key: StorageKey): Promise<T | undefined> {
+export async function readFromStorage<T>(key: StorageKey): Promise<T | undefined> {
     const item = await _ionicStorage.getItem(key);
     return item !== null ? <T>item : undefined;
 }
@@ -47,7 +47,7 @@ export function useIonicStorage<T>(storageKey: StorageKey, value: Ref<T | undefi
 
     async function ensureIsInitialized() {
         if (!isInitialized.value) {
-            value.value = await _readFromStorage<T>(storageKey);
+            value.value = await readFromStorage<T>(storageKey);
         }
         isInitialized.value = true;
     }

@@ -4,6 +4,17 @@ export const enum StorageKey {
     CurrentUser = "lc.currentUser"
 }
 
+export const enum ServerConnectionStatus {
+    Healthy = "healthy",
+    Unhealthy = "unhealthy",
+    Disconnected = "disconnected"
+}
+
+export class WorkerMessage {
+    constructor(public type: string, public value: any) {
+    }
+}
+
 export interface AppInfo {
 
 }

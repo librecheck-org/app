@@ -57,6 +57,7 @@
             <span v-if="props.apiVersion">
                 <small>API version {{ props.apiVersion.version }}</small>
             </span>
+                <small>Server conn {{ appInfoStore.serverConnectionStatus }}</small>
         </ion-footer>
     </ion-page>
 </template>
@@ -66,6 +67,7 @@ import { IonButton, IonCol, IonContent, IonFab, IonFabButton, IonFooter, IonGrid
 import { LoginViewState, useLoginViewModel } from "@/viewModels";
 import { add } from "ionicons/icons";
 import { computed } from "vue";
+import { useAppInfoStore } from "@/stores";
 
 const columnSizes = {
     "size": "12",
@@ -81,6 +83,8 @@ const { props, commands } = useLoginViewModel();
 const { canExecute: canUpdateApp, execute: updateApp } = commands.updateAppCommand;
 const { canExecute: canRequestAuthCode, execute: requestAuthCode } = commands.requestAuthCodeCommand;
 const { canExecute: canVerifyAuthCode, execute: verifyAuthCode } = commands.verifyAuthCodeCommand;
+
+const appInfoStore = useAppInfoStore();
 
 const isBusy = computed(() => {
     return commands.requestAuthCodeCommand.isExecuting.value

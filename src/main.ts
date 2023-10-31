@@ -4,7 +4,6 @@ import { IonicVue } from "@ionic/vue";
 import { createApp } from "vue";
 import { createPinia } from "pinia";
 import { defineCustomElements } from "@ionic/pwa-elements/loader";
-import { registerSW } from "virtual:pwa-register";
 import router from "./router";
 
 /* Core CSS required for Ionic components to work properly */
@@ -26,35 +25,12 @@ import "@ionic/vue/css/display.css";
 /* Theme variables */
 import "./theme/variables.css";
 
-/* API clients */
-import { Configuration, DefaultConfig } from "./apiClients";
-import { AddHeadersMiddleware } from "./infrastructure";
-import { useAppInfoStore } from "./stores";
+/* LibreCheck modules */
+import { registerServiceWorker, startWebWorkers } from "./workers";
+import { initDefaultApiConfig } from "./helpers";
 
 defineCustomElements(window);
-
-const updateSW = registerSW({
-    onNeedRefresh() {
-        console.info("App should be refreshed to apply updates");
-
-        const appInfo = useAppInfoStore();
-        appInfo.setUpdatesAreAvailable(updateSW);
-    },
-
-    onOfflineReady() {
-        console.info("App is ready to work offline");
-    }
-});
-
-const appWorker = new Worker("worker.js");
-
-async function check() {
-    console.log(new Date());
-}
-
-appWorker.onmessage = () => {
-    setInterval(() => { check(); }, 10000);
-};
+registerServiceWorker();
 
 const pinia = createPinia();
 const app = createApp(App)
@@ -63,14 +39,9 @@ const app = createApp(App)
     .use(pinia);
 
 router.isReady().then(async () => {
-    const env = await (await fetch("/env.json")).json();
-
-    DefaultConfig.config = new Configuration({
-        basePath: env?.API_BASE_URL ?? import.meta.env.VITE_API_BASE_URL,
-        middleware: [new AddHeadersMiddleware()]
-    });
+    await initDefaultApiConfig();
 
     app.mount("#app");
 
-    appWorker.postMessage("start");
+    startWebWorkers();
 });

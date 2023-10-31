@@ -1,0 +1,36 @@
+// Copyright (c) LibreCheck Team and Contributors <hello@librecheck.io>. All rights reserved.
+//
+// Licensed under the MIT License. See LICENSE file in the project root for full license information.
+
+import { ServerConnectionStatus, WorkerMessage } from "@/models";
+import { AppInfoApiClient } from "@/apiClients";
+import { initDefaultApiConfig } from "@/helpers";
+
+export const enum AppInfoWorkerMessageType {
+    Start = "start",
+    ServerConnectionChecked = "server_connection_checked"
+}
+
+async function checkServerConnection() {
+    try {
+        const appInfoApiClient = new AppInfoApiClient();
+        await appInfoApiClient.checkAppHealth();
+        self.postMessage(new WorkerMessage(
+            AppInfoWorkerMessageType.ServerConnectionChecked, 
+            ServerConnectionStatus.Healthy));
+    }
+    catch (err) {
+        self.postMessage(new WorkerMessage(
+            AppInfoWorkerMessageType.ServerConnectionChecked, 
+            ServerConnectionStatus.Disconnected));
+    }
+}
+
+addEventListener("message", async (ev) => {
+    const msg = ev.data as WorkerMessage;
+    if (msg.type === AppInfoWorkerMessageType.Start) {
+        await initDefaultApiConfig();
+        await checkServerConnection();
+        setInterval(() => { checkServerConnection(); }, 30000);
+    }
+});
