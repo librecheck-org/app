@@ -51,7 +51,7 @@
 </template>
   
 <script setup lang="ts">
-import { IonAvatar, IonButtons, IonContent, IonHeader, IonItem, IonLabel, IonList, IonMenu, IonMenuButton, IonPage, IonRouterOutlet, IonSplitPane, IonTitle, IonToolbar, IonItemGroup, IonItemDivider } from "@ionic/vue";
+import { IonAvatar, IonButtons, IonContent, IonHeader, IonItem, IonItemDivider, IonItemGroup, IonLabel, IonList, IonMenu, IonMenuButton, IonPage, IonRouterOutlet, IonSplitPane, IonTitle, IonToolbar } from "@ionic/vue";
 import SystemStatusMenuItems from "@/components/SystemStatusMenuItems.vue";
 import router from "@/router";
 import { useCurrentUserStore } from "@/stores";
