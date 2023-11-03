@@ -21,7 +21,7 @@
                     <ion-item button router-link="/definitions">
                         <ion-label>Definitions</ion-label>
                     </ion-item>
-                    <SystemStatusMenuItems />
+                    <SystemStatusMenuItems :update-client-command="commands.updateClientCommand" />
                 </ion-list>
             </ion-content>
         </ion-menu>
@@ -48,6 +48,9 @@ import { IonAvatar, IonButtons, IonContent, IonHeader, IonItem, IonLabel, IonLis
 import SystemStatusMenuItems from "@/components/SystemStatusMenuItems.vue";
 import router from "@/router";
 import { useCurrentUserStore } from "@/stores";
+import { useHomeViewModel } from "@/viewModels/HomeViewModel";
+
+const { commands } = useHomeViewModel();
 
 const currentUser = useCurrentUserStore();
 </script>

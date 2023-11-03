@@ -1,5 +1,5 @@
 export const enum StorageKey {
-    AppInfo = "lc.appInfo",
+    SystemStatus = "lc.systemStatus",
     Tokens = "lc.tokens",
     CurrentUser = "lc.currentUser"
 }
@@ -15,7 +15,7 @@ export class WorkerMessage {
     }
 }
 
-export interface AppInfo {
+export interface SystemStatus {
     clientVersion: string;
     serverVersion: string;
 }

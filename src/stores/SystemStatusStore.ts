@@ -1,4 +1,4 @@
-import { AppInfo, ServerConnectionStatus, StorageKey } from "@/models";
+import { ServerConnectionStatus, StorageKey, SystemStatus } from "@/models";
 import { computed, ref } from "vue";
 import { defineIonicStore, useIonicStorage } from "@/infrastructure";
 import { AppInfoApiClient } from "@/apiClients";
@@ -14,14 +14,14 @@ async function _getServerVersion(): Promise<string> {
     return version;
 }
 
-export function useAppInfoStore() {
-    const storageKey = StorageKey.AppInfo;
+export function useSystemStatusStore() {
+    const storageKey = StorageKey.SystemStatus;
     return defineIonicStore(storageKey, () => {
-        const _value = ref<AppInfo>({ clientVersion: "0.0", serverVersion: "0.0" });
-        const _updateSW = ref<() => void | undefined>();
+        const _value = ref<SystemStatus>({ clientVersion: "0.0", serverVersion: "0.0" });
+        const _clientUpdater = ref<() => void | undefined>();
         const _serverConnectionStatus = ref(ServerConnectionStatus.Healthy);
 
-        const updatesAreAvailable = computed(() => _updateSW.value !== undefined);
+        const clientUpdatesAreAvailable = computed(() => _clientUpdater.value !== undefined);
         const serverConnectionStatus = computed(() => _serverConnectionStatus.value);
 
         const { ensureIsInitialized: _ensureIsInitialized, update } = useIonicStorage(storageKey, _value);
@@ -43,23 +43,23 @@ export function useAppInfoStore() {
             }
         }
 
-        function setUpdatesAreAvailable(updateSW: () => void): void {
-            _updateSW.value = updateSW;
+        function setClientUpdatesAreAvailable(clientUpdater: () => void): void {
+            _clientUpdater.value = clientUpdater;
         }
 
         function setServerConnectionStatus(status: ServerConnectionStatus): void {
             _serverConnectionStatus.value = status;
         }
 
-        function applyUpdates(): void {
-            if (_updateSW.value !== undefined) {
-                _updateSW.value();
+        function applyClientUpdates(): void {
+            if (_clientUpdater.value !== undefined) {
+                _clientUpdater.value();
             }
         }
 
         return {
             value: _value, ensureIsInitialized, update,
-            updatesAreAvailable, setUpdatesAreAvailable, applyUpdates,
+            clientUpdatesAreAvailable, setClientUpdatesAreAvailable, applyClientUpdates,
             serverConnectionStatus, setServerConnectionStatus
         };
     });

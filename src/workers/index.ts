@@ -2,25 +2,25 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-import AppInfoWorker from "@/workers/AppInfoWorker?worker";
-import { AppInfoWorkerMessageType } from "./AppInfoWorker";
+import SystemStatusWorker from "@/workers/SystemStatusWorker?worker";
+import { SystemStatusWorkerMessageType } from "./SystemStatusWorker";
 import { WorkerMessage } from "@/models";
 import { registerSW } from "virtual:pwa-register";
-import { useAppInfoStore } from "@/stores";
+import { useSystemStatusStore } from "@/stores";
 
-export function BuildAppInfoWorker() {
-    return new AppInfoWorker();
+export function BuildSystemStatusWorker() {
+    return new SystemStatusWorker();
 }
 
 export function registerServiceWorker() {
     const updateSW = registerSW({
         onNeedRefresh() {
             console.info("App should be refreshed to apply updates");
-    
-            const appInfo = useAppInfoStore();
-            appInfo.setUpdatesAreAvailable(updateSW);
+
+            const systemStatusStore = useSystemStatusStore();
+            systemStatusStore.setClientUpdatesAreAvailable(updateSW);
         },
-    
+
         onOfflineReady() {
             console.info("App is ready to work offline");
         }
@@ -28,17 +28,17 @@ export function registerServiceWorker() {
 }
 
 export function startWebWorkers() {
-    const appInfoStore = useAppInfoStore();
+    const systemStatusStore = useSystemStatusStore();
 
-    const appInfoWorker = new AppInfoWorker();
-    appInfoWorker.addEventListener("message", (ev) => {
+    const systemStatusWorker = new SystemStatusWorker();
+    systemStatusWorker.addEventListener("message", (ev) => {
         const msg = ev.data as WorkerMessage;
         switch (msg.type) {
-            case AppInfoWorkerMessageType.ServerConnectionChecked:
-                appInfoStore.setServerConnectionStatus(msg.value);
+            case SystemStatusWorkerMessageType.ServerConnectionChecked:
+                systemStatusStore.setServerConnectionStatus(msg.value);
                 break;
         }
     });
 
-    appInfoWorker.postMessage(new WorkerMessage(AppInfoWorkerMessageType.Start, {}));
+    systemStatusWorker.postMessage(new WorkerMessage(SystemStatusWorkerMessageType.Start, {}));
 }

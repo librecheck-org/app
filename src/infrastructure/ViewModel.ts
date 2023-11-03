@@ -1,7 +1,7 @@
 import { onMounted } from "vue";
 
-export interface ViewModel<TProps = object, TCommands = object> {
-    props: TProps;
+export interface ViewModel<TData = object, TCommands = object> {
+    data: TData;
     commands: TCommands;
 
     initialize(): Promise<void>;

@@ -6,7 +6,7 @@ import { ServerConnectionStatus, WorkerMessage } from "@/models";
 import { AppInfoApiClient } from "@/apiClients";
 import { initDefaultApiConfig } from "@/helpers";
 
-export const enum AppInfoWorkerMessageType {
+export const enum SystemStatusWorkerMessageType {
     Start = "start",
     ServerConnectionChecked = "server_connection_checked"
 }
@@ -16,19 +16,19 @@ async function checkServerConnection() {
         const appInfoApiClient = new AppInfoApiClient();
         await appInfoApiClient.checkAppHealth();
         self.postMessage(new WorkerMessage(
-            AppInfoWorkerMessageType.ServerConnectionChecked, 
+            SystemStatusWorkerMessageType.ServerConnectionChecked,
             ServerConnectionStatus.Healthy));
     }
     catch (err) {
         self.postMessage(new WorkerMessage(
-            AppInfoWorkerMessageType.ServerConnectionChecked, 
+            SystemStatusWorkerMessageType.ServerConnectionChecked,
             ServerConnectionStatus.Disconnected));
     }
 }
 
 addEventListener("message", async (ev) => {
     const msg = ev.data as WorkerMessage;
-    if (msg.type === AppInfoWorkerMessageType.Start) {
+    if (msg.type === SystemStatusWorkerMessageType.Start) {
         await initDefaultApiConfig();
         await checkServerConnection();
         setInterval(() => { checkServerConnection(); }, 30000);

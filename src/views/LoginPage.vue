@@ -8,7 +8,7 @@
             </ion-header>
             <ion-content>
                 <ion-list>
-                    <SystemStatusMenuItems />
+                    <SystemStatusMenuItems :update-client-command="commands.updateClientCommand" />
                 </ion-list>
             </ion-content>
         </ion-menu>
@@ -68,24 +68,16 @@
                 <ion-toast :is-open="props.state == LoginViewState.LoginSucceeded"
                     message="Login succeeded, redirecting to Home" :duration="5000" />
             </ion-content>
-
-            <ion-footer>
-                <span v-if="props.apiVersion">
-                    <small>API version {{ props.apiVersion.version }}</small>
-                </span>
-                <small>Server conn {{ appInfoStore.serverConnectionStatus }}</small>
-            </ion-footer>
         </ion-page>
     </ion-split-pane>
 </template>
   
 <script setup lang="ts">
-import { IonButton, IonButtons, IonCol, IonContent, IonFab, IonFabButton, IonFooter, IonGrid, IonHeader, IonIcon, IonInput, IonItem, IonLabel, IonList, IonListHeader, IonMenu, IonMenuButton, IonPage, IonProgressBar, IonRow, IonSplitPane, IonTitle, IonToast, IonToolbar } from "@ionic/vue";
+import { IonButton, IonButtons, IonCol, IonContent, IonFab, IonFabButton, IonGrid, IonHeader, IonIcon, IonInput, IonList, IonMenu, IonMenuButton, IonPage, IonProgressBar, IonRow, IonSplitPane, IonTitle, IonToast, IonToolbar } from "@ionic/vue";
 import { LoginViewState, useLoginViewModel } from "@/viewModels";
 import SystemStatusMenuItems from "@/components/SystemStatusMenuItems.vue";
 import { add } from "ionicons/icons";
 import { computed } from "vue";
-import { useAppInfoStore } from "@/stores";
 
 const columnSizes = {
     "size": "12",
@@ -97,12 +89,9 @@ const columnSizes = {
     "offset-xl": "4"
 };
 
-const { props, commands } = useLoginViewModel();
-const { canExecute: canUpdateApp, execute: updateApp } = commands.updateAppCommand;
+const { data, commands } = useLoginViewModel();
 const { canExecute: canRequestAuthCode, execute: requestAuthCode } = commands.requestAuthCodeCommand;
 const { canExecute: canVerifyAuthCode, execute: verifyAuthCode } = commands.verifyAuthCodeCommand;
-
-const appInfoStore = useAppInfoStore();
 
 const isBusy = computed(() => {
     return commands.requestAuthCodeCommand.isExecuting.value
