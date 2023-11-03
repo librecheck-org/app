@@ -33,24 +33,24 @@
                     <ion-row>
                         <ion-col v-bind="columnSizes">
                             <ion-input label="Email address" label-placement="stacked" type="email"
-                                placeholder="email@domain.com" v-model="props.emailAddress"
-                                :disabled="props.state != LoginViewState.EmailAddressCollection" />
+                                placeholder="email@domain.com" v-model="data.emailAddress"
+                                :disabled="data.state != LoginViewState.EmailAddressCollection" />
                         </ion-col>
                     </ion-row>
-                    <ion-row v-if="props.state == LoginViewState.EmailAddressCollection">
+                    <ion-row v-if="data.state == LoginViewState.EmailAddressCollection">
                         <ion-col v-bind="columnSizes">
                             <ion-button @click="requestAuthCode()" :disabled="!canRequestAuthCode" expand="block">
                                 Send auth code
                             </ion-button>
                         </ion-col>
                     </ion-row>
-                    <ion-row v-if="props.state == LoginViewState.AuthCodeCollection">
+                    <ion-row v-if="data.state == LoginViewState.AuthCodeCollection">
                         <ion-col v-bind="columnSizes">
                             <ion-input label="Auth code" label-placement="stacked" type="text" placeholder="ABCD1234"
-                                v-model="props.authCode" :disabled="props.state != LoginViewState.AuthCodeCollection" />
+                                v-model="data.authCode" :disabled="data.state != LoginViewState.AuthCodeCollection" />
                         </ion-col>
                     </ion-row>
-                    <ion-row v-if="props.state == LoginViewState.AuthCodeCollection">
+                    <ion-row v-if="data.state == LoginViewState.AuthCodeCollection">
                         <ion-col v-bind="columnSizes">
                             <ion-button @click="verifyAuthCode()" :disabled="!canVerifyAuthCode" expand="block">
                                 Verify auth code
@@ -59,13 +59,7 @@
                     </ion-row>
                 </ion-grid>
 
-                <ion-fab v-if="canUpdateApp">
-                    <ion-fab-button @click="updateApp()">
-                        <ion-icon :icon="add"></ion-icon>
-                    </ion-fab-button>
-                </ion-fab>
-
-                <ion-toast :is-open="props.state == LoginViewState.LoginSucceeded"
+                <ion-toast :is-open="data.state == LoginViewState.LoginSucceeded"
                     message="Login succeeded, redirecting to Home" :duration="5000" />
             </ion-content>
         </ion-page>
@@ -73,10 +67,9 @@
 </template>
   
 <script setup lang="ts">
-import { IonButton, IonButtons, IonCol, IonContent, IonFab, IonFabButton, IonGrid, IonHeader, IonIcon, IonInput, IonList, IonMenu, IonMenuButton, IonPage, IonProgressBar, IonRow, IonSplitPane, IonTitle, IonToast, IonToolbar } from "@ionic/vue";
+import { IonButton, IonButtons, IonCol, IonContent, IonGrid, IonHeader, IonInput, IonList, IonMenu, IonMenuButton, IonPage, IonProgressBar, IonRow, IonSplitPane, IonTitle, IonToast, IonToolbar } from "@ionic/vue";
 import { LoginViewState, useLoginViewModel } from "@/viewModels";
 import SystemStatusMenuItems from "@/components/SystemStatusMenuItems.vue";
-import { add } from "ionicons/icons";
 import { computed } from "vue";
 
 const columnSizes = {

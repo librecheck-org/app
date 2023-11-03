@@ -15,12 +15,19 @@
                         </ion-avatar>
                         <ion-label>Item Avatar {{ currentUser.value.emailAddress }}</ion-label>
                     </ion-item>
-                    <ion-item button router-link="/submissions">
-                        <ion-label>Submissions</ion-label>
-                    </ion-item>
-                    <ion-item button router-link="/definitions">
-                        <ion-label>Definitions</ion-label>
-                    </ion-item>
+
+                    <ion-item-group>
+                        <ion-item-divider>
+                            <ion-label>Checklists</ion-label>
+                        </ion-item-divider>
+                        <ion-item button router-link="/submissions" :detail="true">
+                            <ion-label>Submissions</ion-label>
+                        </ion-item>
+                        <ion-item button router-link="/definitions" :detail="true">
+                            <ion-label>Definitions</ion-label>
+                        </ion-item>
+                    </ion-item-group>
+
                     <SystemStatusMenuItems :update-client-command="commands.updateClientCommand" />
                 </ion-list>
             </ion-content>
@@ -44,7 +51,7 @@
 </template>
   
 <script setup lang="ts">
-import { IonAvatar, IonButtons, IonContent, IonHeader, IonItem, IonLabel, IonList, IonMenu, IonMenuButton, IonPage, IonRouterOutlet, IonSplitPane, IonTitle, IonToolbar } from "@ionic/vue";
+import { IonAvatar, IonButtons, IonContent, IonHeader, IonItem, IonLabel, IonList, IonMenu, IonMenuButton, IonPage, IonRouterOutlet, IonSplitPane, IonTitle, IonToolbar, IonItemGroup, IonItemDivider } from "@ionic/vue";
 import SystemStatusMenuItems from "@/components/SystemStatusMenuItems.vue";
 import router from "@/router";
 import { useCurrentUserStore } from "@/stores";

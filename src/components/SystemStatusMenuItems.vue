@@ -1,27 +1,29 @@
 <template>
-    <ion-list-header>
-        <ion-label>System status</ion-label>
-    </ion-list-header>
-    <ion-item>
-        <ion-label>Client v{{ systemStatusStore.value.clientVersion }}</ion-label>
-        <ion-button slot="end" :disabled="!canUpdateClient" @click="updateClient"
-            v-if="systemStatusStore.clientUpdatesAreAvailable">
-            Update
-        </ion-button>
-    </ion-item>
-    <ion-item>
-        <ion-label>Server v{{ systemStatusStore.value.serverVersion }}</ion-label>
-        <ion-icon :icon="heart" aria-label="Healthy connection" slot="end" color="success"
-            v-if="systemStatusStore.serverConnectionStatus == ServerConnectionStatus.Healthy" />
-        <ion-icon :icon="heartHalf" aria-label="Unhealthy connection" slot="end" color="warning"
-            v-if="systemStatusStore.serverConnectionStatus == ServerConnectionStatus.Unhealthy" />
-        <ion-icon :icon="heartDislike" aria-label="Disconnected" slot="end" color="danger"
-            v-if="systemStatusStore.serverConnectionStatus == ServerConnectionStatus.Disconnected" />
-    </ion-item>
+    <ion-item-group>
+        <ion-item-divider>
+            <ion-label>System status</ion-label>
+        </ion-item-divider>
+        <ion-item>
+            <ion-label>Client v{{ systemStatusStore.value.clientVersion }}</ion-label>
+            <ion-button slot="end" :disabled="!canUpdateClient" @click="updateClient"
+                v-if="systemStatusStore.clientUpdatesAreAvailable">
+                Update
+            </ion-button>
+        </ion-item>
+        <ion-item>
+            <ion-label>Server v{{ systemStatusStore.value.serverVersion }}</ion-label>
+            <ion-icon :icon="heart" aria-label="Healthy connection" slot="end" color="success"
+                v-if="systemStatusStore.serverConnectionStatus == ServerConnectionStatus.Healthy" />
+            <ion-icon :icon="heartHalf" aria-label="Unhealthy connection" slot="end" color="warning"
+                v-if="systemStatusStore.serverConnectionStatus == ServerConnectionStatus.Unhealthy" />
+            <ion-icon :icon="heartDislike" aria-label="Disconnected" slot="end" color="danger"
+                v-if="systemStatusStore.serverConnectionStatus == ServerConnectionStatus.Disconnected" />
+        </ion-item>
+    </ion-item-group>
 </template>
   
 <script setup lang="ts">
-import { IonButton, IonIcon, IonItem, IonLabel, IonListHeader } from "@ionic/vue";
+import { IonButton, IonIcon, IonItem, IonItemDivider, IonItemGroup, IonLabel } from "@ionic/vue";
 import { heart, heartDislike, heartHalf } from "ionicons/icons";
 import { Command } from "@/infrastructure/Command";
 import { ServerConnectionStatus } from "@/models";
