@@ -1,5 +1,5 @@
 export const enum StorageKey {
-    App = "lc.app",
+    AppInfo = "lc.appInfo",
     Tokens = "lc.tokens",
     CurrentUser = "lc.currentUser"
 }
@@ -16,10 +16,11 @@ export class WorkerMessage {
 }
 
 export interface AppInfo {
-
+    clientVersion: string;
+    serverVersion: string;
 }
 
 export interface Tokens {
-    get accessToken(): string;
-    get refreshToken(): string;
+    accessToken: string;
+    refreshToken: string;
 }

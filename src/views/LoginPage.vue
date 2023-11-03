@@ -1,70 +1,88 @@
 <template>
-    <ion-page>
-        <ion-header>
-            <ion-toolbar>
-                <ion-title>LibreCheck</ion-title>
-                <ion-progress-bar type="indeterminate" v-if="isBusy"></ion-progress-bar>
-            </ion-toolbar>
-        </ion-header>
+    <ion-split-pane when="xl" content-id="main-content">
+        <ion-menu content-id="main-content">
+            <ion-header>
+                <ion-toolbar>
+                    <ion-title>LibreCheck</ion-title>
+                </ion-toolbar>
+            </ion-header>
+            <ion-content>
+                <ion-list>
+                    <SystemStatusMenuItems />
+                </ion-list>
+            </ion-content>
+        </ion-menu>
 
-        <ion-content class="ion-padding">
-            <ion-grid>
-                <ion-row>
-                    <ion-col v-bind="columnSizes">
-                        <h1>Login</h1>
-                    </ion-col>
-                </ion-row>
-                <ion-row>
-                    <ion-col v-bind="columnSizes">
-                        <ion-input label="Email address" label-placement="stacked" type="email"
-                            placeholder="email@domain.com" v-model="props.emailAddress"
-                            :disabled="props.state != LoginViewState.EmailAddressCollection" />
-                    </ion-col>
-                </ion-row>
-                <ion-row v-if="props.state == LoginViewState.EmailAddressCollection">
-                    <ion-col v-bind="columnSizes">
-                        <ion-button @click="requestAuthCode()" :disabled="!canRequestAuthCode" expand="block">
-                            Send auth code
-                        </ion-button>
-                    </ion-col>
-                </ion-row>
-                <ion-row v-if="props.state == LoginViewState.AuthCodeCollection">
-                    <ion-col v-bind="columnSizes">
-                        <ion-input label="Auth code" label-placement="stacked" type="text" placeholder="ABCD1234"
-                            v-model="props.authCode" :disabled="props.state != LoginViewState.AuthCodeCollection" />
-                    </ion-col>
-                </ion-row>
-                <ion-row v-if="props.state == LoginViewState.AuthCodeCollection">
-                    <ion-col v-bind="columnSizes">
-                        <ion-button @click="verifyAuthCode()" :disabled="!canVerifyAuthCode" expand="block">
-                            Verify auth code
-                        </ion-button>
-                    </ion-col>
-                </ion-row>
-            </ion-grid>
+        <ion-page id="main-content">
+            <ion-header>
+                <ion-toolbar>
+                    <ion-buttons slot="start">
+                        <ion-menu-button />
+                    </ion-buttons>
+                    <ion-title>Login</ion-title>
+                    <ion-progress-bar type="indeterminate" v-if="isBusy"></ion-progress-bar>
+                </ion-toolbar>
+            </ion-header>
+            <ion-content class="ion-padding">
+                <ion-grid>
+                    <ion-row>
+                        <ion-col v-bind="columnSizes">
+                            <h1>Login</h1>
+                        </ion-col>
+                    </ion-row>
+                    <ion-row>
+                        <ion-col v-bind="columnSizes">
+                            <ion-input label="Email address" label-placement="stacked" type="email"
+                                placeholder="email@domain.com" v-model="props.emailAddress"
+                                :disabled="props.state != LoginViewState.EmailAddressCollection" />
+                        </ion-col>
+                    </ion-row>
+                    <ion-row v-if="props.state == LoginViewState.EmailAddressCollection">
+                        <ion-col v-bind="columnSizes">
+                            <ion-button @click="requestAuthCode()" :disabled="!canRequestAuthCode" expand="block">
+                                Send auth code
+                            </ion-button>
+                        </ion-col>
+                    </ion-row>
+                    <ion-row v-if="props.state == LoginViewState.AuthCodeCollection">
+                        <ion-col v-bind="columnSizes">
+                            <ion-input label="Auth code" label-placement="stacked" type="text" placeholder="ABCD1234"
+                                v-model="props.authCode" :disabled="props.state != LoginViewState.AuthCodeCollection" />
+                        </ion-col>
+                    </ion-row>
+                    <ion-row v-if="props.state == LoginViewState.AuthCodeCollection">
+                        <ion-col v-bind="columnSizes">
+                            <ion-button @click="verifyAuthCode()" :disabled="!canVerifyAuthCode" expand="block">
+                                Verify auth code
+                            </ion-button>
+                        </ion-col>
+                    </ion-row>
+                </ion-grid>
 
-            <ion-fab v-if="canUpdateApp">
-                <ion-fab-button @click="updateApp()">
-                    <ion-icon :icon="add"></ion-icon>
-                </ion-fab-button>
-            </ion-fab>
+                <ion-fab v-if="canUpdateApp">
+                    <ion-fab-button @click="updateApp()">
+                        <ion-icon :icon="add"></ion-icon>
+                    </ion-fab-button>
+                </ion-fab>
 
-            <ion-toast :is-open="props.state == LoginViewState.LoginSucceeded"
-                message="Login succeeded, redirecting to Home" :duration="5000" />
-        </ion-content>
+                <ion-toast :is-open="props.state == LoginViewState.LoginSucceeded"
+                    message="Login succeeded, redirecting to Home" :duration="5000" />
+            </ion-content>
 
-        <ion-footer>
-            <span v-if="props.apiVersion">
-                <small>API version {{ props.apiVersion.version }}</small>
-            </span>
+            <ion-footer>
+                <span v-if="props.apiVersion">
+                    <small>API version {{ props.apiVersion.version }}</small>
+                </span>
                 <small>Server conn {{ appInfoStore.serverConnectionStatus }}</small>
-        </ion-footer>
-    </ion-page>
+            </ion-footer>
+        </ion-page>
+    </ion-split-pane>
 </template>
   
 <script setup lang="ts">
-import { IonButton, IonCol, IonContent, IonFab, IonFabButton, IonFooter, IonGrid, IonHeader, IonIcon, IonInput, IonPage, IonProgressBar, IonRow, IonTitle, IonToast, IonToolbar } from "@ionic/vue";
+import { IonButton, IonButtons, IonCol, IonContent, IonFab, IonFabButton, IonFooter, IonGrid, IonHeader, IonIcon, IonInput, IonItem, IonLabel, IonList, IonListHeader, IonMenu, IonMenuButton, IonPage, IonProgressBar, IonRow, IonSplitPane, IonTitle, IonToast, IonToolbar } from "@ionic/vue";
 import { LoginViewState, useLoginViewModel } from "@/viewModels";
+import SystemStatusMenuItems from "@/components/SystemStatusMenuItems.vue";
 import { add } from "ionicons/icons";
 import { computed } from "vue";
 import { useAppInfoStore } from "@/stores";

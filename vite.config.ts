@@ -13,11 +13,14 @@ export default defineConfig({
             registerType: "prompt",
             includeAssets: ["favicon.png"],
             workbox: {
-                navigateFallbackDenylist: [/^\/version$/],
                 runtimeCaching: [
                     {
                         urlPattern: /\/env\.json/,
                         handler: "NetworkFirst",
+                    },
+                    {
+                        urlPattern: /\/version\.json/,
+                        handler: "StaleWhileRevalidate",
                     }
                 ]
             },

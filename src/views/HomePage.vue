@@ -21,6 +21,7 @@
                     <ion-item button router-link="/definitions">
                         <ion-label>Definitions</ion-label>
                     </ion-item>
+                    <SystemStatusMenuItems />
                 </ion-list>
             </ion-content>
         </ion-menu>
@@ -44,6 +45,7 @@
   
 <script setup lang="ts">
 import { IonAvatar, IonButtons, IonContent, IonHeader, IonItem, IonLabel, IonList, IonMenu, IonMenuButton, IonPage, IonRouterOutlet, IonSplitPane, IonTitle, IonToolbar } from "@ionic/vue";
+import SystemStatusMenuItems from "@/components/SystemStatusMenuItems.vue";
 import router from "@/router";
 import { useCurrentUserStore } from "@/stores";
 

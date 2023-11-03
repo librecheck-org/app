@@ -47,7 +47,12 @@ export function useIonicStorage<T>(storageKey: StorageKey, value: Ref<T | undefi
 
     async function ensureIsInitialized() {
         if (!isInitialized.value) {
-            value.value = await readFromStorage<T>(storageKey);
+            // If value is stored within client storage, then it replaces default value.
+            // Otherwise, default value is kept as a starting point.
+            const storedValue = await readFromStorage<T>(storageKey);
+            if (storedValue !== undefined) {
+                value.value = storedValue;
+            }
         }
         isInitialized.value = true;
     }
