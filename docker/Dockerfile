@@ -1,4 +1,4 @@
-FROM node:lts AS builder
+FROM --platform=$BUILDPLATFORM node:lts AS builder
 
 WORKDIR /opt/src
 COPY ./package.json ./package-lock.json ./
