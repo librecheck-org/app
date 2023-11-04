@@ -16,7 +16,7 @@ When API definition changes, the client code should be updated with following co
 > before running the OpenAPI CLI generator!
 
 ```bash
-npm run openapi:generate 
+npm run generate-api-clients
 ```
 
 ## Maintenance
@@ -27,7 +27,7 @@ OpenAPI client generator should be kept updated.
 Following command lists all available versions:
 
 ```bash
-npm run openapi:version-list 
+npm run list-openapi-generator-versions 
 ```
 
 An updated version should be set into `openapitools.json`:

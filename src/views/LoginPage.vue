@@ -27,11 +27,6 @@
                 <ion-grid>
                     <ion-row>
                         <ion-col v-bind="columnSizes">
-                            <h1>Login</h1>
-                        </ion-col>
-                    </ion-row>
-                    <ion-row>
-                        <ion-col v-bind="columnSizes">
                             <ion-input label="Email address" label-placement="stacked" type="email"
                                 placeholder="email@domain.com" v-model="data.emailAddress"
                                 :disabled="data.state != LoginViewState.EmailAddressCollection" />

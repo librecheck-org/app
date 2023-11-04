@@ -11,7 +11,34 @@ export default defineConfig({
         legacy(),
         VitePWA({
             registerType: "prompt",
-            includeAssets: ["favicon.png"],
+            includeAssets: [
+                "images/favicon.ico",
+                "images/apple-touch-icon-180x180.png",
+                "images/maskable-icon-512x512.png"
+            ],
+            manifest: {
+                name: "LibreCheck",
+                short_name: "LibreCheck",
+                description: "LibreCheck",
+                theme_color: "#ffffff",
+                icons: [
+                    {
+                        src: "images/pwa-64x64.png",
+                        sizes: "64x64",
+                        type: "image/png"
+                    },
+                    {
+                        src: "images/pwa-192x192.png",
+                        sizes: "192x192",
+                        type: "image/png"
+                    },
+                    {
+                        src: "images/pwa-512x512.png",
+                        sizes: "512x512",
+                        type: "image/png"
+                    }
+                ]
+            },
             workbox: {
                 runtimeCaching: [
                     {
