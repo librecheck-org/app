@@ -6,6 +6,16 @@
 
 :8080 {
 	root * /opt/app
+
+	# Progressive Web Apps have strict requirements in order to be functional and updatable.
+	# Following files can be cached, but their freshness needs to be verified
+	# with origin server on each use.
+	# See: https://vite-pwa-org.netlify.app/deployment/
+	header / Cache-Control nocache
+	header /sw.js Cache-Control nocache
+	header /index.html Cache-Control nocache
+	header /manifest.webmanifest Cache-Control nocache
+
 	try_files {path} /
 	file_server
 }
