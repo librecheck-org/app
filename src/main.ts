@@ -30,7 +30,6 @@ import "@ionic/vue/css/display.css";
 import "./theme/variables.css";
 
 defineCustomElements(window);
-registerServiceWorker();
 
 const pinia = createPinia();
 const app = createApp(App)
@@ -43,5 +42,6 @@ router.isReady().then(async () => {
 
     app.mount("#app");
 
+    registerServiceWorker();
     startWebWorkers();
 });

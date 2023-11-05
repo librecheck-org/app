@@ -71,14 +71,21 @@ interface IonicStore {
     ensureIsInitialized: any;
 }
 
-export function defineIonicStore<SS extends IonicStore>(storageKey: StorageKey, storeSetup: () => SS) {
-    const storeDefinition = defineStore(storageKey, storeSetup);
+const _storeInstances = new Map<StorageKey, any>();
 
-    const store = storeDefinition();
+export function defineIonicStore<SS extends IonicStore>(storageKey: StorageKey, storeSetup: () => SS) {
+    let store = _storeInstances.get(storageKey);
+    if (store !== undefined) {
+        return store;
+    }
+
+    const storeDefinition = defineStore(storageKey, storeSetup);
+    store = storeDefinition();
 
     // Initialization happens asynchronously and the call is not awaited,
     // because underlying storage is asynchronous but store definition needs to be synchronous.
     store.ensureIsInitialized();
 
+    _storeInstances.set(storageKey, store);
     return store;
 }
