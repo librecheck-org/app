@@ -29,6 +29,7 @@
     "email-validator": "2.0.4",
     "ionicons": "7.2.1",
     "pinia": "2.1.7",
+    "survey-vue3-ui": "^1.9.115",
     "vue": "3.3.7",
     "vue-router": "4.2.5"
   },

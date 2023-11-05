@@ -5,6 +5,7 @@ import { createApp } from "vue";
 import { createPinia } from "pinia";
 import { defineCustomElements } from "@ionic/pwa-elements/loader";
 import router from "./router";
+import { surveyPlugin } from "survey-vue3-ui";
 
 /* LibreCheck modules */
 import { registerServiceWorker, startWebWorkers } from "./workers";
@@ -35,7 +36,8 @@ const pinia = createPinia();
 const app = createApp(App)
     .use(IonicVue)
     .use(router)
-    .use(pinia);
+    .use(pinia)
+    .use(surveyPlugin);
 
 router.isReady().then(async () => {
     await initDefaultApiConfig();
