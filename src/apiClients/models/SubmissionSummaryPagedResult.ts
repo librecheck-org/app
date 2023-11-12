@@ -31,25 +31,25 @@ export interface SubmissionSummaryPagedResult {
      * @type {Array<SubmissionSummary>}
      * @memberof SubmissionSummaryPagedResult
      */
-    items?: Array<SubmissionSummary> | null;
+    items: Array<SubmissionSummary>;
     /**
      * 
      * @type {number}
      * @memberof SubmissionSummaryPagedResult
      */
-    pageSize?: number;
+    pageSize: number;
     /**
      * 
      * @type {number}
      * @memberof SubmissionSummaryPagedResult
      */
-    pageNumber?: number;
+    pageNumber: number;
     /**
      * 
      * @type {number}
      * @memberof SubmissionSummaryPagedResult
      */
-    totalCount?: number;
+    totalCount: number;
 }
 
 /**
@@ -57,6 +57,10 @@ export interface SubmissionSummaryPagedResult {
  */
 export function instanceOfSubmissionSummaryPagedResult(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "items" in value;
+    isInstance = isInstance && "pageSize" in value;
+    isInstance = isInstance && "pageNumber" in value;
+    isInstance = isInstance && "totalCount" in value;
 
     return isInstance;
 }
@@ -71,10 +75,10 @@ export function SubmissionSummaryPagedResultFromJSONTyped(json: any, ignoreDiscr
     }
     return {
         
-        'items': !exists(json, 'items') ? undefined : (json['items'] === null ? null : (json['items'] as Array<any>).map(SubmissionSummaryFromJSON)),
-        'pageSize': !exists(json, 'pageSize') ? undefined : json['pageSize'],
-        'pageNumber': !exists(json, 'pageNumber') ? undefined : json['pageNumber'],
-        'totalCount': !exists(json, 'totalCount') ? undefined : json['totalCount'],
+        'items': ((json['items'] as Array<any>).map(SubmissionSummaryFromJSON)),
+        'pageSize': json['pageSize'],
+        'pageNumber': json['pageNumber'],
+        'totalCount': json['totalCount'],
     };
 }
 
@@ -87,7 +91,7 @@ export function SubmissionSummaryPagedResultToJSON(value?: SubmissionSummaryPage
     }
     return {
         
-        'items': value.items === undefined ? undefined : (value.items === null ? null : (value.items as Array<any>).map(SubmissionSummaryToJSON)),
+        'items': ((value.items as Array<any>).map(SubmissionSummaryToJSON)),
         'pageSize': value.pageSize,
         'pageNumber': value.pageNumber,
         'totalCount': value.totalCount,

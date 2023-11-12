@@ -55,7 +55,7 @@ import { IonAvatar, IonButtons, IonContent, IonHeader, IonItem, IonItemDivider, 
 import SystemStatusMenuItems from "@/components/SystemStatusMenuItems.vue";
 import router from "@/router";
 import { useCurrentUserStore } from "@/stores";
-import { useHomeViewModel } from "@/viewModels/HomeViewModel";
+import { useHomeViewModel } from "@/viewModels";
 
 const { commands } = useHomeViewModel();
 

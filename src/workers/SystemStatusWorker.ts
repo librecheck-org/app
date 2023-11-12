@@ -11,7 +11,16 @@ export const enum SystemStatusWorkerMessageType {
     ServerConnectionChecked = "server_connection_checked"
 }
 
-async function checkServerConnection() {
+addEventListener("message", async (ev) => {
+    const msg = ev.data as WorkerMessage;
+    if (msg.type === SystemStatusWorkerMessageType.Start) {
+        await initDefaultApiConfig();
+        await _checkServerConnection();
+        setInterval(() => { _checkServerConnection(); }, 30000);
+    }
+});
+
+async function _checkServerConnection() {
     try {
         const appInfoApiClient = new AppInfoApiClient();
         await appInfoApiClient.checkAppHealth();
@@ -25,12 +34,3 @@ async function checkServerConnection() {
             ServerConnectionStatus.Disconnected));
     }
 }
-
-addEventListener("message", async (ev) => {
-    const msg = ev.data as WorkerMessage;
-    if (msg.type === SystemStatusWorkerMessageType.Start) {
-        await initDefaultApiConfig();
-        await checkServerConnection();
-        setInterval(() => { checkServerConnection(); }, 30000);
-    }
-});

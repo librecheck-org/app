@@ -1,3 +1,7 @@
+// Copyright (c) LibreCheck Team and Contributors <hello@librecheck.io>. All rights reserved.
+//
+// Licensed under the MIT License. See LICENSE file in the project root for full license information.
+
 import { Command, useCommand } from "@/infrastructure/Command";
 import { ViewModel, useViewModel } from "@/infrastructure";
 import { reactive } from "vue";
