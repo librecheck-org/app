@@ -2,21 +2,24 @@
     <ion-page>
         <ion-content class="ion-padding">
             <ion-label>SUBS</ion-label>
-            <ion-button @click="updateEmailAddress"></ion-button>
             <SurveyComponent :model="survey" />
         </ion-content>
     </ion-page>
 </template>
   
 <script setup lang="ts">
-import { IonButton, IonContent, IonLabel, IonPage } from "@ionic/vue";
+import { IonContent, IonLabel, IonPage } from "@ionic/vue";
 import { Model } from "survey-core";
 import { PlainDarkPanelless } from "survey-core/themes/plain-dark-panelless";
-import { useCurrentUserStore } from "@/stores";
+// import { useCurrentUserStore } from "@/stores";
 
 import "survey-core/defaultV2.css";
 
-const currentUser = useCurrentUserStore();
+// const props = defineProps<{
+//     submissionUuid: string,
+// }>();
+
+// const currentUser = useCurrentUserStore();
 
 const surveyJson = {
     elements: [{
@@ -31,10 +34,6 @@ const surveyJson = {
 };
 const survey = new Model(surveyJson);
 survey.applyTheme(PlainDarkPanelless);
-
-async function updateEmailAddress() {
-    await currentUser.update({ emailAddress: new Date().getSeconds().toString() });
-}
 
 </script>
   

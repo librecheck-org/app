@@ -38,6 +38,12 @@ export interface SubmissionSummary {
      * @memberof SubmissionSummary
      */
     definition: DefinitionSummary;
+    /**
+     * 
+     * @type {Date}
+     * @memberof SubmissionSummary
+     */
+    timestamp: Date;
 }
 
 /**
@@ -47,6 +53,7 @@ export function instanceOfSubmissionSummary(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "uuid" in value;
     isInstance = isInstance && "definition" in value;
+    isInstance = isInstance && "timestamp" in value;
 
     return isInstance;
 }
@@ -63,6 +70,7 @@ export function SubmissionSummaryFromJSONTyped(json: any, ignoreDiscriminator: b
         
         'uuid': json['uuid'],
         'definition': DefinitionSummaryFromJSON(json['definition']),
+        'timestamp': (new Date(json['timestamp'])),
     };
 }
 
@@ -77,6 +85,7 @@ export function SubmissionSummaryToJSON(value?: SubmissionSummary | null): any {
         
         'uuid': value.uuid,
         'definition': DefinitionSummaryToJSON(value.definition),
+        'timestamp': (value.timestamp.toISOString()),
     };
 }
 

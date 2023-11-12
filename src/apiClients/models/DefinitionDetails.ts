@@ -33,6 +33,12 @@ export interface DefinitionDetails {
     title: string;
     /**
      * 
+     * @type {Date}
+     * @memberof DefinitionDetails
+     */
+    timestamp: Date;
+    /**
+     * 
      * @type {string}
      * @memberof DefinitionDetails
      */
@@ -46,6 +52,7 @@ export function instanceOfDefinitionDetails(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "uuid" in value;
     isInstance = isInstance && "title" in value;
+    isInstance = isInstance && "timestamp" in value;
     isInstance = isInstance && "contents" in value;
 
     return isInstance;
@@ -63,6 +70,7 @@ export function DefinitionDetailsFromJSONTyped(json: any, ignoreDiscriminator: b
         
         'uuid': json['uuid'],
         'title': json['title'],
+        'timestamp': (new Date(json['timestamp'])),
         'contents': json['contents'],
     };
 }
@@ -78,6 +86,7 @@ export function DefinitionDetailsToJSON(value?: DefinitionDetails | null): any {
         
         'uuid': value.uuid,
         'title': value.title,
+        'timestamp': (value.timestamp.toISOString()),
         'contents': value.contents,
     };
 }

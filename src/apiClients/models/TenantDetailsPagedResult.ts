@@ -31,25 +31,25 @@ export interface TenantDetailsPagedResult {
      * @type {Array<TenantDetails>}
      * @memberof TenantDetailsPagedResult
      */
-    items?: Array<TenantDetails> | null;
+    items: Array<TenantDetails>;
     /**
      * 
      * @type {number}
      * @memberof TenantDetailsPagedResult
      */
-    pageSize?: number;
+    pageSize: number;
     /**
      * 
      * @type {number}
      * @memberof TenantDetailsPagedResult
      */
-    pageNumber?: number;
+    pageNumber: number;
     /**
      * 
      * @type {number}
      * @memberof TenantDetailsPagedResult
      */
-    totalCount?: number;
+    totalCount: number;
 }
 
 /**
@@ -57,6 +57,10 @@ export interface TenantDetailsPagedResult {
  */
 export function instanceOfTenantDetailsPagedResult(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "items" in value;
+    isInstance = isInstance && "pageSize" in value;
+    isInstance = isInstance && "pageNumber" in value;
+    isInstance = isInstance && "totalCount" in value;
 
     return isInstance;
 }
@@ -71,10 +75,10 @@ export function TenantDetailsPagedResultFromJSONTyped(json: any, ignoreDiscrimin
     }
     return {
         
-        'items': !exists(json, 'items') ? undefined : (json['items'] === null ? null : (json['items'] as Array<any>).map(TenantDetailsFromJSON)),
-        'pageSize': !exists(json, 'pageSize') ? undefined : json['pageSize'],
-        'pageNumber': !exists(json, 'pageNumber') ? undefined : json['pageNumber'],
-        'totalCount': !exists(json, 'totalCount') ? undefined : json['totalCount'],
+        'items': ((json['items'] as Array<any>).map(TenantDetailsFromJSON)),
+        'pageSize': json['pageSize'],
+        'pageNumber': json['pageNumber'],
+        'totalCount': json['totalCount'],
     };
 }
 
@@ -87,7 +91,7 @@ export function TenantDetailsPagedResultToJSON(value?: TenantDetailsPagedResult 
     }
     return {
         
-        'items': value.items === undefined ? undefined : (value.items === null ? null : (value.items as Array<any>).map(TenantDetailsToJSON)),
+        'items': ((value.items as Array<any>).map(TenantDetailsToJSON)),
         'pageSize': value.pageSize,
         'pageNumber': value.pageNumber,
         'totalCount': value.totalCount,

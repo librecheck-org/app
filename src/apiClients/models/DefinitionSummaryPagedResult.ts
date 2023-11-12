@@ -31,25 +31,25 @@ export interface DefinitionSummaryPagedResult {
      * @type {Array<DefinitionSummary>}
      * @memberof DefinitionSummaryPagedResult
      */
-    items?: Array<DefinitionSummary> | null;
+    items: Array<DefinitionSummary>;
     /**
      * 
      * @type {number}
      * @memberof DefinitionSummaryPagedResult
      */
-    pageSize?: number;
+    pageSize: number;
     /**
      * 
      * @type {number}
      * @memberof DefinitionSummaryPagedResult
      */
-    pageNumber?: number;
+    pageNumber: number;
     /**
      * 
      * @type {number}
      * @memberof DefinitionSummaryPagedResult
      */
-    totalCount?: number;
+    totalCount: number;
 }
 
 /**
@@ -57,6 +57,10 @@ export interface DefinitionSummaryPagedResult {
  */
 export function instanceOfDefinitionSummaryPagedResult(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "items" in value;
+    isInstance = isInstance && "pageSize" in value;
+    isInstance = isInstance && "pageNumber" in value;
+    isInstance = isInstance && "totalCount" in value;
 
     return isInstance;
 }
@@ -71,10 +75,10 @@ export function DefinitionSummaryPagedResultFromJSONTyped(json: any, ignoreDiscr
     }
     return {
         
-        'items': !exists(json, 'items') ? undefined : (json['items'] === null ? null : (json['items'] as Array<any>).map(DefinitionSummaryFromJSON)),
-        'pageSize': !exists(json, 'pageSize') ? undefined : json['pageSize'],
-        'pageNumber': !exists(json, 'pageNumber') ? undefined : json['pageNumber'],
-        'totalCount': !exists(json, 'totalCount') ? undefined : json['totalCount'],
+        'items': ((json['items'] as Array<any>).map(DefinitionSummaryFromJSON)),
+        'pageSize': json['pageSize'],
+        'pageNumber': json['pageNumber'],
+        'totalCount': json['totalCount'],
     };
 }
 
@@ -87,7 +91,7 @@ export function DefinitionSummaryPagedResultToJSON(value?: DefinitionSummaryPage
     }
     return {
         
-        'items': value.items === undefined ? undefined : (value.items === null ? null : (value.items as Array<any>).map(DefinitionSummaryToJSON)),
+        'items': ((value.items as Array<any>).map(DefinitionSummaryToJSON)),
         'pageSize': value.pageSize,
         'pageNumber': value.pageNumber,
         'totalCount': value.totalCount,

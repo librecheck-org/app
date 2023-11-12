@@ -31,6 +31,12 @@ export interface DefinitionSummary {
      * @memberof DefinitionSummary
      */
     title: string;
+    /**
+     * 
+     * @type {Date}
+     * @memberof DefinitionSummary
+     */
+    timestamp: Date;
 }
 
 /**
@@ -40,6 +46,7 @@ export function instanceOfDefinitionSummary(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "uuid" in value;
     isInstance = isInstance && "title" in value;
+    isInstance = isInstance && "timestamp" in value;
 
     return isInstance;
 }
@@ -56,6 +63,7 @@ export function DefinitionSummaryFromJSONTyped(json: any, ignoreDiscriminator: b
         
         'uuid': json['uuid'],
         'title': json['title'],
+        'timestamp': (new Date(json['timestamp'])),
     };
 }
 
@@ -70,6 +78,7 @@ export function DefinitionSummaryToJSON(value?: DefinitionSummary | null): any {
         
         'uuid': value.uuid,
         'title': value.title,
+        'timestamp': (value.timestamp.toISOString()),
     };
 }
 

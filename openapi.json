@@ -656,6 +656,7 @@
       "DefinitionDetails": {
         "required": [
           "contents",
+          "timestamp",
           "title",
           "uuid"
         ],
@@ -668,6 +669,10 @@
           "title": {
             "minLength": 1,
             "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
           },
           "contents": {
             "minLength": 1,
@@ -678,6 +683,7 @@
       },
       "DefinitionSummary": {
         "required": [
+          "timestamp",
           "title",
           "uuid"
         ],
@@ -690,19 +696,28 @@
           "title": {
             "minLength": 1,
             "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
           }
         },
         "additionalProperties": false
       },
       "DefinitionSummaryPagedResult": {
+        "required": [
+          "items",
+          "pageNumber",
+          "pageSize",
+          "totalCount"
+        ],
         "type": "object",
         "properties": {
           "items": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/DefinitionSummary"
-            },
-            "nullable": true
+            }
           },
           "pageSize": {
             "type": "integer",
@@ -849,6 +864,7 @@
         "required": [
           "contents",
           "definition",
+          "timestamp",
           "uuid"
         ],
         "type": "object",
@@ -859,6 +875,10 @@
           },
           "definition": {
             "$ref": "#/components/schemas/DefinitionSummary"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
           },
           "contents": {
             "minLength": 1,
@@ -870,6 +890,7 @@
       "SubmissionSummary": {
         "required": [
           "definition",
+          "timestamp",
           "uuid"
         ],
         "type": "object",
@@ -880,19 +901,28 @@
           },
           "definition": {
             "$ref": "#/components/schemas/DefinitionSummary"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
           }
         },
         "additionalProperties": false
       },
       "SubmissionSummaryPagedResult": {
+        "required": [
+          "items",
+          "pageNumber",
+          "pageSize",
+          "totalCount"
+        ],
         "type": "object",
         "properties": {
           "items": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/SubmissionSummary"
-            },
-            "nullable": true
+            }
           },
           "pageSize": {
             "type": "integer",
@@ -923,14 +953,19 @@
         "additionalProperties": false
       },
       "TenantDetailsPagedResult": {
+        "required": [
+          "items",
+          "pageNumber",
+          "pageSize",
+          "totalCount"
+        ],
         "type": "object",
         "properties": {
           "items": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/TenantDetails"
-            },
-            "nullable": true
+            }
           },
           "pageSize": {
             "type": "integer",

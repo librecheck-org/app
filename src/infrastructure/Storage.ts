@@ -1,6 +1,11 @@
+// Copyright (c) LibreCheck Team and Contributors <hello@librecheck.io>. All rights reserved.
+//
+// Licensed under the MIT License. See LICENSE file in the project root for full license information.
+
 import { Ref, ref } from "vue";
 import { Storage } from "@ionic/storage";
 import { StorageKey } from "@/models";
+import _ from "lodash";
 import { defineStore } from "pinia";
 
 class IonicStorageWrapper {
@@ -58,7 +63,7 @@ export function useIonicStorage<T>(storageKey: StorageKey, value: Ref<T | undefi
     }
 
     async function update(updates: Partial<T> | undefined) {
-        const updated = updates !== undefined ? <T>{ ...value.value, ...updates } : undefined;
+        const updated = updates !== undefined ? _.cloneDeep(<T>{ ...value.value, ...updates }) : undefined;
         await _writeToStorage(storageKey, updated);
         value.value = updated;
     }

@@ -40,6 +40,12 @@ export interface SubmissionDetails {
     definition: DefinitionSummary;
     /**
      * 
+     * @type {Date}
+     * @memberof SubmissionDetails
+     */
+    timestamp: Date;
+    /**
+     * 
      * @type {string}
      * @memberof SubmissionDetails
      */
@@ -53,6 +59,7 @@ export function instanceOfSubmissionDetails(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "uuid" in value;
     isInstance = isInstance && "definition" in value;
+    isInstance = isInstance && "timestamp" in value;
     isInstance = isInstance && "contents" in value;
 
     return isInstance;
@@ -70,6 +77,7 @@ export function SubmissionDetailsFromJSONTyped(json: any, ignoreDiscriminator: b
         
         'uuid': json['uuid'],
         'definition': DefinitionSummaryFromJSON(json['definition']),
+        'timestamp': (new Date(json['timestamp'])),
         'contents': json['contents'],
     };
 }
@@ -85,6 +93,7 @@ export function SubmissionDetailsToJSON(value?: SubmissionDetails | null): any {
         
         'uuid': value.uuid,
         'definition': DefinitionSummaryToJSON(value.definition),
+        'timestamp': (value.timestamp.toISOString()),
         'contents': value.contents,
     };
 }
