@@ -6,7 +6,6 @@
 **/.project
 **/.settings
 **/.toolstarget
-**/.venv
 **/.vs
 **/.vscode
 **/*.*proj.user
@@ -25,3 +24,8 @@
 LICENSE
 README.md
 tests
+!**/.gitignore
+!.git/HEAD
+!.git/config
+!.git/packed-refs
+!.git/refs/heads/**
