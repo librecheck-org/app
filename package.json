@@ -32,7 +32,7 @@
     "lodash": "4.17.21",
     "pinia": "2.1.7",
     "survey-vue3-ui": "1.9.121",
-    "vue": "3.3.11",
+    "vue": "3.3.12",
     "vue-router": "4.2.5"
   },
   "devDependencies": {
@@ -56,6 +56,6 @@
     "vue-tsc": "1.8.25"
   },
   "overrides": {
-    "vue": "3.3.11"
+    "vue": "3.3.12"
   }
 }
