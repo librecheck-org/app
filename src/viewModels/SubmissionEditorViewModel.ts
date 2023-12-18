@@ -3,14 +3,14 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 import { Command, useCommand } from "@/infrastructure/Command";
-import { ViewModel, useViewModel } from "@/infrastructure";
-import { useDefinitionsStore, useSubmissionsStore } from "@/stores";
 import { DefinitionSummary, SubmissionSummary } from "@/apiClients";
-import { Submissions } from "@/models";
+import { ViewModel, useViewModel } from "@/infrastructure";
 import { Model } from "survey-core";
 import { PlainDarkPanelless } from "survey-core/themes/plain-dark-panelless";
+import { Submissions } from "@/models";
 import { reactive } from "vue";
 import { useIonRouter } from "@ionic/vue";
+import { useSubmissionsStore } from "@/stores";
 
 export enum SubmissionEditorViewState {
     None
@@ -42,7 +42,6 @@ class SubmissionEditorViewCommands {
 }
 
 export function useSubmissionEditorViewModel(submissionUuid: string): ViewModel<SubmissionEditorViewData, SubmissionEditorViewCommands> {
-    const _definitionsStore = useDefinitionsStore();
     const _submissionsStore = useSubmissionsStore();
     const _ionRouter = useIonRouter();
 

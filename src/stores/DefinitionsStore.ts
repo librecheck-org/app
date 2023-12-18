@@ -4,8 +4,8 @@
 
 import { Definitions, StorageKey } from "@/models";
 import { defineIonicStore, useIonicStorage } from "@/infrastructure";
-import { ref } from "vue";
 import { DefinitionDetails } from "@/apiClients";
+import { ref } from "vue";
 
 interface DefinitionStore {
     value: Definitions;

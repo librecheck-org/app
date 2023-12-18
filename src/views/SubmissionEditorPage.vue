@@ -17,6 +17,6 @@ const props = defineProps<{
     submissionUuid: string,
 }>();
 
-const { data, commands } = useSubmissionEditorViewModel(props.submissionUuid);
+const { data } = useSubmissionEditorViewModel(props.submissionUuid);
 </script>
   
