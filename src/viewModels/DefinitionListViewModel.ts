@@ -8,6 +8,7 @@ import { useDefinitionsStore, useSubmissionsStore } from "@/stores";
 import { DefinitionSummary } from "@/apiClients";
 import { Definitions } from "@/models";
 import { reactive } from "vue";
+import { useIonRouter } from "@ionic/vue";
 
 export enum DefinitionListViewState {
     None
@@ -39,22 +40,25 @@ class DefinitionListViewCommands {
 export function useDefinitionListViewModel(): ViewModel<DefinitionListViewData, DefinitionListViewCommands> {
     const _definitionsStore = useDefinitionsStore();
     const _submissionsStore = useSubmissionsStore();
+    const _ionRouter = useIonRouter();
 
     const data = reactive(new DefinitionListViewDataImpl(_definitionsStore.value));
 
     async function initialize() {
     }
 
-    function _canUpdateApp(): boolean {
+    function _canCreateSubmissionDraft(): boolean {
         return true;
     }
 
-    async function _updateApp(definitionUuid: string): Promise<void> {
-        await _submissionsStore.createDraft(definitionUuid);
+    async function _createSubmissionDraft(definitionUuid: string): Promise<void> {
+        const definition = await _definitionsStore.readDefinition(definitionUuid);
+        const submissionDraft = await _submissionsStore.createDraft(definition);
+        _ionRouter.push("/submissions/" + submissionDraft.uuid);
     }
 
-    const _updateClientCommand = useCommand(_canUpdateApp, _updateApp);
-    const commands = new DefinitionListViewCommands(_updateClientCommand);
+    const _createSubmissionDraftCommand = useCommand(_canCreateSubmissionDraft, _createSubmissionDraft);
+    const commands = new DefinitionListViewCommands(_createSubmissionDraftCommand);
 
     return useViewModel({ data, commands, initialize });
 }

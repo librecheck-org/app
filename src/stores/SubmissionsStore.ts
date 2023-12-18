@@ -29,9 +29,13 @@ export function useSubmissionsStore() {
             return draft;
         }
 
+        function readDraft(submissionUuid: string): SubmissionDraft | undefined {
+            return _value.value.drafts[submissionUuid];
+        }
+
         return {
             value: _value, ensureIsInitialized, update,
-            createDraft
+            createDraft, readDraft
         };
     });
 }

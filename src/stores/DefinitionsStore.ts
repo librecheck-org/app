@@ -5,6 +5,7 @@
 import { Definitions, StorageKey } from "@/models";
 import { defineIonicStore, useIonicStorage } from "@/infrastructure";
 import { ref } from "vue";
+import { DefinitionDetails } from "@/apiClients";
 
 interface DefinitionStore {
     value: Definitions;
@@ -24,8 +25,13 @@ export function useDefinitionsStore(): DefinitionStore {
             await _ensureIsInitialized();
         }
 
+        function readDefinition(definitionUuid: string): DefinitionDetails | undefined {
+            return _value.value.details[definitionUuid];
+        }
+
         return {
-            value: _value, ensureIsInitialized, update
+            value: _value, ensureIsInitialized, update,
+            readDefinition
         };
     });
 }

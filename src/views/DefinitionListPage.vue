@@ -13,7 +13,7 @@
                             Here's a small text description for the card content. Nothing more, nothing less.
                         </ion-card-content>
 
-                        <ion-button fill="clear" @click="createSubmissionDraft()">Fill</ion-button>
+                        <ion-button fill="clear" @click="createSubmissionDraft(def.uuid)">Fill</ion-button>
                     </ion-card>
                 </ion-col>
             </ion-row>
