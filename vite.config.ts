@@ -63,6 +63,15 @@ export default defineConfig({
     },
     test: {
         globals: true,
-        environment: "jsdom"
+        environment: "jsdom",
+        reporters: ["junit", "default"],
+        outputFile: {
+            junit: "./test-report.xml",
+        },
+        coverage: {
+            enabled: true,
+            provider: "v8",
+            reporter: ["cobertura", "html"],
+        },
     }
 });

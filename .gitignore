@@ -164,3 +164,6 @@ dist
 
 # Workbox dev service worker
 dev-dist
+
+# Unit test execution report
+test-report.xml

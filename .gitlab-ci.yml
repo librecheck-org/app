@@ -13,8 +13,8 @@ include:
     file: /.gitlab/ci_templates/node/install-dependencies.gitlab-ci.yml
   - project: pommalabs/templates
     file: /.gitlab/ci_templates/node/check-source-code-style.gitlab-ci.yml
-  #- project: pommalabs/templates
-  #  file: /.gitlab/ci_templates/dotnet/.run-tests.gitlab-ci.yml
+  - project: pommalabs/templates
+    file: /.gitlab/ci_templates/node/run-tests.gitlab-ci.yml
   #- project: pommalabs/templates
   #  file: /.gitlab/ci_templates/dotnet/publish-sonar-report.gitlab-ci.yml
   - project: pommalabs/templates
