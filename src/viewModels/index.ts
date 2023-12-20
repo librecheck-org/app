@@ -6,3 +6,4 @@ export * from "./DefinitionListViewModel";
 export * from "./HomeViewModel";
 export * from "./LoginViewModel";
 export * from "./SubmissionEditorViewModel";
+export * from "./SubmissionListViewModel";

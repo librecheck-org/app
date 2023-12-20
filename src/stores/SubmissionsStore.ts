@@ -8,7 +8,14 @@ import { DefinitionDetails } from "@/apiClients";
 import { newUuid } from "@/helpers";
 import { ref } from "vue";
 
-export function useSubmissionsStore() {
+interface SubmissionStore {
+    value: Submissions;
+
+    ensureIsInitialized: () => Promise<void>;
+    update: (value: Partial<Submissions> | undefined) => Promise<void>;
+}
+
+export function useSubmissionsStore(): SubmissionStore {
     const storageKey = StorageKey.Submissions;
     return defineIonicStore(storageKey, () => {
         const _value = ref<Submissions>({ summaries: [], details: {}, drafts: {} });

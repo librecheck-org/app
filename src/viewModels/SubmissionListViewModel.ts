@@ -3,45 +3,51 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 import { Command, useCommand } from "@/infrastructure/Command";
-import { DefinitionStore, useDefinitionsStore, useSubmissionsStore } from "@/stores";
+import { SubmissionStore, useDefinitionsStore, useSubmissionsStore } from "@/stores";
 import { ViewModel, useViewModel } from "@/infrastructure";
-import { DefinitionSummary } from "@/apiClients";
+import { SubmissionDraft } from "@/models";
+import { SubmissionSummary } from "@/apiClients";
 import { reactive } from "vue";
 import { useIonRouter } from "@ionic/vue";
 
-export enum DefinitionListViewState {
+export enum SubmissionListViewState {
     None
 }
 
-interface DefinitionListViewData {
-    state: DefinitionListViewState;
+interface SubmissionListViewData {
+    state: SubmissionListViewState;
 
-    get definitions(): DefinitionSummary[];
+    get submissions(): SubmissionSummary[];
+    get drafts(): SubmissionDraft[];
 }
 
-class DefinitionListViewDataImpl implements DefinitionListViewData {
-    constructor(private _definitionStore: DefinitionStore) {
+class SubmissionListViewDataImpl implements SubmissionListViewData {
+    constructor(private _submissionStore: SubmissionStore) {
     }
 
-    state: DefinitionListViewState = DefinitionListViewState.None;
+    state: SubmissionListViewState = SubmissionListViewState.None;
 
-    get definitions(): DefinitionSummary[] {
-        return this._definitionStore.value.summaries;
+    get submissions(): SubmissionSummary[] {
+        return this._submissionStore.value.summaries;
+    }
+
+    get drafts(): SubmissionDraft[] {
+        return Object.entries(this._submissionStore.value.drafts).map((kv) => kv[1]);
     }
 }
 
-class DefinitionListViewCommands {
+class SubmissionListViewCommands {
     constructor(
         public createSubmissionDraft: Command) {
     }
 }
 
-export function useDefinitionListViewModel(): ViewModel<DefinitionListViewData, DefinitionListViewCommands> {
+export function useSubmissionListViewModel(): ViewModel<SubmissionListViewData, SubmissionListViewCommands> {
     const _definitionsStore = useDefinitionsStore();
     const _submissionsStore = useSubmissionsStore();
     const _ionRouter = useIonRouter();
 
-    const data = reactive(new DefinitionListViewDataImpl(_definitionsStore));
+    const data = reactive(new SubmissionListViewDataImpl(_submissionsStore));
 
     async function initialize() {
     }
@@ -57,7 +63,7 @@ export function useDefinitionListViewModel(): ViewModel<DefinitionListViewData, 
     }
 
     const _createSubmissionDraftCommand = useCommand(_canCreateSubmissionDraft, _createSubmissionDraft);
-    const commands = new DefinitionListViewCommands(_createSubmissionDraftCommand);
+    const commands = new SubmissionListViewCommands(_createSubmissionDraftCommand);
 
     return useViewModel({ data, commands, initialize });
 }
