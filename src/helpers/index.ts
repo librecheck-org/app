@@ -16,6 +16,7 @@ export async function initDefaultApiConfig(): Promise<void> {
 }
 
 export async function getCurrentUser(): Promise<UserDetails | undefined> {
+    console.log(readFromStorage);
     return await readFromStorage<UserDetails>(StorageKey.CurrentUser);
 }
 
