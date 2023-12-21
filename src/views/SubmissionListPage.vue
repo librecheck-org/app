@@ -42,7 +42,6 @@ import { IonButton, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, Ion
 import { useSubmissionListViewModel } from "@/viewModels";
 
 const { data, commands } = useSubmissionListViewModel();
-console.log(data);
 const { execute: createSubmissionDraft } = commands.createSubmissionDraft;
 </script>
   

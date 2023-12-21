@@ -1,53 +1,55 @@
 <template>
-    <ion-split-pane when="xl" content-id="main-content">
-        <ion-menu content-id="main-content">
-            <ion-header>
-                <ion-toolbar>
-                    <ion-title>LibreCheck</ion-title>
-                </ion-toolbar>
-            </ion-header>
-            <ion-content>
-                <ion-list v-if="currentUser.value">
-                    <ion-item>
-                        <ion-avatar slot="start">
-                            <img alt="Silhouette of a person's head"
-                                src="https://ionicframework.com/docs/img/demos/avatar.svg" />
-                        </ion-avatar>
-                        <ion-label>Item Avatar {{ currentUser.value.emailAddress }}</ion-label>
-                    </ion-item>
-
-                    <ion-item-group>
-                        <ion-item-divider>
-                            <ion-label>Checklists</ion-label>
-                        </ion-item-divider>
-                        <ion-item button router-link="/submissions" :detail="true">
-                            <ion-label>Submissions</ion-label>
+    <ion-page>
+        <ion-split-pane when="xl" content-id="main-content">
+            <ion-menu content-id="main-content">
+                <ion-header>
+                    <ion-toolbar>
+                        <ion-title>LibreCheck</ion-title>
+                    </ion-toolbar>
+                </ion-header>
+                <ion-content>
+                    <ion-list v-if="currentUser.value">
+                        <ion-item>
+                            <ion-avatar slot="start">
+                                <img alt="Silhouette of a person's head"
+                                    src="https://ionicframework.com/docs/img/demos/avatar.svg" />
+                            </ion-avatar>
+                            <ion-label>Item Avatar {{ currentUser.value.emailAddress }}</ion-label>
                         </ion-item>
-                        <ion-item button router-link="/definitions" :detail="true">
-                            <ion-label>Definitions</ion-label>
-                        </ion-item>
-                    </ion-item-group>
 
-                    <SystemStatusMenuItems :update-client-command="commands.updateClientCommand" />
-                </ion-list>
-            </ion-content>
-        </ion-menu>
+                        <ion-item-group>
+                            <ion-item-divider>
+                                <ion-label>Checklists</ion-label>
+                            </ion-item-divider>
+                            <ion-item button router-link="/submissions" :detail="true">
+                                <ion-label>Submissions</ion-label>
+                            </ion-item>
+                            <ion-item button router-link="/definitions" :detail="true">
+                                <ion-label>Definitions</ion-label>
+                            </ion-item>
+                        </ion-item-group>
 
-        <ion-page id="main-content">
-            <ion-header>
-                <ion-toolbar>
-                    <ion-buttons slot="start">
-                        <ion-menu-button />
-                    </ion-buttons>
-                    <ion-title>{{ router.currentRoute.value.name }}</ion-title>
-                </ion-toolbar>
-            </ion-header>
+                        <SystemStatusMenuItems :update-client-command="commands.updateClientCommand" />
+                    </ion-list>
+                </ion-content>
+            </ion-menu>
 
-            <ion-content class="ion-padding">
-                <ion-router-outlet />
-            </ion-content>
-        </ion-page>
-    </ion-split-pane>
+            <div id="main-content">
+                <ion-header>
+                    <ion-toolbar>
+                        <ion-buttons slot="start">
+                            <ion-menu-button />
+                        </ion-buttons>
+                        <ion-title>{{ router.currentRoute.value.name }}</ion-title>
+                    </ion-toolbar>
+                </ion-header>
+
+                <ion-content class="ion-padding">
+                    <ion-router-outlet />
+                </ion-content>
+            </div>
+        </ion-split-pane>
+    </ion-page>
 </template>
   
 <script setup lang="ts">
