@@ -45,7 +45,7 @@
                 </ion-header>
 
                 <ion-content class="ion-padding">
-                    <ion-router-outlet />
+                    <ion-router-outlet animated="false" />
                 </ion-content>
             </div>
         </ion-split-pane>
