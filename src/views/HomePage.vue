@@ -1,7 +1,7 @@
 <template>
     <ion-page>
         <ion-split-pane when="xl" content-id="main-content">
-            <ion-menu content-id="main-content">
+            <ion-menu ref="mainMenu" content-id="main-content">
                 <ion-header>
                     <ion-toolbar>
                         <ion-title>LibreCheck</ion-title>
@@ -21,10 +21,10 @@
                             <ion-item-divider>
                                 <ion-label>Checklists</ion-label>
                             </ion-item-divider>
-                            <ion-item button router-link="/submissions" :detail="true">
+                            <ion-item button router-link="/submissions" @click="closeMainMenu" :detail="true">
                                 <ion-label>Submissions</ion-label>
                             </ion-item>
-                            <ion-item button router-link="/definitions" :detail="true">
+                            <ion-item button router-link="/definitions" @click="closeMainMenu" :detail="true">
                                 <ion-label>Definitions</ion-label>
                             </ion-item>
                         </ion-item-group>
@@ -34,7 +34,7 @@
                 </ion-content>
             </ion-menu>
 
-            <div id="main-content">
+            <div class="ion-page" id="main-content">
                 <ion-header>
                     <ion-toolbar>
                         <ion-buttons slot="start">
@@ -55,12 +55,20 @@
 <script setup lang="ts">
 import { IonAvatar, IonButtons, IonContent, IonHeader, IonItem, IonItemDivider, IonItemGroup, IonLabel, IonList, IonMenu, IonMenuButton, IonPage, IonRouterOutlet, IonSplitPane, IonTitle, IonToolbar } from "@ionic/vue";
 import SystemStatusMenuItems from "@/components/SystemStatusMenuItems.vue";
+import { ref } from "vue";
 import router from "@/router";
 import { useCurrentUserStore } from "@/stores";
 import { useHomeViewModel } from "@/viewModels";
 
-const { commands } = useHomeViewModel();
+const mainMenu = ref<InstanceType<typeof IonMenu> | null>(null);
 
+const { commands } = useHomeViewModel();
 const currentUser = useCurrentUserStore();
+
+async function closeMainMenu() {
+    if (mainMenu.value !== null) {
+        await mainMenu.value.$el.close();
+    }
+}
 </script>
   
