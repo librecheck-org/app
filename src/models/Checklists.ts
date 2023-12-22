@@ -17,5 +17,5 @@ export interface Submissions {
 }
 
 export interface SubmissionDraft extends SubmissionDetails {
-
+    currentPageNumber: number;
 }

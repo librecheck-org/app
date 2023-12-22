@@ -22,3 +22,7 @@ export async function getCurrentUser(): Promise<UserDetails | undefined> {
 export function newUuid(): string {
     return crypto.randomUUID();
 }
+
+export function getCurrentDate(): Date {
+    return new Date();
+}

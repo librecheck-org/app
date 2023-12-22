@@ -13,7 +13,7 @@
                             Here's a small text description for the card content. Nothing more, nothing less.
                         </ion-card-content>
 
-                        <ion-button fill="clear" @click="createSubmissionDraft(sub.uuid)">Fill</ion-button>
+                        <ion-button fill="clear" @click="editSubmissionDraft(sub.uuid)">Fill</ion-button>
                     </ion-card>
                 </ion-col>
             </ion-row>
@@ -27,9 +27,10 @@
 
                         <ion-card-content>
                             Here's a small text description for the card content. Nothing more, nothing less.
+                            {{ sub.timestamp }}
                         </ion-card-content>
 
-                        <ion-button fill="clear" @click="createSubmissionDraft(sub.uuid)">Fill</ion-button>
+                        <ion-button fill="clear" @click="editSubmissionDraft(sub.uuid)">Fill</ion-button>
                     </ion-card>
                 </ion-col>
             </ion-row>
@@ -42,6 +43,5 @@ import { IonButton, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, Ion
 import { useSubmissionListViewModel } from "@/viewModels";
 
 const { data, commands } = useSubmissionListViewModel();
-const { execute: createSubmissionDraft } = commands.createSubmissionDraft;
+const { execute: editSubmissionDraft } = commands.editSubmissionDraft;
 </script>
-  

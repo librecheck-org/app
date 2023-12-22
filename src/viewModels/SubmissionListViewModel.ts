@@ -3,7 +3,7 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 import { Command, useCommand } from "@/infrastructure/Command";
-import { SubmissionStore, useDefinitionsStore, useSubmissionsStore } from "@/stores";
+import { SubmissionStore, useSubmissionsStore } from "@/stores";
 import { ViewModel, useViewModel } from "@/infrastructure";
 import { SubmissionDraft } from "@/models";
 import { SubmissionSummary } from "@/apiClients";
@@ -38,12 +38,11 @@ class SubmissionListViewDataImpl implements SubmissionListViewData {
 
 class SubmissionListViewCommands {
     constructor(
-        public createSubmissionDraft: Command) {
+        public editSubmissionDraft: Command) {
     }
 }
 
 export function useSubmissionListViewModel(): ViewModel<SubmissionListViewData, SubmissionListViewCommands> {
-    const _definitionsStore = useDefinitionsStore();
     const _submissionsStore = useSubmissionsStore();
     const _ionRouter = useIonRouter();
 
@@ -52,18 +51,16 @@ export function useSubmissionListViewModel(): ViewModel<SubmissionListViewData, 
     async function initialize() {
     }
 
-    function _canCreateSubmissionDraft(): boolean {
+    function _canEditSubmissionDraft(): boolean {
         return true;
     }
 
-    async function _createSubmissionDraft(definitionUuid: string): Promise<void> {
-        const definition = await _definitionsStore.readDefinition(definitionUuid);
-        const submissionDraft = await _submissionsStore.createDraft(definition);
-        _ionRouter.push("/submissions/" + submissionDraft.uuid);
+    async function _editSubmissionDraft(submissionUuid: string): Promise<void> {
+        _ionRouter.push("/submissions/" + submissionUuid);
     }
 
-    const _createSubmissionDraftCommand = useCommand(_canCreateSubmissionDraft, _createSubmissionDraft);
-    const commands = new SubmissionListViewCommands(_createSubmissionDraftCommand);
+    const _editSubmissionDraftCommand = useCommand(_canEditSubmissionDraft, _editSubmissionDraft);
+    const commands = new SubmissionListViewCommands(_editSubmissionDraftCommand);
 
     return useViewModel({ data, commands, initialize });
 }

@@ -3,11 +3,11 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 import { Command, useCommand } from "@/infrastructure/Command";
-import { DefinitionSummary, SubmissionSummary } from "@/apiClients";
+import { SubmissionDraft, Submissions } from "@/models";
 import { ViewModel, useViewModel } from "@/infrastructure";
-import { Model } from "survey-core";
 import { PlainDarkPanelless } from "survey-core/themes/plain-dark-panelless";
-import { Submissions } from "@/models";
+import { SubmissionSummary } from "@/apiClients";
+import { SurveyModel } from "survey-core";
 import { reactive } from "vue";
 import { useIonRouter } from "@ionic/vue";
 import { useSubmissionsStore } from "@/stores";
@@ -18,9 +18,9 @@ export enum SubmissionEditorViewState {
 
 interface SubmissionEditorViewData {
     state: SubmissionEditorViewState;
-    survey: Model | undefined;
+    survey: SurveyModel | undefined;
 
-    get definitions(): DefinitionSummary[];
+    get submissions(): SubmissionSummary[];
 }
 
 class SubmissionEditorViewDataImpl implements SubmissionEditorViewData {
@@ -28,7 +28,7 @@ class SubmissionEditorViewDataImpl implements SubmissionEditorViewData {
     }
 
     state: SubmissionEditorViewState = SubmissionEditorViewState.None;
-    survey: Model | undefined;
+    survey: SurveyModel | undefined;
 
     get submissions(): SubmissionSummary[] {
         return this._submissions.summaries;
@@ -47,10 +47,30 @@ export function useSubmissionEditorViewModel(submissionUuid: string): ViewModel<
 
     const data = reactive(new SubmissionEditorViewDataImpl(_submissionsStore.value));
 
+    function _initializeSurvey(submissionDraft: SubmissionDraft): SurveyModel {
+        const survey = new SurveyModel(JSON.parse(submissionDraft.definition.contents));
+        survey.data = JSON.parse(submissionDraft.contents);
+
+        survey.onValueChanged.add(async (s: SurveyModel) => {
+            submissionDraft.contents = JSON.stringify(s.data);
+            await _submissionsStore.updateDraft(submissionDraft);
+        });
+
+        survey.onCurrentPageChanged.add(async (s: SurveyModel) => {
+            submissionDraft.currentPageNumber = s.currentPageNo;
+            await _submissionsStore.updateDraft(submissionDraft);
+        });
+
+        survey.applyTheme(PlainDarkPanelless);
+
+        return survey;
+    }
+
     async function initialize() {
         const submissionDraft = _submissionsStore.readDraft(submissionUuid);
-        data.survey = new Model(submissionDraft.definition.contents);
-        data.survey.applyTheme(PlainDarkPanelless);
+        if (submissionDraft !== undefined) {
+            data.survey = _initializeSurvey(submissionDraft);
+        }
     }
 
     function _canCreateSubmissionDraft(): boolean {

@@ -35,3 +35,20 @@ describe("newUuid", () => {
     expect(result.length).toBeGreaterThan(0);
   });
 });
+
+describe("getCurrentDate", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  test("when invoked, should return a date", async () => {
+    // Arrange
+    const { getCurrentDate } = await import("@/helpers");
+
+    // Act
+    const result = getCurrentDate();
+
+    // Assert
+    expect(result).toBeInstanceOf(Date);
+  });
+});
