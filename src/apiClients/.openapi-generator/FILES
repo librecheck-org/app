@@ -15,7 +15,6 @@ models/HealthReport.ts
 models/HealthReportResult.ts
 models/HealthStatus.ts
 models/LoginAuthCodeVerifiedResult.ts
-models/ProblemDetails.ts
 models/RequestLoginAuthCodeCommand.ts
 models/SubmissionDetails.ts
 models/SubmissionSummary.ts
@@ -24,6 +23,7 @@ models/TenantDetails.ts
 models/TenantDetailsPagedResult.ts
 models/UserDetails.ts
 models/UserTenantElement.ts
+models/ValidationProblemDetails.ts
 models/VerifyLoginAuthCodeCommand.ts
 models/index.ts
 runtime.ts

@@ -17,6 +17,7 @@ export interface SubmissionStore {
     createDraft(definition: DefinitionDetails): Promise<SubmissionDraft>;
     readDraft(submissionUuid: string): SubmissionDraft | undefined;
     updateDraft(submissionDraft: SubmissionDraft): Promise<void>;
+    deleteDraft(submissionUuid: string): Promise<void>;
 }
 
 export function useSubmissionsStore(): SubmissionStore {

@@ -2,7 +2,7 @@
   "openapi": "3.0.1",
   "info": {
     "title": "LibreCheck API",
-    "description": "TODO",
+    "description": "TODO\n\nSome useful links:\n- [API source code](https://gitlab.com/librecheck-io/librecheck-api)\n- [Reference App source code](https://gitlab.com/librecheck-io/librecheck-app)",
     "contact": {
       "name": "LibreCheck Team",
       "email": "hello@librecheck.io"
@@ -11,7 +11,7 @@
       "name": "AGPLv3+",
       "url": "https://www.gnu.org/licenses/"
     },
-    "version": "v1"
+    "version": "0.461+9159d8a8"
   },
   "paths": {
     "/health": {
@@ -104,7 +104,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
                 }
               }
             }
@@ -155,7 +155,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
                 }
               }
             }
@@ -192,7 +192,8 @@
             "required": true,
             "style": "simple",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "format": "uuid"
             }
           }
         ],
@@ -202,7 +203,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
                 }
               }
             }
@@ -267,7 +268,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
                 }
               }
             }
@@ -318,7 +319,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
                 }
               }
             }
@@ -355,7 +356,8 @@
             "required": true,
             "style": "simple",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "format": "uuid"
             }
           }
         ],
@@ -365,7 +367,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
                 }
               }
             }
@@ -439,7 +441,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
                 }
               }
             }
@@ -472,7 +474,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
                 }
               }
             }
@@ -505,7 +507,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
                 }
               }
             }
@@ -570,7 +572,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
                 }
               }
             }
@@ -794,7 +796,7 @@
           }
         },
         "additionalProperties": false,
-        "description": "Represents a result in a PommaLabs.Salatino.Models.HealthReport.\r\nCorresponds to the result of a single health check."
+        "description": "Represents a result in a PommaLabs.Salatino.Models.DataTransferObjects.HealthReport.\r\nCorresponds to the result of a single health check."
       },
       "HealthStatus": {
         "enum": [
@@ -818,33 +820,6 @@
           }
         },
         "additionalProperties": false
-      },
-      "ProblemDetails": {
-        "type": "object",
-        "properties": {
-          "type": {
-            "type": "string",
-            "nullable": true
-          },
-          "title": {
-            "type": "string",
-            "nullable": true
-          },
-          "status": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "detail": {
-            "type": "string",
-            "nullable": true
-          },
-          "instance": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": {}
       },
       "RequestLoginAuthCodeCommand": {
         "type": "object",
@@ -873,12 +848,12 @@
             "type": "string",
             "format": "uuid"
           },
-          "definition": {
-            "$ref": "#/components/schemas/DefinitionSummary"
-          },
           "timestamp": {
             "type": "string",
             "format": "date-time"
+          },
+          "definition": {
+            "$ref": "#/components/schemas/DefinitionDetails"
           },
           "contents": {
             "minLength": 1,
@@ -899,12 +874,12 @@
             "type": "string",
             "format": "uuid"
           },
-          "definition": {
-            "$ref": "#/components/schemas/DefinitionSummary"
-          },
           "timestamp": {
             "type": "string",
             "format": "date-time"
+          },
+          "definition": {
+            "$ref": "#/components/schemas/DefinitionSummary"
           }
         },
         "additionalProperties": false
@@ -1021,6 +996,43 @@
           }
         },
         "additionalProperties": false
+      },
+      "ValidationProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "detail": {
+            "type": "string",
+            "nullable": true
+          },
+          "instance": {
+            "type": "string",
+            "nullable": true
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": {}
       },
       "VerifyLoginAuthCodeCommand": {
         "type": "object",
