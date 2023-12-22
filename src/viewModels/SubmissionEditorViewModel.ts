@@ -50,6 +50,7 @@ export function useSubmissionEditorViewModel(submissionUuid: string): ViewModel<
     function _initializeSurvey(submissionDraft: SubmissionDraft): SurveyModel {
         const survey = new SurveyModel(JSON.parse(submissionDraft.definition.contents));
         survey.data = JSON.parse(submissionDraft.contents);
+        survey.currentPageNo = submissionDraft.currentPageNumber;
 
         survey.onValueChanged.add(async (s: SurveyModel) => {
             submissionDraft.contents = JSON.stringify(s.data);

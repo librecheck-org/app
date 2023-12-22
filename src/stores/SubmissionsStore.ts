@@ -2,13 +2,13 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-import { StorageKey, SubmissionDraft, Submissions } from "@/models";
+import { StorageKey, SubmissionDraft, Submissions, UpdatableEntityState, updateEntityState } from "@/models";
 import { defineIonicStore, useIonicStorage } from "@/infrastructure";
 import { getCurrentDate, newUuid } from "@/helpers";
 import { DefinitionDetails } from "@/apiClients";
 import { ref } from "vue";
 
-interface SubmissionStore {
+export interface SubmissionStore {
     value: Submissions;
 
     ensureIsInitialized: () => Promise<void>;
@@ -37,6 +37,7 @@ export function useSubmissionsStore(): SubmissionStore {
                 contents: "{}",
                 timestamp: getCurrentDate(),
                 currentPageNumber: 0,
+                entityState: UpdatableEntityState.Created,
             };
             await update({ drafts: { ..._value.value.drafts, [draft.uuid]: draft } });
             return draft;
@@ -49,13 +50,26 @@ export function useSubmissionsStore(): SubmissionStore {
         async function updateDraft(submissionDraft: SubmissionDraft): Promise<void> {
             const drafts = _value.value.drafts;
             submissionDraft.timestamp = getCurrentDate();
+            updateEntityState(submissionDraft, UpdatableEntityState.Updated);
             drafts[submissionDraft.uuid] = submissionDraft;
+            await update({ drafts: drafts });
+        }
+
+        async function deleteDraft(submissionUuid: string): Promise<void> {
+            const drafts = _value.value.drafts;
+            const submissionDraft = readDraft(submissionUuid);
+            if (submissionDraft === undefined) {
+                return;
+            }
+            submissionDraft.timestamp = getCurrentDate();
+            updateEntityState(submissionDraft, UpdatableEntityState.Deleted);
+            drafts[submissionUuid] = submissionDraft;
             await update({ drafts: drafts });
         }
 
         return {
             value: _value, ensureIsInitialized, update,
-            createDraft, readDraft, updateDraft
+            createDraft, readDraft, updateDraft, deleteDraft
         };
     });
 }

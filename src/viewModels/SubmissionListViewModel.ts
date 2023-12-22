@@ -3,9 +3,9 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 import { Command, useCommand } from "@/infrastructure/Command";
+import { SubmissionDraft, UpdatableEntityState } from "@/models";
 import { SubmissionStore, useSubmissionsStore } from "@/stores";
 import { ViewModel, useViewModel } from "@/infrastructure";
-import { SubmissionDraft } from "@/models";
 import { SubmissionSummary } from "@/apiClients";
 import { reactive } from "vue";
 import { useIonRouter } from "@ionic/vue";
@@ -32,13 +32,16 @@ class SubmissionListViewDataImpl implements SubmissionListViewData {
     }
 
     get drafts(): SubmissionDraft[] {
-        return Object.entries(this._submissionStore.value.drafts).map((kv) => kv[1]);
+        return Object.entries(this._submissionStore.value.drafts)
+            .map((kv) => kv[1])
+            .filter((d) => d.entityState !== UpdatableEntityState.Deleted);
     }
 }
 
 class SubmissionListViewCommands {
     constructor(
-        public editSubmissionDraft: Command) {
+        public editSubmissionDraft: Command,
+        public deleteSubmissionDraft: Command) {
     }
 }
 
@@ -59,8 +62,17 @@ export function useSubmissionListViewModel(): ViewModel<SubmissionListViewData, 
         _ionRouter.push("/submissions/" + submissionUuid);
     }
 
+    function _canDeleteSubmissionDraft(): boolean {
+        return true;
+    }
+
+    async function _deleteSubmissionDraft(submissionUuid: string): Promise<void> {
+        await _submissionsStore.deleteDraft(submissionUuid);
+    }
+
     const _editSubmissionDraftCommand = useCommand(_canEditSubmissionDraft, _editSubmissionDraft);
-    const commands = new SubmissionListViewCommands(_editSubmissionDraftCommand);
+    const _deleteSubmissionDraftCommand = useCommand(_canDeleteSubmissionDraft, _deleteSubmissionDraft);
+    const commands = new SubmissionListViewCommands(_editSubmissionDraftCommand, _deleteSubmissionDraftCommand);
 
     return useViewModel({ data, commands, initialize });
 }

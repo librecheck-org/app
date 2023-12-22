@@ -3,7 +3,7 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 import type { DefinitionDetails, DefinitionSummary, SubmissionDetails, SubmissionSummary } from "@/apiClients";
-import type { SubmissionDraft } from "@/models/SubmissionDraft";
+import { UpdatableEntity, UpdatableEntityState } from "./Base";
 
 export interface Definitions {
     get summaries(): DefinitionSummary[];
@@ -16,6 +16,7 @@ export interface Submissions {
     get drafts(): Record<string, SubmissionDraft>;
 }
 
-export interface SubmissionDraft extends SubmissionDetails {
+export interface SubmissionDraft extends SubmissionDetails, UpdatableEntity {
     currentPageNumber: number;
+    entityState: UpdatableEntityState;
 }

@@ -30,7 +30,10 @@
                             {{ sub.timestamp }}
                         </ion-card-content>
 
-                        <ion-button fill="clear" @click="editSubmissionDraft(sub.uuid)">Fill</ion-button>
+                        <ion-button fill="clear" @click="editSubmissionDraft(sub.uuid)"
+                            :disabled="!canEditSubmissionDraft">Edit</ion-button>
+                        <ion-button fill="clear" @click="deleteSubmissionDraft(sub.uuid)"
+                            :disabled="!canDeleteSubmissionDraft">Delete</ion-button>
                     </ion-card>
                 </ion-col>
             </ion-row>
@@ -43,5 +46,6 @@ import { IonButton, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, Ion
 import { useSubmissionListViewModel } from "@/viewModels";
 
 const { data, commands } = useSubmissionListViewModel();
-const { execute: editSubmissionDraft } = commands.editSubmissionDraft;
+const { canExecute: canEditSubmissionDraft, execute: editSubmissionDraft } = commands.editSubmissionDraft;
+const { canExecute: canDeleteSubmissionDraft, execute: deleteSubmissionDraft } = commands.deleteSubmissionDraft;
 </script>
