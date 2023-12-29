@@ -54,8 +54,8 @@ async function _downloadDefinitions() {
             summaries.push(...pagedData.items);
         } while (pagedData.pageSize < pageSize);
 
-        for (let i = 0; i < summaries.length; ++i) {
-            const { uuid: definitionUuid, timestamp: definitionTimestamp } = summaries[i];
+        for (const summary of summaries) {
+            const { uuid: definitionUuid, timestamp: definitionTimestamp } = summary;
             const storedDefinition = storedDefinitions?.details[definitionUuid];
 
             // If definition details are missing from client storage,

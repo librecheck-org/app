@@ -13,69 +13,84 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { ChangeStatus } from './ChangeStatus';
+import {
+    ChangeStatusFromJSON,
+    ChangeStatusFromJSONTyped,
+    ChangeStatusToJSON,
+} from './ChangeStatus';
+
 /**
  * 
  * @export
- * @interface DefinitionDetails
+ * @interface SubmissionChange
  */
-export interface DefinitionDetails {
+export interface SubmissionChange {
     /**
      * 
      * @type {string}
-     * @memberof DefinitionDetails
+     * @memberof SubmissionChange
      */
     uuid: string;
     /**
      * 
-     * @type {string}
-     * @memberof DefinitionDetails
-     */
-    title: string;
-    /**
-     * 
      * @type {Date}
-     * @memberof DefinitionDetails
+     * @memberof SubmissionChange
      */
     timestamp: Date;
     /**
      * 
+     * @type {ChangeStatus}
+     * @memberof SubmissionChange
+     */
+    changeStatus: ChangeStatus;
+    /**
+     * 
      * @type {string}
-     * @memberof DefinitionDetails
+     * @memberof SubmissionChange
+     */
+    definitionUuid: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SubmissionChange
      */
     contents: string;
 }
 
 /**
- * Check if a given object implements the DefinitionDetails interface.
+ * Check if a given object implements the SubmissionChange interface.
  */
-export function instanceOfDefinitionDetails(value: object): boolean {
+export function instanceOfSubmissionChange(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "uuid" in value;
-    isInstance = isInstance && "title" in value;
     isInstance = isInstance && "timestamp" in value;
+    isInstance = isInstance && "changeStatus" in value;
+    isInstance = isInstance && "definitionUuid" in value;
     isInstance = isInstance && "contents" in value;
 
     return isInstance;
 }
 
-export function DefinitionDetailsFromJSON(json: any): DefinitionDetails {
-    return DefinitionDetailsFromJSONTyped(json, false);
+export function SubmissionChangeFromJSON(json: any): SubmissionChange {
+    return SubmissionChangeFromJSONTyped(json, false);
 }
 
-export function DefinitionDetailsFromJSONTyped(json: any, ignoreDiscriminator: boolean): DefinitionDetails {
+export function SubmissionChangeFromJSONTyped(json: any, ignoreDiscriminator: boolean): SubmissionChange {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
         'uuid': json['uuid'],
-        'title': json['title'],
         'timestamp': (new Date(json['timestamp'])),
+        'changeStatus': ChangeStatusFromJSON(json['changeStatus']),
+        'definitionUuid': json['definitionUuid'],
         'contents': json['contents'],
     };
 }
 
-export function DefinitionDetailsToJSON(value?: DefinitionDetails | null): any {
+export function SubmissionChangeToJSON(value?: SubmissionChange | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -85,8 +100,9 @@ export function DefinitionDetailsToJSON(value?: DefinitionDetails | null): any {
     return {
         
         'uuid': value.uuid,
-        'title': value.title,
         'timestamp': (value.timestamp.toISOString()),
+        'changeStatus': ChangeStatusToJSON(value.changeStatus),
+        'definitionUuid': value.definitionUuid,
         'contents': value.contents,
     };
 }

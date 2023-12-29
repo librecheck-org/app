@@ -13,56 +13,63 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { DefinitionSummary } from './DefinitionSummary';
+import type { ChangeStatus } from './ChangeStatus';
 import {
-    DefinitionSummaryFromJSON,
-    DefinitionSummaryFromJSONTyped,
-    DefinitionSummaryToJSON,
-} from './DefinitionSummary';
+    ChangeStatusFromJSON,
+    ChangeStatusFromJSONTyped,
+    ChangeStatusToJSON,
+} from './ChangeStatus';
 
 /**
  * 
  * @export
- * @interface SubmissionSummary
+ * @interface DefinitionChange
  */
-export interface SubmissionSummary {
+export interface DefinitionChange {
     /**
      * 
      * @type {string}
-     * @memberof SubmissionSummary
+     * @memberof DefinitionChange
      */
     uuid: string;
     /**
      * 
      * @type {Date}
-     * @memberof SubmissionSummary
+     * @memberof DefinitionChange
      */
     timestamp: Date;
     /**
      * 
-     * @type {DefinitionSummary}
-     * @memberof SubmissionSummary
+     * @type {ChangeStatus}
+     * @memberof DefinitionChange
      */
-    definition: DefinitionSummary;
+    changeStatus: ChangeStatus;
+    /**
+     * 
+     * @type {string}
+     * @memberof DefinitionChange
+     */
+    contents: string;
 }
 
 /**
- * Check if a given object implements the SubmissionSummary interface.
+ * Check if a given object implements the DefinitionChange interface.
  */
-export function instanceOfSubmissionSummary(value: object): boolean {
+export function instanceOfDefinitionChange(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "uuid" in value;
     isInstance = isInstance && "timestamp" in value;
-    isInstance = isInstance && "definition" in value;
+    isInstance = isInstance && "changeStatus" in value;
+    isInstance = isInstance && "contents" in value;
 
     return isInstance;
 }
 
-export function SubmissionSummaryFromJSON(json: any): SubmissionSummary {
-    return SubmissionSummaryFromJSONTyped(json, false);
+export function DefinitionChangeFromJSON(json: any): DefinitionChange {
+    return DefinitionChangeFromJSONTyped(json, false);
 }
 
-export function SubmissionSummaryFromJSONTyped(json: any, ignoreDiscriminator: boolean): SubmissionSummary {
+export function DefinitionChangeFromJSONTyped(json: any, ignoreDiscriminator: boolean): DefinitionChange {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -70,11 +77,12 @@ export function SubmissionSummaryFromJSONTyped(json: any, ignoreDiscriminator: b
         
         'uuid': json['uuid'],
         'timestamp': (new Date(json['timestamp'])),
-        'definition': DefinitionSummaryFromJSON(json['definition']),
+        'changeStatus': ChangeStatusFromJSON(json['changeStatus']),
+        'contents': json['contents'],
     };
 }
 
-export function SubmissionSummaryToJSON(value?: SubmissionSummary | null): any {
+export function DefinitionChangeToJSON(value?: DefinitionChange | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -85,7 +93,8 @@ export function SubmissionSummaryToJSON(value?: SubmissionSummary | null): any {
         
         'uuid': value.uuid,
         'timestamp': (value.timestamp.toISOString()),
-        'definition': DefinitionSummaryToJSON(value.definition),
+        'changeStatus': ChangeStatusToJSON(value.changeStatus),
+        'contents': value.contents,
     };
 }
 

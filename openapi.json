@@ -11,7 +11,7 @@
       "name": "AGPLv3+",
       "url": "https://www.gnu.org/licenses/"
     },
-    "version": "0.461+9159d8a8"
+    "version": "0.496+a2635268"
   },
   "paths": {
     "/health": {
@@ -398,6 +398,52 @@
         ]
       }
     },
+    "/api/v1/checklists/changesets": {
+      "post": {
+        "tags": [
+          "Checklists"
+        ],
+        "operationId": "ChecklistsApi_MergeChangesetV1",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MergeChangesetCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearer_token": [
+              "AuthenticatedUserWithSelectedTenantPolicy"
+            ]
+          }
+        ]
+      }
+    },
     "/api/v1/fair-use-token": {
       "get": {
         "tags": [
@@ -623,6 +669,15 @@
         "additionalProperties": false,
         "description": "Application version."
       },
+      "ChangeStatus": {
+        "enum": [
+          0,
+          1,
+          2
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
       "CreateDefinitionCommand": {
         "type": "object",
         "properties": {
@@ -651,6 +706,33 @@
           "contents": {
             "type": "string",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "DefinitionChange": {
+        "required": [
+          "changeStatus",
+          "contents",
+          "timestamp",
+          "uuid"
+        ],
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "changeStatus": {
+            "$ref": "#/components/schemas/ChangeStatus"
+          },
+          "contents": {
+            "minLength": 1,
+            "type": "string"
           }
         },
         "additionalProperties": false
@@ -821,6 +903,32 @@
         },
         "additionalProperties": false
       },
+      "MergeChangesetCommand": {
+        "required": [
+          "definitionChanges",
+          "submissionChanges"
+        ],
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "definitionChanges": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DefinitionChange"
+            }
+          },
+          "submissionChanges": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SubmissionChange"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
       "RequestLoginAuthCodeCommand": {
         "type": "object",
         "properties": {
@@ -831,6 +939,38 @@
           "fairUseToken": {
             "type": "string",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "SubmissionChange": {
+        "required": [
+          "changeStatus",
+          "contents",
+          "definitionUuid",
+          "timestamp",
+          "uuid"
+        ],
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "changeStatus": {
+            "$ref": "#/components/schemas/ChangeStatus"
+          },
+          "definitionUuid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "contents": {
+            "minLength": 1,
+            "type": "string"
           }
         },
         "additionalProperties": false

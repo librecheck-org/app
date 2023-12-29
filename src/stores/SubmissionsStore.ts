@@ -2,7 +2,7 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-import { StorageKey, SubmissionDraft, Submissions, UpdatableEntityState, updateEntityState } from "@/models";
+import { ChangeStatus, StorageKey, SubmissionLocalChange, Submissions, updateChangeStatus } from "@/models";
 import { defineIonicStore, useIonicStorage } from "@/infrastructure";
 import { getCurrentDate, newUuid } from "@/helpers";
 import { DefinitionDetails } from "@/apiClients";
@@ -14,16 +14,16 @@ export interface SubmissionStore {
     ensureIsInitialized: () => Promise<void>;
     update: (value: Partial<Submissions> | undefined) => Promise<void>;
 
-    createDraft(definition: DefinitionDetails): Promise<SubmissionDraft>;
-    readDraft(submissionUuid: string): SubmissionDraft | undefined;
-    updateDraft(submissionDraft: SubmissionDraft): Promise<void>;
+    createDraft(definition: DefinitionDetails): Promise<SubmissionLocalChange>;
+    readDraft(submissionUuid: string): SubmissionLocalChange | undefined;
+    updateDraft(submissionDraft: SubmissionLocalChange): Promise<void>;
     deleteDraft(submissionUuid: string): Promise<void>;
 }
 
 export function useSubmissionsStore(): SubmissionStore {
     const storageKey = StorageKey.Submissions;
     return defineIonicStore(storageKey, () => {
-        const _value = ref<Submissions>({ summaries: [], details: {}, drafts: {} });
+        const _value = ref<Submissions>({ summaries: [], details: {}, workingCopies: {} });
 
         const { ensureIsInitialized: _ensureIsInitialized, update } = useIonicStorage(storageKey, _value);
 
@@ -31,41 +31,41 @@ export function useSubmissionsStore(): SubmissionStore {
             await _ensureIsInitialized();
         }
 
-        async function createDraft(definition: DefinitionDetails): Promise<SubmissionDraft> {
-            const draft = <SubmissionDraft>{
+        async function createDraft(definition: DefinitionDetails): Promise<SubmissionLocalChange> {
+            const draft = <SubmissionLocalChange>{
                 uuid: newUuid(),
                 definition: definition,
                 contents: "{}",
                 timestamp: getCurrentDate(),
+                changeStatus: ChangeStatus.Updated,
                 currentPageNumber: 0,
-                entityState: UpdatableEntityState.Created,
             };
-            await update({ drafts: { ..._value.value.drafts, [draft.uuid]: draft } });
+            await update({ workingCopies: { ..._value.value.workingCopies, [draft.uuid]: draft } });
             return draft;
         }
 
-        function readDraft(submissionUuid: string): SubmissionDraft | undefined {
-            return _value.value.drafts[submissionUuid];
+        function readDraft(submissionUuid: string): SubmissionLocalChange | undefined {
+            return _value.value.workingCopies[submissionUuid];
         }
 
-        async function updateDraft(submissionDraft: SubmissionDraft): Promise<void> {
-            const drafts = _value.value.drafts;
+        async function updateDraft(submissionDraft: SubmissionLocalChange): Promise<void> {
+            const submissions = _value.value.workingCopies;
             submissionDraft.timestamp = getCurrentDate();
-            updateEntityState(submissionDraft, UpdatableEntityState.Updated);
-            drafts[submissionDraft.uuid] = submissionDraft;
-            await update({ drafts: drafts });
+            updateChangeStatus(submissionDraft, ChangeStatus.Updated);
+            submissions[submissionDraft.uuid] = submissionDraft;
+            await update({ workingCopies: submissions });
         }
 
         async function deleteDraft(submissionUuid: string): Promise<void> {
-            const drafts = _value.value.drafts;
+            const submissions = _value.value.workingCopies;
             const submissionDraft = readDraft(submissionUuid);
             if (submissionDraft === undefined) {
                 return;
             }
             submissionDraft.timestamp = getCurrentDate();
-            updateEntityState(submissionDraft, UpdatableEntityState.Deleted);
-            drafts[submissionUuid] = submissionDraft;
-            await update({ drafts: drafts });
+            updateChangeStatus(submissionDraft, ChangeStatus.Deleted);
+            submissions[submissionUuid] = submissionDraft;
+            await update({ workingCopies: submissions });
         }
 
         return {

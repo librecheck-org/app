@@ -17,7 +17,7 @@ interface DefinitionStore {
 export function useDefinitionsStore(): DefinitionStore {
     const storageKey = StorageKey.Definitions;
     return defineIonicStore(storageKey, () => {
-        const _value = ref<Definitions>({ summaries: [], details: {} });
+        const _value = ref<Definitions>({ summaries: [], details: {}, workingCopies: {} });
 
         const { ensureIsInitialized: _ensureIsInitialized, update } = useIonicStorage(storageKey, _value);
 

@@ -5,8 +5,10 @@ apis/IamApiClient.ts
 apis/index.ts
 index.ts
 models/AppVersion.ts
+models/ChangeStatus.ts
 models/CreateDefinitionCommand.ts
 models/CreateSubmissionCommand.ts
+models/DefinitionChange.ts
 models/DefinitionDetails.ts
 models/DefinitionSummary.ts
 models/DefinitionSummaryPagedResult.ts
@@ -15,7 +17,9 @@ models/HealthReport.ts
 models/HealthReportResult.ts
 models/HealthStatus.ts
 models/LoginAuthCodeVerifiedResult.ts
+models/MergeChangesetCommand.ts
 models/RequestLoginAuthCodeCommand.ts
+models/SubmissionChange.ts
 models/SubmissionDetails.ts
 models/SubmissionSummary.ts
 models/SubmissionSummaryPagedResult.ts

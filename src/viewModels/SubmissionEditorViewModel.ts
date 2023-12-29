@@ -3,7 +3,7 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 import { Command, useCommand } from "@/infrastructure/Command";
-import { SubmissionDraft, Submissions } from "@/models";
+import { SubmissionLocalChange, Submissions } from "@/models";
 import { ViewModel, useViewModel } from "@/infrastructure";
 import { PlainDarkPanelless } from "survey-core/themes/plain-dark-panelless";
 import { SubmissionSummary } from "@/apiClients";
@@ -47,7 +47,7 @@ export function useSubmissionEditorViewModel(submissionUuid: string): ViewModel<
 
     const data = reactive(new SubmissionEditorViewDataImpl(_submissionsStore.value));
 
-    function _initializeSurvey(submissionDraft: SubmissionDraft): SurveyModel {
+    function _initializeSurvey(submissionDraft: SubmissionLocalChange): SurveyModel {
         const survey = new SurveyModel(JSON.parse(submissionDraft.definition.contents));
         survey.data = JSON.parse(submissionDraft.contents);
         survey.currentPageNo = submissionDraft.currentPageNumber;

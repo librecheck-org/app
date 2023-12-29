@@ -17,23 +17,23 @@
  * 
  * @export
  */
-export const HealthStatus = {
+export const ChangeStatus = {
     NUMBER_0: 0,
     NUMBER_1: 1,
     NUMBER_2: 2
 } as const;
-export type HealthStatus = typeof HealthStatus[keyof typeof HealthStatus];
+export type ChangeStatus = typeof ChangeStatus[keyof typeof ChangeStatus];
 
 
-export function HealthStatusFromJSON(json: any): HealthStatus {
-    return HealthStatusFromJSONTyped(json, false);
+export function ChangeStatusFromJSON(json: any): ChangeStatus {
+    return ChangeStatusFromJSONTyped(json, false);
 }
 
-export function HealthStatusFromJSONTyped(json: any, ignoreDiscriminator: boolean): HealthStatus {
-    return json as HealthStatus;
+export function ChangeStatusFromJSONTyped(json: any, ignoreDiscriminator: boolean): ChangeStatus {
+    return json as ChangeStatus;
 }
 
-export function HealthStatusToJSON(value?: HealthStatus | null): any {
+export function ChangeStatusToJSON(value?: ChangeStatus | null): any {
     return value as any;
 }
 

@@ -2,8 +2,8 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
+import { ChangeStatus, SubmissionLocalChange } from "@/models";
 import { Command, useCommand } from "@/infrastructure/Command";
-import { SubmissionDraft, UpdatableEntityState } from "@/models";
 import { SubmissionStore, useSubmissionsStore } from "@/stores";
 import { ViewModel, useViewModel } from "@/infrastructure";
 import { SubmissionSummary } from "@/apiClients";
@@ -18,7 +18,7 @@ interface SubmissionListViewData {
     state: SubmissionListViewState;
 
     get submissions(): SubmissionSummary[];
-    get drafts(): SubmissionDraft[];
+    get drafts(): SubmissionLocalChange[];
 }
 
 class SubmissionListViewDataImpl implements SubmissionListViewData {
@@ -31,10 +31,10 @@ class SubmissionListViewDataImpl implements SubmissionListViewData {
         return this._submissionStore.value.summaries;
     }
 
-    get drafts(): SubmissionDraft[] {
-        return Object.entries(this._submissionStore.value.drafts)
+    get drafts(): SubmissionLocalChange[] {
+        return Object.entries(this._submissionStore.value.workingCopies)
             .map((kv) => kv[1])
-            .filter((d) => d.entityState !== UpdatableEntityState.Deleted);
+            .filter((d) => d.changeStatus !== ChangeStatus.Deleted);
     }
 }
 
