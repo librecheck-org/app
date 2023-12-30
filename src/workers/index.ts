@@ -2,7 +2,7 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-import { useDefinitionsStore, useSystemStatusStore } from "@/stores";
+import { useDefinitionsStore, useSubmissionsStore, useSystemStatusStore } from "@/stores";
 import ChecklistsWorker from "@/workers/ChecklistsWorker?worker";
 import { ChecklistsWorkerMessageType } from "./ChecklistsWorker";
 import SystemStatusWorker from "@/workers/SystemStatusWorker?worker";
@@ -53,12 +53,17 @@ function _startSystemStatusWorker() {
 function _startChecklistsWorker() {
     const checklistsWorker = new ChecklistsWorker();
     const definitionsStore = useDefinitionsStore();
+    const submissionsStore = useSubmissionsStore();
 
     checklistsWorker.addEventListener("message", async (ev) => {
         const msg = ev.data as WorkerMessage;
         switch (msg.type) {
             case ChecklistsWorkerMessageType.DefinitionsDownloaded:
                 await definitionsStore.update(msg.payload);
+                break;
+
+            case ChecklistsWorkerMessageType.SubmissionsDownloaded:
+                await submissionsStore.update(msg.payload);
                 break;
         }
     });
