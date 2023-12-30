@@ -2,16 +2,16 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-import { ChecklistsApiClient, DefinitionDetails, DefinitionSummary, DefinitionSummaryPagedResult, SubmissionDetails, SubmissionSummary, SubmissionSummaryPagedResult } from "@/apiClients";
+import { ChecklistsApiClient, DefinitionDetails, DefinitionSummary, DefinitionSummaryPagedResult, MergeChangesetCommand, SubmissionDetails, SubmissionSummary, SubmissionSummaryPagedResult } from "@/apiClients";
 import { Definitions, StorageKey, Submissions, WorkerMessage } from "@/models";
-import { getCurrentUser, initDefaultApiConfig } from "@/helpers";
+import { getCurrentUser, getRecordValues, initDefaultApiConfig } from "@/helpers";
 import { isEqual } from "date-fns";
 import { readFromStorage } from "@/infrastructure";
 
 export const enum ChecklistsWorkerMessageType {
     Start = "start",
-    DefinitionsDownloaded = "definitions_downloaded",
-    SubmissionsDownloaded = "submissions_downloaded",
+    DefinitionsRead = "definitions_read",
+    SubmissionsRead = "submissions_read",
 }
 
 addEventListener("message", (ev) => {
@@ -19,21 +19,30 @@ addEventListener("message", (ev) => {
     if (msg.type === ChecklistsWorkerMessageType.Start) {
         Promise.resolve().then(async () => {
             await initDefaultApiConfig();
-            await _downloadDefinitions();
-            await _downloadSubmissions();
+            await _readChecklistsData();
+            await _updateChecklistsData();
         });
     }
 });
 
-const _definitionsDownloadFrequency = 5 * 60 * 1000; // Five minutes
-let _downloadingDefinitions = false;
+async function _readChecklistsData() {
+    await _readDefinitions();
+    await _readSubmissions();
 
-async function _downloadDefinitions() {
-    if (_downloadingDefinitions) {
+    setTimeout(() => {
+        Promise.resolve(async () => await _readChecklistsData());
+    }, 5 * 60 * 1000 /* Five minutes */);
+}
+
+let _readingDefinitions = false;
+let _readingSubmissions = false;
+
+async function _readDefinitions() {
+    if (_readingDefinitions) {
         return;
     }
     try {
-        _downloadingDefinitions = true;
+        _readingDefinitions = true;
 
         const currentUser = await getCurrentUser();
         if (currentUser === undefined) {
@@ -75,30 +84,23 @@ async function _downloadDefinitions() {
         }
 
         self.postMessage(new WorkerMessage(
-            ChecklistsWorkerMessageType.DefinitionsDownloaded,
+            ChecklistsWorkerMessageType.DefinitionsRead,
             <Definitions>{ summaries, details }));
-
-        setTimeout(() => {
-            Promise.resolve().then(async () => await _downloadDefinitions());
-        }, _definitionsDownloadFrequency);
     }
     catch (err) {
         console.warn("An error occurred while reading definitions", err);
     }
     finally {
-        _downloadingDefinitions = false;
+        _readingDefinitions = false;
     }
 }
 
-const _submissionsDownloadFrequency = 5 * 60 * 1000; // Five minutes
-let _downloadingSubmissions = false;
-
-async function _downloadSubmissions() {
-    if (_downloadingSubmissions) {
+async function _readSubmissions() {
+    if (_readingSubmissions) {
         return;
     }
     try {
-        _downloadingSubmissions = true;
+        _readingSubmissions = true;
 
         const currentUser = await getCurrentUser();
         if (currentUser === undefined) {
@@ -140,17 +142,59 @@ async function _downloadSubmissions() {
         }
 
         self.postMessage(new WorkerMessage(
-            ChecklistsWorkerMessageType.SubmissionsDownloaded,
+            ChecklistsWorkerMessageType.SubmissionsRead,
             <Submissions>{ summaries, details }));
-
-        setTimeout(() => {
-            Promise.resolve().then(async () => await _downloadSubmissions());
-        }, _submissionsDownloadFrequency);
     }
     catch (err) {
         console.warn("An error occurred while reading submissions", err);
     }
     finally {
-        _downloadingSubmissions = false;
+        _readingSubmissions = false;
+    }
+}
+
+async function _updateChecklistsData() {
+    await _mergeChangeset();
+
+    setTimeout(() => {
+        Promise.resolve(async () => await _readChecklistsData());
+    }, 2 * 60 * 1000 /* Two minutes */);
+}
+
+async function _mergeChangeset() {
+    try {
+        const currentUser = await getCurrentUser();
+        if (currentUser === undefined) {
+            console.debug("User is not authenticated, changeset cannot be merged");
+            return;
+        }
+
+        const storedDefinitions = await readFromStorage<Definitions>(StorageKey.Definitions);
+        const storedSubmissions = await readFromStorage<Submissions>(StorageKey.Submissions);
+
+        const definitionsHaveChanges = storedDefinitions !== undefined && Object.keys(storedDefinitions.workingCopies).length > 0;
+        const submissionsHaveChanges = storedSubmissions !== undefined && Object.keys(storedSubmissions.workingCopies).length > 0;
+
+        if (!definitionsHaveChanges && !submissionsHaveChanges) {
+            console.info("There are no changes to be sent");
+            return;
+        }
+
+        const checklistsApiClient = new ChecklistsApiClient();
+
+        await checklistsApiClient.mergeChangesetV1(<MergeChangesetCommand>{
+            definitionChanges: getRecordValues(storedDefinitions?.workingCopies ?? {}),
+            submissionChanges: getRecordValues(storedSubmissions?.workingCopies ?? {}),
+        });
+
+        if (definitionsHaveChanges) {
+            await _readDefinitions();
+        }
+        if (submissionsHaveChanges) {
+            await _readSubmissions();
+        }
+    }
+    catch (err) {
+        console.warn("An error occurred while updating definitions and submissions", err);
     }
 }

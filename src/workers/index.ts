@@ -58,11 +58,11 @@ function _startChecklistsWorker() {
     checklistsWorker.addEventListener("message", async (ev) => {
         const msg = ev.data as WorkerMessage;
         switch (msg.type) {
-            case ChecklistsWorkerMessageType.DefinitionsDownloaded:
+            case ChecklistsWorkerMessageType.DefinitionsRead:
                 await definitionsStore.update(msg.payload);
                 break;
 
-            case ChecklistsWorkerMessageType.SubmissionsDownloaded:
+            case ChecklistsWorkerMessageType.SubmissionsRead:
                 await submissionsStore.update(msg.payload);
                 break;
         }

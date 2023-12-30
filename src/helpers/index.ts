@@ -26,3 +26,7 @@ export function newUuid(): string {
 export function getCurrentDate(): Date {
     return new Date();
 }
+
+export function getRecordValues<T>(record: Record<string, T>): T[] {
+    return Object.entries(record).map(kv => kv[1]);
+}

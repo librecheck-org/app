@@ -7,6 +7,7 @@ import { Command, useCommand } from "@/infrastructure/Command";
 import { SubmissionStore, useSubmissionsStore } from "@/stores";
 import { ViewModel, useViewModel } from "@/infrastructure";
 import { SubmissionSummary } from "@/apiClients";
+import { getRecordValues } from "@/helpers";
 import { reactive } from "vue";
 import { useIonRouter } from "@ionic/vue";
 
@@ -32,8 +33,7 @@ class SubmissionListViewDataImpl implements SubmissionListViewData {
     }
 
     get drafts(): SubmissionLocalChange[] {
-        return Object.entries(this._submissionStore.value.workingCopies)
-            .map((kv) => kv[1])
+        return getRecordValues(this._submissionStore.value.workingCopies)
             .filter((d) => d.changeStatus !== ChangeStatus.Deleted);
     }
 }
