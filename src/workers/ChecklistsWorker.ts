@@ -2,11 +2,11 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-import { ChecklistsApiClient, DefinitionDetails, DefinitionSummary, DefinitionSummaryPagedResult, MergeChangesetCommand, SubmissionDetails, SubmissionSummary, SubmissionSummaryPagedResult } from "@/apiClients";
-import { Definitions, StorageKey, Submissions, WorkerMessage } from "@/models";
-import { getCurrentUser, getRecordValues, initDefaultApiConfig } from "@/helpers";
+import { ChecklistsApiClient, DefinitionChange, DefinitionDetails, DefinitionSummary, DefinitionSummaryPagedResult, SubmissionChange, SubmissionDetails, SubmissionSummary, SubmissionSummaryPagedResult } from "@/apiClients";
+import { ChangeStatus, DefinitionLocalChange, Definitions, StorageKey, SubmissionLocalChange, Submissions, WorkerMessage } from "@/models";
+import { getCurrentUser, getRecordValues, initDefaultApiConfig, newUuid } from "@/helpers";
 import { isEqual } from "date-fns";
-import { readFromStorage } from "@/infrastructure";
+import { readFromStorage, updateStorage } from "@/infrastructure";
 
 export const enum ChecklistsWorkerMessageType {
     Start = "start",
@@ -30,7 +30,7 @@ async function _readChecklistsData() {
     await _readSubmissions();
 
     setTimeout(() => {
-        Promise.resolve(async () => await _readChecklistsData());
+        Promise.resolve().then(async () => await _readChecklistsData());
     }, 5 * 60 * 1000 /* Five minutes */);
 }
 
@@ -157,7 +157,7 @@ async function _updateChecklistsData() {
     await _mergeChangeset();
 
     setTimeout(() => {
-        Promise.resolve(async () => await _readChecklistsData());
+        Promise.resolve().then(async () => await _updateChecklistsData());
     }, 2 * 60 * 1000 /* Two minutes */);
 }
 
@@ -172,29 +172,69 @@ async function _mergeChangeset() {
         const storedDefinitions = await readFromStorage<Definitions>(StorageKey.Definitions);
         const storedSubmissions = await readFromStorage<Submissions>(StorageKey.Submissions);
 
-        const definitionsHaveChanges = storedDefinitions !== undefined && Object.keys(storedDefinitions.workingCopies).length > 0;
-        const submissionsHaveChanges = storedSubmissions !== undefined && Object.keys(storedSubmissions.workingCopies).length > 0;
+        const definitionChanges = _mapDefinitionWorkingCopiesToChanges(storedDefinitions?.workingCopies);
+        const submissionChanges = _mapSubmissionWorkingCopiesToChanges(storedSubmissions?.workingCopies);
 
-        if (!definitionsHaveChanges && !submissionsHaveChanges) {
+        if (definitionChanges.length == 0 && submissionChanges.length == 0) {
             console.info("There are no changes to be sent");
             return;
         }
 
         const checklistsApiClient = new ChecklistsApiClient();
-
-        await checklistsApiClient.mergeChangesetV1(<MergeChangesetCommand>{
-            definitionChanges: getRecordValues(storedDefinitions?.workingCopies ?? {}),
-            submissionChanges: getRecordValues(storedSubmissions?.workingCopies ?? {}),
+        await checklistsApiClient.mergeChangesetV1({
+            mergeChangesetCommand: {
+                uuid: newUuid(),
+                definitionChanges: definitionChanges,
+                submissionChanges: submissionChanges,
+            }
         });
 
         if (definitionsHaveChanges) {
             await _readDefinitions();
         }
         if (submissionsHaveChanges) {
+            await _resetSubmissionsChangeStatus(submissionChanges);
             await _readSubmissions();
         }
     }
     catch (err) {
         console.warn("An error occurred while updating definitions and submissions", err);
+    }
+}
+
+function _mapDefinitionWorkingCopiesToChanges(workingCopies: Record<string, DefinitionLocalChange> | undefined): DefinitionChange[] {
+    return getRecordValues(workingCopies ?? {})
+        .filter(x => x.changeStatus != ChangeStatus.Unchanged)
+        .map(x => <DefinitionChange>{
+            uuid: x.uuid,
+            timestamp: x.timestamp,
+            changeStatus: x.changeStatus,
+            contents: x.contents,
+        });
+}
+
+function _mapSubmissionWorkingCopiesToChanges(workingCopies: Record<string, SubmissionLocalChange> | undefined): SubmissionChange[] {
+    return getRecordValues(workingCopies ?? {})
+        .filter(x => x.changeStatus != ChangeStatus.Unchanged)
+        .map(x => <SubmissionChange>{
+            uuid: x.uuid,
+            timestamp: x.timestamp,
+            changeStatus: x.changeStatus,
+            definitionUuid: x.definition.uuid,
+            contents: x.contents,
+        });
+}
+
+async function _resetSubmissionsChangeStatus(changes: SubmissionChange[]) {
+    for (const change of changes) {
+        const storedSubmissions = await readFromStorage<Submissions>(StorageKey.Submissions);
+        if (storedSubmissions === undefined) {
+            return;
+        }
+        const submission = storedSubmissions.workingCopies[change.uuid];
+        if (isEqual(submission.timestamp, change.timestamp)) {
+            submission.changeStatus = ChangeStatus.Unchanged;
+            await updateStorage<Submissions>(StorageKey.Submissions, { workingCopies: storedSubmissions.workingCopies });
+        }
     }
 }

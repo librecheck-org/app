@@ -43,8 +43,11 @@ export async function readFromStorage<T>(key: StorageKey): Promise<T | undefined
     return item !== null ? <T>item : undefined;
 }
 
-async function _writeToStorage<T>(key: StorageKey, value: T): Promise<void> {
-    await _ionicStorage.setItem(key, value);
+export async function updateStorage<T>(key: StorageKey, updates: Partial<T> | undefined): Promise<T | undefined> {
+    const storedItem = await _ionicStorage.getItem(key);
+    const updatedItem = updates !== undefined ? _.cloneDeep(<T>{ ...storedItem, ...updates }) : undefined;
+    await _ionicStorage.setItem(key, updatedItem);
+    return updatedItem;
 }
 
 export function useIonicStorage<T>(storageKey: StorageKey, value: Ref<T | undefined>) {
@@ -63,8 +66,7 @@ export function useIonicStorage<T>(storageKey: StorageKey, value: Ref<T | undefi
     }
 
     async function update(updates: Partial<T> | undefined) {
-        const updated = updates !== undefined ? _.cloneDeep(<T>{ ...value.value, ...updates }) : undefined;
-        await _writeToStorage(storageKey, updated);
+        const updated = await updateStorage(storageKey, updates);
         value.value = updated;
     }
 
