@@ -10,6 +10,7 @@ import SystemStatusWorker from "@/workers/SystemStatusWorker?worker";
 import { SystemStatusWorkerMessageType } from "./SystemStatusWorker";
 import { WorkerMessage } from "@/models";
 import { registerSW } from "virtual:pwa-register";
+import { setStorageWorker } from "@/infrastructure";
 
 export function registerServiceWorker() {
     const updateSW = registerSW({
@@ -34,6 +35,7 @@ export function startWebWorkers() {
 
 function _startStorageWorker() {
     const storageWorker = new StorageWorker();
+    setStorageWorker(storageWorker);
 }
 
 function _startSystemStatusWorker() {
@@ -57,15 +59,19 @@ function _startChecklistsWorker() {
     const definitionsStore = useDefinitionsStore();
     const submissionsStore = useSubmissionsStore();
 
-    checklistsWorker.addEventListener("message", async (ev) => {
+    checklistsWorker.addEventListener("message", (ev) => {
         const msg = ev.data as WorkerMessage;
         switch (msg.type) {
             case ChecklistsWorkerMessageType.DefinitionsRead:
-                await definitionsStore.update(msg.payload);
+                Promise.resolve().then(async () => {
+                    await definitionsStore.update(msg.payload);
+                });
                 break;
 
             case ChecklistsWorkerMessageType.SubmissionsRead:
-                await submissionsStore.update(msg.payload);
+                Promise.resolve().then(async () => {
+                    await submissionsStore.update(msg.payload);
+                });
                 break;
         }
     });
