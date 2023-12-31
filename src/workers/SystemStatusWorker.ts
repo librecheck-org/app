@@ -11,12 +11,14 @@ export const enum SystemStatusWorkerMessageType {
     ServerConnectionChecked = "server_connection_checked"
 }
 
-addEventListener("message", async (ev) => {
+addEventListener("message", (ev) => {
     const msg = ev.data as WorkerMessage;
-    if (msg.type === SystemStatusWorkerMessageType.Start) {
-        await initDefaultApiConfig();
-        await _checkServerConnection();
-        setInterval(() => { _checkServerConnection(); }, 30000);
+    if (msg.type == SystemStatusWorkerMessageType.Start) {
+        Promise.resolve().then(async () => {
+            await initDefaultApiConfig();
+            await _checkServerConnection();
+            setInterval(() => { _checkServerConnection(); }, 30 * 1000);
+        });
     }
 });
 

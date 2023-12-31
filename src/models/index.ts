@@ -4,6 +4,7 @@
 
 export * from "./Base";
 export * from "./Checklists";
+export * from "./Workers";
 
 export const enum StorageKey {
     // Base
@@ -20,11 +21,6 @@ export const enum ServerConnectionStatus {
     Healthy = "healthy",
     Unhealthy = "unhealthy",
     Disconnected = "disconnected"
-}
-
-export class WorkerMessage {
-    constructor(public type: string, public payload: any) {
-    }
 }
 
 export interface SystemStatus {

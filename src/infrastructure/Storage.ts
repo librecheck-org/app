@@ -3,8 +3,8 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 import { Ref, ref } from "vue";
+import { StorageKey, StorageWorkerMessageType, WorkerMessage } from "@/models";
 import { Storage } from "@ionic/storage";
-import { StorageKey } from "@/models";
 import _ from "lodash";
 import { defineStore } from "pinia";
 
@@ -38,6 +38,12 @@ class IonicStorageWrapper {
 
 const _ionicStorage = new IonicStorageWrapper();
 
+let _storageWorker: Worker | undefined;
+
+export function setStorageWorker(storageWorker: Worker) {
+    _storageWorker = storageWorker;
+}
+
 export async function readFromStorage<T>(key: StorageKey): Promise<T | undefined> {
     const item = await _ionicStorage.getItem(key);
     return item !== null ? <T>item : undefined;
@@ -46,7 +52,7 @@ export async function readFromStorage<T>(key: StorageKey): Promise<T | undefined
 export async function updateStorage<T>(key: StorageKey, updates: Partial<T> | undefined): Promise<T | undefined> {
     const storedItem = await _ionicStorage.getItem(key);
     const updatedItem = updates !== undefined ? _.cloneDeep(<T>{ ...storedItem, ...updates }) : undefined;
-    await _ionicStorage.setItem(key, updatedItem);
+    _storageWorker?.postMessage(new WorkerMessage(StorageWorkerMessageType.Write, { key: key, value: updatedItem }));
     return updatedItem;
 }
 

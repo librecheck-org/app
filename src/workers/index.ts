@@ -5,14 +5,11 @@
 import { useDefinitionsStore, useSubmissionsStore, useSystemStatusStore } from "@/stores";
 import ChecklistsWorker from "@/workers/ChecklistsWorker?worker";
 import { ChecklistsWorkerMessageType } from "./ChecklistsWorker";
+import StorageWorker from "@/workers/StorageWorker?worker";
 import SystemStatusWorker from "@/workers/SystemStatusWorker?worker";
 import { SystemStatusWorkerMessageType } from "./SystemStatusWorker";
 import { WorkerMessage } from "@/models";
 import { registerSW } from "virtual:pwa-register";
-
-export function BuildSystemStatusWorker() {
-    return new SystemStatusWorker();
-}
 
 export function registerServiceWorker() {
     const updateSW = registerSW({
@@ -30,8 +27,13 @@ export function registerServiceWorker() {
 }
 
 export function startWebWorkers() {
+    _startStorageWorker();
     _startSystemStatusWorker();
     _startChecklistsWorker();
+}
+
+function _startStorageWorker() {
+    const storageWorker = new StorageWorker();
 }
 
 function _startSystemStatusWorker() {
