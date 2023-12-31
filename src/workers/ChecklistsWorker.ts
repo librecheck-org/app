@@ -2,11 +2,11 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-import { ChecklistsApiClient, DefinitionChange, DefinitionDetails, DefinitionSummary, DefinitionSummaryPagedResult, SubmissionChange, SubmissionDetails, SubmissionSummary, SubmissionSummaryPagedResult } from "@/apiClients";
 import { ChangeStatus, DefinitionLocalChange, Definitions, StorageKey, SubmissionLocalChange, Submissions, WorkerMessage } from "@/models";
+import { ChecklistsApiClient, DefinitionChange, DefinitionDetails, DefinitionSummary, DefinitionSummaryPagedResult, SubmissionChange, SubmissionDetails, SubmissionSummary, SubmissionSummaryPagedResult } from "@/apiClients";
 import { getCurrentUser, getRecordValues, initDefaultApiConfig, newUuid } from "@/helpers";
-import { isEqual } from "date-fns";
 import { readFromStorage, updateStorage } from "@/infrastructure";
+import { isEqual } from "date-fns";
 
 export const enum ChecklistsWorkerMessageType {
     Start = "start",
@@ -175,7 +175,10 @@ async function _mergeChangeset() {
         const definitionChanges = _mapDefinitionWorkingCopiesToChanges(storedDefinitions?.workingCopies);
         const submissionChanges = _mapSubmissionWorkingCopiesToChanges(storedSubmissions?.workingCopies);
 
-        if (definitionChanges.length == 0 && submissionChanges.length == 0) {
+        const definitionsHaveChanges = definitionChanges.length == 0;
+        const submissionsHaveChanges = submissionChanges.length == 0;
+
+        if (!definitionsHaveChanges && !submissionsHaveChanges) {
             console.info("There are no changes to be sent");
             return;
         }
