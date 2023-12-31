@@ -10,6 +10,12 @@ export enum ChangeStatus {
     Deleted = 2
 }
 
+export enum SyncStatus {
+    RemoteOnly = 0,
+    Synced = 1,
+    WaitingForSync = 2,
+}
+
 export interface MergeableObject {
     changeStatus: ChangeStatus;
 }

@@ -6,7 +6,7 @@ import { ChangeStatus, DefinitionLocalChange, Definitions, StorageKey, Submissio
 import { ChecklistsApiClient, DefinitionChange, DefinitionDetails, DefinitionSummary, DefinitionSummaryPagedResult, SubmissionChange, SubmissionDetails, SubmissionSummary, SubmissionSummaryPagedResult } from "@/apiClients";
 import { getCurrentUser, getRecordValues, initDefaultApiConfig, newUuid } from "@/helpers";
 import { readFromStorage, updateStorage } from "@/infrastructure";
-import { isEqual } from "date-fns";
+import { isEqual as areDatesEqual } from "date-fns";
 
 export const enum ChecklistsWorkerMessageType {
     Start = "start",
@@ -74,7 +74,7 @@ async function _readDefinitions() {
             // If definition details are missing from client storage,
             // or if stored definition details have a timestamp which is different
             // from the one read from server, then they should be read using the API.
-            if (storedDefinition === undefined || !isEqual(storedDefinition?.timestamp, summary.timestamp)) {
+            if (storedDefinition === undefined || !areDatesEqual(storedDefinition?.timestamp, summary.timestamp)) {
                 details[summary.uuid] = await checklistsApiClient.readDefinitionV1({
                     uuid: summary.uuid
                 });
@@ -132,7 +132,7 @@ async function _readSubmissions() {
             // If submission details are missing from client storage,
             // or if stored submission details have a timestamp which is different
             // from the one read from server, then they should be read using the API.
-            if (storedSubmission === undefined || !isEqual(storedSubmission?.timestamp, summary.timestamp)) {
+            if (storedSubmission === undefined || !areDatesEqual(storedSubmission?.timestamp, summary.timestamp)) {
                 details[summary.uuid] = await checklistsApiClient.readSubmissionV1({
                     uuid: summary.uuid
                 });
@@ -235,7 +235,7 @@ async function _resetSubmissionsChangeStatus(changes: SubmissionChange[]) {
             return;
         }
         const submission = storedSubmissions.workingCopies[change.uuid];
-        if (isEqual(submission.timestamp, change.timestamp)) {
+        if (areDatesEqual(submission.timestamp, change.timestamp)) {
             submission.changeStatus = ChangeStatus.Unchanged;
             await updateStorage<Submissions>(StorageKey.Submissions, { workingCopies: storedSubmissions.workingCopies });
         }
