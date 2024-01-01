@@ -4,40 +4,9 @@
 
 import { Ref, ref } from "vue";
 import { StorageKey, StorageWorkerMessageType, WorkerMessage } from "@/models";
-import { Storage } from "@ionic/storage";
 import _ from "lodash";
 import { defineStore } from "pinia";
 import { newUuid } from "@/helpers";
-
-class IonicStorageWrapper {
-    private readonly _store = new Storage();
-    private _isCreated = false;
-
-    public async getItem(key: string): Promise<any> {
-        await this._ensureCreated();
-        return await this._store.get(key);
-    }
-
-    public async setItem(key: string, value: any): Promise<void> {
-        await this._ensureCreated();
-        await this._store.set(key, value);
-    }
-
-    public async removeItem(key: string): Promise<void> {
-        await this._ensureCreated();
-        await this._store.remove(key);
-    }
-
-    private async _ensureCreated() {
-        if (this._isCreated) {
-            return;
-        }
-        await this._store.create();
-        this._isCreated = true;
-    }
-}
-
-const _ionicStorage = new IonicStorageWrapper();
 
 let _storageWorker: Worker | undefined;
 
@@ -82,12 +51,14 @@ function _unlockPromise(promiseId: string, value: unknown): void {
 }
 
 export async function readFromStorage<T>(key: StorageKey): Promise<T | undefined> {
-    const item = await _ionicStorage.getItem(key);
+    const lockingPromise = _createLockingPromise();
+    _storageWorker?.postMessage(new WorkerMessage(StorageWorkerMessageType.Read, { key, promiseId: lockingPromise.id }));
+    const item = await lockingPromise.promise;
     return item !== null ? <T>item : undefined;
 }
 
 export async function updateStorage<T>(key: StorageKey, updates: Partial<T> | undefined): Promise<T | undefined> {
-    const storedItem = await _ionicStorage.getItem(key);
+    const storedItem = await readFromStorage<T>(key);
     const updatedItem = updates !== undefined ? _.cloneDeep(<T>{ ...storedItem, ...updates }) : undefined;
     const lockingPromise = _createLockingPromise();
     _storageWorker?.postMessage(new WorkerMessage(StorageWorkerMessageType.Write, { key, value: updatedItem, promiseId: lockingPromise.id }));

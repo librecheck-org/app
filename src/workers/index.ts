@@ -27,18 +27,12 @@ export function registerServiceWorker() {
     });
 }
 
-export function startWebWorkers() {
-    _startStorageWorker();
-    _startSystemStatusWorker();
-    _startChecklistsWorker();
-}
-
-function _startStorageWorker() {
+export function startStorageWorker() {
     const storageWorker = new StorageWorker();
     setStorageWorker(storageWorker);
 }
 
-function _startSystemStatusWorker() {
+export function startSystemStatusWorker() {
     const systemStatusWorker = new SystemStatusWorker();
     const systemStatusStore = useSystemStatusStore();
 
@@ -54,7 +48,7 @@ function _startSystemStatusWorker() {
     systemStatusWorker.postMessage(new WorkerMessage(SystemStatusWorkerMessageType.Start, {}));
 }
 
-function _startChecklistsWorker() {
+export function startChecklistsWorker() {
     const checklistsWorker = new ChecklistsWorker();
     const definitionsStore = useDefinitionsStore();
     const submissionsStore = useSubmissionsStore();

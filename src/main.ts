@@ -8,7 +8,7 @@ import router from "./router";
 import { surveyPlugin } from "survey-vue3-ui";
 
 /* LibreCheck modules */
-import { registerServiceWorker, startWebWorkers } from "./workers";
+import { registerServiceWorker, startChecklistsWorker, startStorageWorker, startSystemStatusWorker } from "./workers";
 import { initDefaultApiConfig } from "./helpers";
 
 /* Core CSS required for Ionic components to work properly */
@@ -32,6 +32,8 @@ import "./theme/variables.css";
 
 defineCustomElements(window);
 
+startStorageWorker();
+
 const pinia = createPinia();
 const app = createApp(App)
     .use(IonicVue)
@@ -45,5 +47,6 @@ router.isReady().then(async () => {
     app.mount("#app");
 
     registerServiceWorker();
-    startWebWorkers();
+    startSystemStatusWorker();
+    startChecklistsWorker();
 });
