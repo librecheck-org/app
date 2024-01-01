@@ -9,6 +9,7 @@ import StorageWorker from "@/workers/StorageWorker?worker";
 import SystemStatusWorker from "@/workers/SystemStatusWorker?worker";
 import { SystemStatusWorkerMessageType } from "./SystemStatusWorker";
 import { WorkerMessage } from "@/models";
+import { fireAndForget } from "@/helpers";
 import { registerSW } from "virtual:pwa-register";
 import { setStorageWorker } from "@/infrastructure";
 
@@ -57,13 +58,13 @@ export function startChecklistsWorker() {
         const msg = ev.data as WorkerMessage;
         switch (msg.type) {
             case ChecklistsWorkerMessageType.DefinitionsRead:
-                Promise.resolve().then(async () => {
+                fireAndForget(async () => {
                     await definitionsStore.update(msg.payload);
                 });
                 break;
 
             case ChecklistsWorkerMessageType.SubmissionsRead:
-                Promise.resolve().then(async () => {
+                fireAndForget(async () => {
                     await submissionsStore.update(msg.payload);
                 });
                 break;

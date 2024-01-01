@@ -4,23 +4,24 @@
 
 import { StorageKey, StorageWorkerMessageType, WorkerMessage } from "@/models";
 import { Storage } from "@ionic/storage";
+import { fireAndForget } from "@/helpers";
 
 addEventListener("message", (ev) => {
     const msg = ev.data as WorkerMessage;
     switch (msg.type) {
         case StorageWorkerMessageType.Read: {
             const { key, promiseId } = msg.payload;
-            Promise.resolve().then(async () => await _read(key, promiseId));
+            fireAndForget(async () => await _read(key, promiseId));
             break;
         }
         case StorageWorkerMessageType.Update: {
             const { key, value, promiseId } = msg.payload;
-            Promise.resolve().then(async () => await _update(key, value, promiseId));
+            fireAndForget(async () => await _update(key, value, promiseId));
             break;
         }
         case StorageWorkerMessageType.Delete: {
             const { key, promiseId } = msg.payload;
-            Promise.resolve().then(async () => await _delete(key, promiseId));
+            fireAndForget(async () => await _delete(key, promiseId));
             break;
         }
     }

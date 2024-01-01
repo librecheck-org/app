@@ -3,8 +3,8 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 import { ServerConnectionStatus, WorkerMessage } from "@/models";
+import { fireAndForget, initDefaultApiConfig } from "@/helpers";
 import { AppInfoApiClient } from "@/apiClients";
-import { initDefaultApiConfig } from "@/helpers";
 
 export const enum SystemStatusWorkerMessageType {
     Start = "start",
@@ -14,7 +14,7 @@ export const enum SystemStatusWorkerMessageType {
 addEventListener("message", (ev) => {
     const msg = ev.data as WorkerMessage;
     if (msg.type == SystemStatusWorkerMessageType.Start) {
-        Promise.resolve().then(async () => {
+        fireAndForget(async () => {
             await initDefaultApiConfig();
             await _checkServerConnection();
             setInterval(() => { _checkServerConnection(); }, 30 * 1000);

@@ -4,9 +4,9 @@
 
 import { Ref, ref } from "vue";
 import { StorageKey, StorageWorkerMessageType, WorkerMessage } from "@/models";
+import { fireAndForget, newUuid } from "@/helpers";
 import _ from "lodash";
 import { defineStore } from "pinia";
-import { newUuid } from "@/helpers";
 
 let _storageWorker: Worker | undefined;
 
@@ -113,7 +113,7 @@ export function defineIonicStore<SS extends IonicStore>(storageKey: StorageKey, 
 
     // Initialization happens asynchronously and the call is not awaited,
     // because underlying storage is asynchronous but store definition needs to be synchronous.
-    store.ensureIsInitialized();
+    fireAndForget(async () => await store.ensureIsInitialized());
 
     _storeInstances.set(storageKey, store);
     return store;

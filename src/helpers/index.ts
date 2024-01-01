@@ -30,3 +30,7 @@ export function getCurrentDate(): Date {
 export function getRecordValues<T>(record: Record<string, T>): T[] {
     return Object.entries(record).map(kv => kv[1]);
 }
+
+export function fireAndForget(action: () => Promise<void>) {
+    Promise.resolve().then(async () => await action());
+}

@@ -4,7 +4,7 @@
 
 import { ChangeStatus, DefinitionLocalChange, Definitions, StorageKey, SubmissionLocalChange, Submissions, WorkerMessage } from "@/models";
 import { ChecklistsApiClient, DefinitionChange, DefinitionDetails, DefinitionSummary, DefinitionSummaryPagedResult, SubmissionChange, SubmissionDetails, SubmissionSummary, SubmissionSummaryPagedResult } from "@/apiClients";
-import { getCurrentUser, getRecordValues, initDefaultApiConfig, newUuid } from "@/helpers";
+import { fireAndForget, getCurrentUser, getRecordValues, initDefaultApiConfig, newUuid } from "@/helpers";
 import { readFromStorage, updateStorage } from "@/infrastructure";
 import { isEqual as areDatesEqual } from "date-fns";
 
@@ -17,7 +17,7 @@ export const enum ChecklistsWorkerMessageType {
 addEventListener("message", (ev) => {
     const msg = ev.data as WorkerMessage;
     if (msg.type === ChecklistsWorkerMessageType.Start) {
-        Promise.resolve().then(async () => {
+        fireAndForget(async () => {
             await initDefaultApiConfig();
             await _readChecklistsData();
             await _updateChecklistsData();
@@ -30,7 +30,7 @@ async function _readChecklistsData() {
     await _readSubmissions();
 
     setTimeout(() => {
-        Promise.resolve().then(async () => await _readChecklistsData());
+        fireAndForget(async () => await _readChecklistsData());
     }, 5 * 60 * 1000 /* Five minutes */);
 }
 
@@ -157,7 +157,7 @@ async function _updateChecklistsData() {
     await _mergeChangeset();
 
     setTimeout(() => {
-        Promise.resolve().then(async () => await _updateChecklistsData());
+        fireAndForget(async () => await _updateChecklistsData());
     }, 2 * 60 * 1000 /* Two minutes */);
 }
 
