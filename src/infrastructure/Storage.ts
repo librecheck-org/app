@@ -7,6 +7,7 @@ import { StorageKey, StorageWorkerMessageType, WorkerMessage } from "@/models";
 import { Storage } from "@ionic/storage";
 import _ from "lodash";
 import { defineStore } from "pinia";
+import { newUuid } from "@/helpers";
 
 class IonicStorageWrapper {
     private readonly _store = new Storage();
@@ -42,6 +43,42 @@ let _storageWorker: Worker | undefined;
 
 export function setStorageWorker(storageWorker: Worker) {
     _storageWorker = storageWorker;
+    _storageWorker.addEventListener("message", (ev) => {
+        const msg = ev.data as WorkerMessage;
+        switch (msg.type) {
+            case StorageWorkerMessageType.Unlock: {
+                const { promiseId, value } = msg.payload;
+                _unlockPromise(promiseId, value);
+                break;
+            }
+        }
+    });
+}
+
+interface LockingPromise {
+    id: string;
+    promise: Promise<unknown>;
+    resolve: (value: unknown) => void;
+}
+
+const _lockingPromiseMap = new Map<string, LockingPromise>();
+const _dummyPromise = new Promise<unknown>(() => { });
+const _dummyResolve = () => { /* Empty function used to initialize a locking promise */ };
+
+function _createLockingPromise(): LockingPromise {
+    const promiseId = newUuid();
+    const lockingPromise: LockingPromise = { id: promiseId, promise: _dummyPromise, resolve: _dummyResolve };
+    lockingPromise.promise = new Promise((resolve: (value: unknown) => void) => lockingPromise.resolve = resolve);
+    _lockingPromiseMap.set(promiseId, lockingPromise);
+    return lockingPromise;
+}
+
+function _unlockPromise(promiseId: string, value: unknown): void {
+    const lockingPromise = _lockingPromiseMap.get(promiseId);
+    if (lockingPromise !== undefined) {
+        lockingPromise.resolve(value);
+        _lockingPromiseMap.delete(promiseId);
+    }
 }
 
 export async function readFromStorage<T>(key: StorageKey): Promise<T | undefined> {
@@ -52,7 +89,9 @@ export async function readFromStorage<T>(key: StorageKey): Promise<T | undefined
 export async function updateStorage<T>(key: StorageKey, updates: Partial<T> | undefined): Promise<T | undefined> {
     const storedItem = await _ionicStorage.getItem(key);
     const updatedItem = updates !== undefined ? _.cloneDeep(<T>{ ...storedItem, ...updates }) : undefined;
-    _storageWorker?.postMessage(new WorkerMessage(StorageWorkerMessageType.Write, { key: key, value: updatedItem }));
+    const lockingPromise = _createLockingPromise();
+    _storageWorker?.postMessage(new WorkerMessage(StorageWorkerMessageType.Write, { key, value: updatedItem, promiseId: lockingPromise.id }));
+    await lockingPromise.promise;
     return updatedItem;
 }
 

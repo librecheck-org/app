@@ -8,13 +8,20 @@ import { Storage } from "@ionic/storage";
 addEventListener("message", (ev) => {
     const msg = ev.data as WorkerMessage;
     switch (msg.type) {
-        case StorageWorkerMessageType.Read:
+        case StorageWorkerMessageType.Read: {
+            const { key, promiseId } = msg.payload;
+            navigator.locks.request(key, { mode: "shared" }, async () => {
+                const value = await _ionicStorage.getItem(key);
+                self.postMessage(new WorkerMessage(StorageWorkerMessageType.Unlock, { promiseId, value }));
+            });
             break;
+        }
 
         case StorageWorkerMessageType.Write: {
-            const { key, value } = msg.payload;
+            const { key, value, promiseId } = msg.payload;
             navigator.locks.request(key, { mode: "exclusive" }, async () => {
                 await _ionicStorage.setItem(key, value);
+                self.postMessage(new WorkerMessage(StorageWorkerMessageType.Unlock, { promiseId, value }));
             });
             break;
         }

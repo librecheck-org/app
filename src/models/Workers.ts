@@ -9,5 +9,6 @@ export class WorkerMessage {
 
 export const enum StorageWorkerMessageType {
     Read = "read",
-    Write = "write"
+    Write = "write",
+    Unlock = "unlock"
 }
