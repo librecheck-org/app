@@ -2,7 +2,7 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-import { StorageWorkerMessageType, WorkerMessage } from "@/models";
+import { StorageKey, StorageWorkerMessageType, WorkerMessage } from "@/models";
 import { Storage } from "@ionic/storage";
 
 addEventListener("message", (ev) => {
@@ -10,19 +10,17 @@ addEventListener("message", (ev) => {
     switch (msg.type) {
         case StorageWorkerMessageType.Read: {
             const { key, promiseId } = msg.payload;
-            navigator.locks.request(key, { mode: "shared" }, async () => {
-                const value = await _ionicStorage.getItem(key);
-                self.postMessage(new WorkerMessage(StorageWorkerMessageType.Unlock, { promiseId, value }));
-            });
+            Promise.resolve().then(async () => await _read(key, promiseId));
             break;
         }
-
-        case StorageWorkerMessageType.Write: {
+        case StorageWorkerMessageType.Update: {
             const { key, value, promiseId } = msg.payload;
-            navigator.locks.request(key, { mode: "exclusive" }, async () => {
-                await _ionicStorage.setItem(key, value);
-                self.postMessage(new WorkerMessage(StorageWorkerMessageType.Unlock, { promiseId, value }));
-            });
+            Promise.resolve().then(async () => await _update(key, value, promiseId));
+            break;
+        }
+        case StorageWorkerMessageType.Delete: {
+            const { key, promiseId } = msg.payload;
+            Promise.resolve().then(async () => await _delete(key, promiseId));
             break;
         }
     }
@@ -32,17 +30,17 @@ class IonicStorageWrapper {
     private readonly _store = new Storage();
     private _isCreated = false;
 
-    public async getItem(key: string): Promise<any> {
+    public async get(key: string): Promise<any> {
         await this._ensureCreated();
         return await this._store.get(key);
     }
 
-    public async setItem(key: string, value: any): Promise<void> {
+    public async set(key: string, value: any): Promise<void> {
         await this._ensureCreated();
         await this._store.set(key, value);
     }
 
-    public async removeItem(key: string): Promise<void> {
+    public async remove(key: string): Promise<void> {
         await this._ensureCreated();
         await this._store.remove(key);
     }
@@ -57,3 +55,38 @@ class IonicStorageWrapper {
 }
 
 const _ionicStorage = new IonicStorageWrapper();
+
+function _unlockPromise(promiseId: string, value: unknown) {
+    self.postMessage(new WorkerMessage(StorageWorkerMessageType.Unlock, { promiseId, value }));
+}
+
+async function _read(key: StorageKey, promiseId: string) {
+    let value: any = null;
+    try {
+        await navigator.locks.request(key, { mode: "shared" }, async () => {
+            value = await _ionicStorage.get(key);
+        });
+    } finally {
+        _unlockPromise(promiseId, value);
+    }
+}
+
+async function _update(key: StorageKey, value: unknown, promiseId: string) {
+    try {
+        await navigator.locks.request(key, { mode: "exclusive" }, async () => {
+            await _ionicStorage.set(key, value);
+        });
+    } finally {
+        _unlockPromise(promiseId, value);
+    }
+}
+
+async function _delete(key: StorageKey, promiseId: string) {
+    try {
+        await navigator.locks.request(key, { mode: "exclusive" }, async () => {
+            await _ionicStorage.remove(key);
+        });
+    } finally {
+        _unlockPromise(promiseId, undefined);
+    }
+}

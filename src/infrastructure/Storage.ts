@@ -61,9 +61,15 @@ export async function updateStorage<T>(key: StorageKey, updates: Partial<T> | un
     const storedItem = await readFromStorage<T>(key);
     const updatedItem = updates !== undefined ? _.cloneDeep(<T>{ ...storedItem, ...updates }) : undefined;
     const lockingPromise = _createLockingPromise();
-    _storageWorker?.postMessage(new WorkerMessage(StorageWorkerMessageType.Write, { key, value: updatedItem, promiseId: lockingPromise.id }));
+    _storageWorker?.postMessage(new WorkerMessage(StorageWorkerMessageType.Update, { key, value: updatedItem, promiseId: lockingPromise.id }));
     await lockingPromise.promise;
     return updatedItem;
+}
+
+export async function deleteFromStorage(key: StorageKey): Promise<void> {
+    const lockingPromise = _createLockingPromise();
+    _storageWorker?.postMessage(new WorkerMessage(StorageWorkerMessageType.Delete, { key, promiseId: lockingPromise.id }));
+    await lockingPromise.promise;
 }
 
 export function useIonicStorage<T>(storageKey: StorageKey, value: Ref<T | undefined>) {
