@@ -44,7 +44,7 @@
                     </ion-toolbar>
                 </ion-header>
 
-                <ion-content class="ion-padding">
+                <ion-content class="ion-padding lc-scrollable">
                     <ion-router-outlet animated="false" />
                 </ion-content>
             </div>
@@ -71,4 +71,9 @@ async function closeMainMenu() {
     }
 }
 </script>
-  
+
+<style>
+.lc-scrollable .ion-page:first-of-type {
+    overflow-y: auto;
+}
+</style>

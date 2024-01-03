@@ -28,4 +28,3 @@ import { useDefinitionListViewModel } from "@/viewModels";
 const { data, commands } = useDefinitionListViewModel();
 const { execute: createSubmissionDraft } = commands.createSubmissionDraft;
 </script>
-  
