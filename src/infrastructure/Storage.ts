@@ -87,11 +87,15 @@ export function useIonicStorage<T>(storageKey: StorageKey, value: Ref<T | undefi
     async function ensureIsInitialized() {
         if (!isInitialized.value) {
             // If value is stored within client storage, then it replaces default value.
-            // Otherwise, default value is kept as a starting point.
+            // Stored value is merged with default value, because new properties
+            // might have been added to default value.
             const storedValue = await readFromStorage<T>(storageKey);
             if (storedValue !== undefined) {
-                value.value = storedValue;
+                value.value = { ...value.value, ...storedValue };
             }
+            // Stored value is updated with merged value, in order to let workers,
+            // which do not use stores, directly read the merged value.
+            await update(value.value);
         }
         isInitialized.value = true;
     }
