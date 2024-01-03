@@ -31,7 +31,7 @@
 </template>
   
 <script setup lang="ts">
-import { IonButton, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonCol, IonGrid, IonPage, IonRow } from "@ionic/vue";
+import { IonButton, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonCol, IonContent, IonGrid, IonPage, IonRow } from "@ionic/vue";
 import { useSubmissionListViewModel } from "@/viewModels";
 
 const { data, commands } = useSubmissionListViewModel();
