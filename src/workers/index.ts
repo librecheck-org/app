@@ -2,16 +2,14 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-import { fireAndForget, initDefaultApiConfig } from "@/helpers";
 import { useDefinitionsStore, useSubmissionsStore, useSystemStatusStore } from "@/stores";
 import ChecklistsWorker from "@/workers/ChecklistsWorker?worker";
 import { ChecklistsWorkerMessageType } from "./ChecklistsWorker";
-import StorageWorker from "@/workers/StorageWorker?worker";
 import SystemStatusWorker from "@/workers/SystemStatusWorker?worker";
 import { SystemStatusWorkerMessageType } from "./SystemStatusWorker";
 import { WorkerMessage } from "@/models";
+import { fireAndForget } from "@/helpers";
 import { registerSW } from "virtual:pwa-register";
-import { setStorageWorker } from "@/infrastructure";
 
 export function registerServiceWorker() {
     const updateSW = registerSW({
@@ -28,10 +26,7 @@ export function registerServiceWorker() {
     });
 }
 
-export function startStorageWorker() {
-    const storageWorker = new StorageWorker();
-    setStorageWorker(storageWorker);
-}
+export { startStorageWorker } from "./Helpers";
 
 export function startSystemStatusWorker() {
     const systemStatusWorker = new SystemStatusWorker();
@@ -72,21 +67,4 @@ export function startChecklistsWorker() {
     });
 
     checklistsWorker.postMessage(new WorkerMessage(ChecklistsWorkerMessageType.Start, {}));
-}
-
-export async function initializeWorker() {
-    startStorageWorker();
-    await initDefaultApiConfig();
-}
-
-export function scheduleNextExecution(action: () => Promise<void>, interval: number) {
-    // Here setTimeout is used to repeat function execution and the same behavior
-    // could be better achieved by using setInterval. However, by using setTimeout,
-    // we make sure that, when an execution runs for a longer time
-    // than given interval, it does not create a queue of blocked actions,
-    // because the execution of next action is explicitly scheduled once
-    // the current action is over.
-    setTimeout(() => {
-        fireAndForget(action);
-    }, interval);
 }
