@@ -32,5 +32,5 @@ export function getRecordValues<T>(record: Record<string, T>): T[] {
 }
 
 export function fireAndForget(action: () => Promise<void>) {
-    Promise.resolve().then(async () => await action());
+    Promise.resolve().then(action);
 }

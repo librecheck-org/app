@@ -52,7 +52,8 @@ function _unlockPromise(promiseId: string, value: unknown): void {
 
 export async function readFromStorage<T>(key: StorageKey): Promise<T | undefined> {
     const lockingPromise = _createLockingPromise();
-    _storageWorker?.postMessage(new WorkerMessage(StorageWorkerMessageType.Read, { key, promiseId: lockingPromise.id }));
+    _ensureStorageWorkerAvailability();
+    _storageWorker!.postMessage(new WorkerMessage(StorageWorkerMessageType.Read, { key, promiseId: lockingPromise.id }));
     const item = await lockingPromise.promise;
     return item !== null ? <T>item : undefined;
 }
@@ -61,15 +62,23 @@ export async function updateStorage<T>(key: StorageKey, updates: Partial<T> | un
     const storedItem = await readFromStorage<T>(key);
     const updatedItem = updates !== undefined ? _.cloneDeep(<T>{ ...storedItem, ...updates }) : undefined;
     const lockingPromise = _createLockingPromise();
-    _storageWorker?.postMessage(new WorkerMessage(StorageWorkerMessageType.Update, { key, value: updatedItem, promiseId: lockingPromise.id }));
+    _ensureStorageWorkerAvailability();
+    _storageWorker!.postMessage(new WorkerMessage(StorageWorkerMessageType.Update, { key, value: updatedItem, promiseId: lockingPromise.id }));
     await lockingPromise.promise;
     return updatedItem;
 }
 
 export async function deleteFromStorage(key: StorageKey): Promise<void> {
     const lockingPromise = _createLockingPromise();
-    _storageWorker?.postMessage(new WorkerMessage(StorageWorkerMessageType.Delete, { key, promiseId: lockingPromise.id }));
+    _ensureStorageWorkerAvailability();
+    _storageWorker!.postMessage(new WorkerMessage(StorageWorkerMessageType.Delete, { key, promiseId: lockingPromise.id }));
     await lockingPromise.promise;
+}
+
+function _ensureStorageWorkerAvailability() {
+    if (_storageWorker === undefined) {
+        throw new Error("Storage worker is not available");
+    }
 }
 
 export function useIonicStorage<T>(storageKey: StorageKey, value: Ref<T | undefined>) {
@@ -113,7 +122,7 @@ export function defineIonicStore<SS extends IonicStore>(storageKey: StorageKey, 
 
     // Initialization happens asynchronously and the call is not awaited,
     // because underlying storage is asynchronous but store definition needs to be synchronous.
-    fireAndForget(async () => await store.ensureIsInitialized());
+    fireAndForget(store.ensureIsInitialized);
 
     _storeInstances.set(storageKey, store);
     return store;

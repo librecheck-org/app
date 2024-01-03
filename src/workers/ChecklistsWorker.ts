@@ -4,7 +4,8 @@
 
 import { ChangeStatus, DefinitionLocalChange, Definitions, StorageKey, SubmissionLocalChange, Submissions, WorkerMessage } from "@/models";
 import { ChecklistsApiClient, DefinitionChange, DefinitionDetails, DefinitionSummary, DefinitionSummaryPagedResult, SubmissionChange, SubmissionDetails, SubmissionSummary, SubmissionSummaryPagedResult } from "@/apiClients";
-import { fireAndForget, getCurrentUser, getRecordValues, initDefaultApiConfig, newUuid } from "@/helpers";
+import { fireAndForget, getCurrentUser, getRecordValues, newUuid } from "@/helpers";
+import { initializeWorker, scheduleNextExecution } from ".";
 import { readFromStorage, updateStorage } from "@/infrastructure";
 import { isEqual as areDatesEqual } from "date-fns";
 
@@ -16,22 +17,27 @@ export const enum ChecklistsWorkerMessageType {
 
 addEventListener("message", (ev) => {
     const msg = ev.data as WorkerMessage;
-    if (msg.type === ChecklistsWorkerMessageType.Start) {
-        fireAndForget(async () => {
-            await initDefaultApiConfig();
-            await _readChecklistsData();
-            await _updateChecklistsData();
-        });
-    }
+    fireAndForget(async () => await _handleMessage(msg));
 });
 
-async function _readChecklistsData() {
-    await _readDefinitions();
-    await _readSubmissions();
+async function _handleMessage(msg: WorkerMessage): Promise<void> {
+    switch (msg.type) {
+        case ChecklistsWorkerMessageType.Start:
+            await initializeWorker();
+            await _readChecklistsData();
+            await _updateChecklistsData();
+            break;
+    }
+}
 
-    setTimeout(() => {
-        fireAndForget(async () => await _readChecklistsData());
-    }, 5 * 60 * 1000 /* Five minutes */);
+async function _readChecklistsData() {
+    try {
+        await _readDefinitions();
+        await _readSubmissions();
+    }
+    finally {
+        scheduleNextExecution(_readChecklistsData, 5 * 60 * 1000 /* Five minutes */);
+    }
 }
 
 let _readingDefinitions = false;
@@ -154,11 +160,12 @@ async function _readSubmissions() {
 }
 
 async function _updateChecklistsData() {
-    await _mergeChangeset();
-
-    setTimeout(() => {
-        fireAndForget(async () => await _updateChecklistsData());
-    }, 2 * 60 * 1000 /* Two minutes */);
+    try {
+        await _mergeChangeset();
+    }
+    finally {
+        scheduleNextExecution(_updateChecklistsData, 2 * 60 * 1000 /* Two minutes */);
+    }
 }
 
 async function _mergeChangeset() {

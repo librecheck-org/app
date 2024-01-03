@@ -8,24 +8,28 @@ import { fireAndForget } from "@/helpers";
 
 addEventListener("message", (ev) => {
     const msg = ev.data as WorkerMessage;
+    fireAndForget(async () => await _handleMessage(msg));
+});
+
+async function _handleMessage(msg: WorkerMessage): Promise<void> {
     switch (msg.type) {
         case StorageWorkerMessageType.Read: {
             const { key, promiseId } = msg.payload;
-            fireAndForget(async () => await _read(key, promiseId));
+            await _read(key, promiseId);
             break;
         }
         case StorageWorkerMessageType.Update: {
             const { key, value, promiseId } = msg.payload;
-            fireAndForget(async () => await _update(key, value, promiseId));
+            await _update(key, value, promiseId);
             break;
         }
         case StorageWorkerMessageType.Delete: {
             const { key, promiseId } = msg.payload;
-            fireAndForget(async () => await _delete(key, promiseId));
+            await _delete(key, promiseId);
             break;
         }
     }
-});
+}
 
 class IonicStorageWrapper {
     private readonly _store = new Storage();
