@@ -3,7 +3,8 @@
         <ion-content>
             <ion-grid>
                 <ion-row>
-                    <ion-col v-for="def in data.definitions" v-bind:key="def.uuid">
+                    <ion-col v-for="def in data.definitions" v-bind:key="def.uuid" size="12" size-sm="6" size-md="4"
+                        size-lg="3">
                         <ion-card>
                             <ion-card-header>
                                 <ion-card-title>{{ def.title }}</ion-card-title>
