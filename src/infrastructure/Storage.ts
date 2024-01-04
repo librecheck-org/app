@@ -8,6 +8,11 @@ import { fireAndForget, newUuid } from "@/helpers";
 import _ from "lodash";
 import { defineStore } from "pinia";
 
+/**
+ * Storage worker handles direct operations on storage, in order to
+ * take advantage of locks. CRUD operations are sent to this worker,
+ * which sends back a message with operation result.
+ */
 let _storageWorker: Worker | undefined;
 
 export function setStorageWorker(storageWorker: Worker) {
@@ -22,6 +27,15 @@ export function setStorageWorker(storageWorker: Worker) {
             }
         }
     });
+}
+
+async function _sendMessageToStorageWorker(type: StorageWorkerMessageType, payload: object): Promise<unknown> {
+    if (_storageWorker === undefined) {
+        throw new Error("Storage worker is not available");
+    }
+    const lockingPromise = _createLockingPromise();
+    _storageWorker.postMessage(new WorkerMessage(type, { ...payload, promiseId: lockingPromise.id }));
+    return await lockingPromise.promise;
 }
 
 interface LockingPromise {
@@ -51,34 +65,20 @@ function _unlockPromise(promiseId: string, value: unknown): void {
 }
 
 export async function readFromStorage<T>(key: StorageKey): Promise<T | undefined> {
-    const lockingPromise = _createLockingPromise();
-    _ensureStorageWorkerAvailability();
-    _storageWorker!.postMessage(new WorkerMessage(StorageWorkerMessageType.Read, { key, promiseId: lockingPromise.id }));
-    const item = await lockingPromise.promise;
+    const item = await _sendMessageToStorageWorker(StorageWorkerMessageType.Read, { key });
     return item !== null ? <T>item : undefined;
 }
 
-export async function updateStorage<T>(key: StorageKey, updates: Partial<T> | undefined): Promise<T | undefined> {
-    const storedItem = await readFromStorage<T>(key);
-    const updatedItem = updates !== undefined ? _.cloneDeep(<T>{ ...storedItem, ...updates }) : undefined;
-    const lockingPromise = _createLockingPromise();
-    _ensureStorageWorkerAvailability();
-    _storageWorker!.postMessage(new WorkerMessage(StorageWorkerMessageType.Update, { key, value: updatedItem, promiseId: lockingPromise.id }));
-    await lockingPromise.promise;
-    return updatedItem;
+export async function updateStorage<T>(key: StorageKey, updates: Partial<T>): Promise<T | undefined> {
+    // Update function might receive ref objects, which cannot be sent to storage worker.
+    // In fact, they are proxy objects, while a plain object is expected for serialization.
+    updates = _.cloneDeep(updates);
+    const item = await _sendMessageToStorageWorker(StorageWorkerMessageType.Update, { key, updates });
+    return item !== null ? <T>item : undefined;
 }
 
 export async function deleteFromStorage(key: StorageKey): Promise<void> {
-    const lockingPromise = _createLockingPromise();
-    _ensureStorageWorkerAvailability();
-    _storageWorker!.postMessage(new WorkerMessage(StorageWorkerMessageType.Delete, { key, promiseId: lockingPromise.id }));
-    await lockingPromise.promise;
-}
-
-function _ensureStorageWorkerAvailability() {
-    if (_storageWorker === undefined) {
-        throw new Error("Storage worker is not available");
-    }
+    await _sendMessageToStorageWorker(StorageWorkerMessageType.Delete, { key });
 }
 
 export function useIonicStorage<T>(storageKey: StorageKey, value: Ref<T | undefined>) {
@@ -100,7 +100,7 @@ export function useIonicStorage<T>(storageKey: StorageKey, value: Ref<T | undefi
         isInitialized.value = true;
     }
 
-    async function update(updates: Partial<T> | undefined) {
+    async function update(updates: Partial<T>) {
         const updated = await updateStorage(storageKey, updates);
         value.value = updated;
     }

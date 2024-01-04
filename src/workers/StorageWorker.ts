@@ -19,8 +19,8 @@ async function _handleMessage(msg: WorkerMessage): Promise<void> {
             break;
         }
         case StorageWorkerMessageType.Update: {
-            const { key, value, promiseId } = msg.payload;
-            await _update(key, value, promiseId);
+            const { key, updates, promiseId } = msg.payload;
+            await _update(key, updates, promiseId);
             break;
         }
         case StorageWorkerMessageType.Delete: {
@@ -76,9 +76,12 @@ async function _read(key: StorageKey, promiseId: string) {
     }
 }
 
-async function _update(key: StorageKey, value: unknown, promiseId: string) {
+async function _update(key: StorageKey, updates: object, promiseId: string) {
+    let value: object | null = null;
     try {
         await navigator.locks.request(key, { mode: "exclusive" }, async () => {
+            value = await _ionicStorage.get(key);
+            value = { ...value, ...updates };
             await _ionicStorage.set(key, value);
         });
     } finally {
