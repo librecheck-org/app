@@ -2,10 +2,13 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-export * from "./basee";
-export * from "./checklistss";
+export * from "./base";
+export * from "./checklists";
 export * from "./iam";
 
+/**
+ * List of all storage keys managed by the application, grouped by "module".
+ */
 export const enum StorageKey {
     // Base
     SystemStatus = "lc.base.systemStatus",
