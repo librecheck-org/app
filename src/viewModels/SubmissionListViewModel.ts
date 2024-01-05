@@ -4,7 +4,7 @@
 
 import { ChangeStatus, SyncStatus } from "@/models";
 import { Command, useCommand } from "@/infrastructure/Command";
-import { SubmissionStore, useSubmissionsStore } from "@/stores";
+import { SubmissionStore, useSubmissionStore } from "@/stores";
 import { ViewModel, useViewModel } from "@/infrastructure";
 import { compareDesc as compareDatesDesc } from "date-fns";
 import { getRecordValues } from "@/helpers";
@@ -80,10 +80,10 @@ class SubmissionListViewCommands {
 }
 
 export function useSubmissionListViewModel(): ViewModel<SubmissionListViewData, SubmissionListViewCommands> {
-    const _submissionsStore = useSubmissionsStore();
+    const _submissionStore = useSubmissionStore();
     const _ionRouter = useIonRouter();
 
-    const data = reactive(new SubmissionListViewDataImpl(_submissionsStore));
+    const data = reactive(new SubmissionListViewDataImpl(_submissionStore));
 
     async function initialize() {
     }
@@ -101,7 +101,7 @@ export function useSubmissionListViewModel(): ViewModel<SubmissionListViewData, 
     }
 
     async function _deleteSubmissionDraft(submissionUuid: string): Promise<void> {
-        await _submissionsStore.deleteDraft(submissionUuid);
+        await _submissionStore.deleteDraft(submissionUuid);
     }
 
     const _editSubmissionDraftCommand = useCommand(_canEditSubmissionDraft, _editSubmissionDraft);

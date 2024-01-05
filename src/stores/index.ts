@@ -3,7 +3,7 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 export * from "./CurrentUserStore";
-export * from "./DefinitionsStore";
-export * from "./SubmissionsStore";
+export * from "./DefinitionStore";
+export * from "./SubmissionStore";
 export * from "./SystemStatusStore";
-export * from "./TokensStore";
+export * from "./TokenStore";

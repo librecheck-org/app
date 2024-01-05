@@ -5,7 +5,7 @@
 import * as EmailValidator from "email-validator";
 import { FairUseTokenApiClient, IamApiClient } from "@/apiClients";
 import { ViewModel, useCommand, useViewModel } from "@/infrastructure";
-import { useCurrentUserStore, useSystemStatusStore, useTokensStore } from "@/stores";
+import { useCurrentUserStore, useSystemStatusStore, useTokenStore } from "@/stores";
 import { Command } from "@/infrastructure/Command";
 import { reactive } from "vue";
 import router from "@/router";
@@ -32,7 +32,7 @@ class LoginViewCommands {
 
 export function useLoginViewModel(): ViewModel<LoginViewData, LoginViewCommands> {
     const _systemStatusStore = useSystemStatusStore();
-    const _tokensStore = useTokensStore();
+    const _tokenStore = useTokenStore();
     const _currentUserStore = useCurrentUserStore();
 
     const data = reactive(new LoginViewData());
@@ -91,7 +91,7 @@ export function useLoginViewModel(): ViewModel<LoginViewData, LoginViewCommands>
                 authCode: data.authCode!.trim()
             }
         });
-        await _tokensStore.update(tokens);
+        await _tokenStore.update(tokens);
 
         const currentUser = await iamApiClient.getCurrentUserV1();
         await _currentUserStore.update(currentUser);

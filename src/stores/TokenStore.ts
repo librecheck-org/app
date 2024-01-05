@@ -6,14 +6,14 @@ import { StorageKey, Tokens } from "@/models";
 import { definePersistentStore, usePersistentStorage } from "@/infrastructure";
 import { ref } from "vue";
 
-export interface TokensStore {
+export interface TokenStore {
     value: Tokens | undefined;
 
     ensureIsInitialized: () => Promise<void>;
     update: (value: Partial<Tokens | undefined> | undefined) => Promise<void>;
 }
 
-export function useTokensStore(): TokensStore {
+export function useTokenStore(): TokenStore {
     const storageKey = StorageKey.Tokens;
     return definePersistentStore(storageKey, () => {
         const value = ref<Tokens | undefined>();

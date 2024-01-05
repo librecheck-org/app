@@ -20,7 +20,7 @@ export interface SubmissionStore {
     deleteDraft(submissionUuid: string): Promise<void>;
 }
 
-export function useSubmissionsStore(): SubmissionStore {
+export function useSubmissionStore(): SubmissionStore {
     const storageKey = StorageKey.Submissions;
     return definePersistentStore(storageKey, () => {
         const _value = ref<Submissions>({ summaries: [], details: {}, workingCopies: {} });

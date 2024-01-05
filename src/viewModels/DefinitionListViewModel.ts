@@ -3,7 +3,7 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 import { Command, useCommand } from "@/infrastructure/Command";
-import { DefinitionStore, useDefinitionsStore, useSubmissionsStore } from "@/stores";
+import { DefinitionStore, useDefinitionsStore, useSubmissionStore } from "@/stores";
 import { ViewModel, useViewModel } from "@/infrastructure";
 import { DefinitionSummary } from "@/apiClients";
 import { reactive } from "vue";
@@ -37,11 +37,11 @@ class DefinitionListViewCommands {
 }
 
 export function useDefinitionListViewModel(): ViewModel<DefinitionListViewData, DefinitionListViewCommands> {
-    const _definitionsStore = useDefinitionsStore();
-    const _submissionsStore = useSubmissionsStore();
+    const _definitionStore = useDefinitionsStore();
+    const _submissionStore = useSubmissionStore();
     const _ionRouter = useIonRouter();
 
-    const data = reactive(new DefinitionListViewDataImpl(_definitionsStore));
+    const data = reactive(new DefinitionListViewDataImpl(_definitionStore));
 
     async function initialize() {
     }
@@ -51,9 +51,11 @@ export function useDefinitionListViewModel(): ViewModel<DefinitionListViewData, 
     }
 
     async function _createSubmissionDraft(definitionUuid: string): Promise<void> {
-        const definition = await _definitionsStore.readDefinition(definitionUuid);
-        const submissionDraft = await _submissionsStore.createDraft(definition);
-        _ionRouter.push("/submissions/" + submissionDraft.uuid);
+        const definition = _definitionStore.readDefinition(definitionUuid);
+        if (definition !== undefined) {
+            const submissionDraft = await _submissionStore.createDraft(definition);
+            _ionRouter.push("/submissions/" + submissionDraft.uuid);
+        }
     }
 
     const _createSubmissionDraftCommand = useCommand(_canCreateSubmissionDraft, _createSubmissionDraft);

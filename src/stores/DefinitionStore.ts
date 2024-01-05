@@ -7,11 +7,12 @@ import { definePersistentStore, usePersistentStorage } from "@/infrastructure";
 import { DefinitionDetails } from "@/apiClients";
 import { ref } from "vue";
 
-interface DefinitionStore {
+export interface DefinitionStore {
     value: Definitions;
 
     ensureIsInitialized: () => Promise<void>;
     update: (value: Partial<Definitions> | undefined) => Promise<void>;
+    readDefinition(definitionUuid: string): DefinitionDetails | undefined;
 }
 
 export function useDefinitionsStore(): DefinitionStore {

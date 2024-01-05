@@ -10,7 +10,7 @@ import { SubmissionSummary } from "@/apiClients";
 import { SurveyModel } from "survey-core";
 import { reactive } from "vue";
 import { useIonRouter } from "@ionic/vue";
-import { useSubmissionsStore } from "@/stores";
+import { useSubmissionStore } from "@/stores";
 
 export enum SubmissionEditorViewState {
     None
@@ -42,10 +42,10 @@ class SubmissionEditorViewCommands {
 }
 
 export function useSubmissionEditorViewModel(submissionUuid: string): ViewModel<SubmissionEditorViewData, SubmissionEditorViewCommands> {
-    const _submissionsStore = useSubmissionsStore();
+    const _submissionStore = useSubmissionStore();
     const _ionRouter = useIonRouter();
 
-    const data = reactive(new SubmissionEditorViewDataImpl(_submissionsStore.value));
+    const data = reactive(new SubmissionEditorViewDataImpl(_submissionStore.value));
 
     function _initializeSurvey(submissionDraft: SubmissionLocalChange): SurveyModel {
         const survey = new SurveyModel(JSON.parse(submissionDraft.definition.contents));
@@ -54,12 +54,12 @@ export function useSubmissionEditorViewModel(submissionUuid: string): ViewModel<
 
         survey.onValueChanged.add(async (s: SurveyModel) => {
             submissionDraft.contents = JSON.stringify(s.data);
-            await _submissionsStore.updateDraft(submissionDraft);
+            await _submissionStore.updateDraft(submissionDraft);
         });
 
         survey.onCurrentPageChanged.add(async (s: SurveyModel) => {
             submissionDraft.currentPageNumber = s.currentPageNo;
-            await _submissionsStore.updateDraft(submissionDraft);
+            await _submissionStore.updateDraft(submissionDraft);
         });
 
         survey.applyTheme(PlainDarkPanelless);
@@ -68,7 +68,7 @@ export function useSubmissionEditorViewModel(submissionUuid: string): ViewModel<
     }
 
     async function initialize() {
-        const submissionDraft = _submissionsStore.readDraft(submissionUuid);
+        const submissionDraft = _submissionStore.readDraft(submissionUuid);
         if (submissionDraft !== undefined) {
             data.survey = _initializeSurvey(submissionDraft);
         }
@@ -79,7 +79,7 @@ export function useSubmissionEditorViewModel(submissionUuid: string): ViewModel<
     }
 
     async function _createSubmissionDraft(definitionUuid: string): Promise<void> {
-        const submissionDraft = await _submissionsStore.createDraft(definitionUuid);
+        const submissionDraft = await _submissionStore.createDraft(definitionUuid);
         _ionRouter.push("/submissions/" + submissionDraft.uuid);
     }
 
