@@ -32,7 +32,10 @@ async function _handleMessage(msg: WorkerMessage): Promise<void> {
 }
 
 class IonicStorageWrapper {
-    private readonly _store = new Storage();
+    private readonly _store = new Storage({
+        name: "librecheck-db",
+        storeName: "librecheck-kv-v1"
+    });
     private _isCreated = false;
 
     public async get(key: string): Promise<any> {

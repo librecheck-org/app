@@ -3,7 +3,7 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 import { ServerConnectionStatus, WorkerMessage } from "@/models";
-import { initializeWorker, scheduleNextExecution } from "./Helpers";
+import { initializeWorker, scheduleNextExecution } from "./shared";
 import { AppInfoApiClient } from "@/apiClients";
 import { fireAndForget } from "@/helpers";
 

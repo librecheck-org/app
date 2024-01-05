@@ -10,6 +10,8 @@ import { UserDetails } from "@/apiClients";
 export interface CurrentUserStore {
     value: UserDetails | undefined;
 
+    get isAuthenticated(): boolean;
+
     ensureIsInitialized: () => Promise<void>;
     update: (value: Partial<UserDetails | undefined> | undefined) => Promise<void>;
 }

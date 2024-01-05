@@ -26,7 +26,7 @@ export function registerServiceWorker() {
     });
 }
 
-export { startStorageWorker } from "./Helpers";
+export { startStorageWorker } from "./shared";
 
 export function startSystemStatusWorker() {
     const systemStatusWorker = new SystemStatusWorker();

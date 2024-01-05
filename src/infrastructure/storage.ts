@@ -82,27 +82,31 @@ function _rejectPromise(promiseId: string, error: unknown): void {
     }
 }
 
-export async function readFromStorage<T>(key: StorageKey): Promise<T | undefined> {
-    const item = await _sendMessageToStorageWorker(StorageWorkerMessageType.ExecuteRead, { key });
-    return item !== null ? <T>item : undefined;
+function _convertValue<T = object>(value: unknown) {
+    return Object.keys(value ?? {}).length > 0 ? <T>value : undefined;
 }
 
-export async function updateStorage<T>(key: StorageKey, updates: Partial<T>, updater: StorageUpdater | undefined = undefined): Promise<T | undefined> {
+export async function readFromStorage<T = object>(key: StorageKey): Promise<T | undefined> {
+    const value = await _sendMessageToStorageWorker(StorageWorkerMessageType.ExecuteRead, { key });
+    return _convertValue(value);
+}
+
+export async function updateStorage<T = object>(key: StorageKey, updates: Partial<T>, updater: StorageUpdater | undefined = undefined): Promise<T | undefined> {
     // Update function might receive ref objects, which cannot be sent to storage worker.
     // In fact, they are proxy objects, while a plain object is expected for serialization.
     updates = _.cloneDeep(updates);
     // When a storage updater is not specified, then we fall back to a default function.
     // That function, as the name implies, simply merges given updates into stored value.
     updater ??= { module: "shared", function: "mergeUpdates" };
-    const item = await _sendMessageToStorageWorker(StorageWorkerMessageType.ExecuteUpdate, { key, updates, updater });
-    return item !== null ? <T>item : undefined;
+    const value = await _sendMessageToStorageWorker(StorageWorkerMessageType.ExecuteUpdate, { key, updates, updater });
+    return _convertValue(value);
 }
 
 export async function deleteFromStorage(key: StorageKey): Promise<void> {
     await _sendMessageToStorageWorker(StorageWorkerMessageType.ExecuteDelete, { key });
 }
 
-export function usePersistentStorage<T>(storageKey: StorageKey, value: Ref<T | undefined>) {
+export function usePersistentStorage<T = object>(storageKey: StorageKey, value: Ref<T | undefined>) {
     const isInitialized = ref(false);
 
     async function ensureIsInitialized() {

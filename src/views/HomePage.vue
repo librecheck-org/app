@@ -8,13 +8,13 @@
                     </ion-toolbar>
                 </ion-header>
                 <ion-content>
-                    <ion-list v-if="currentUser.value">
+                    <ion-list v-if="currentUserStore.value">
                         <ion-item>
                             <ion-avatar slot="start">
                                 <img alt="Silhouette of a person's head"
                                     src="https://ionicframework.com/docs/img/demos/avatar.svg" />
                             </ion-avatar>
-                            <ion-label>Item Avatar {{ currentUser.value.emailAddress }}</ion-label>
+                            <ion-label>Item Avatar {{ currentUserStore.value.emailAddress }}</ion-label>
                         </ion-item>
 
                         <ion-item-group>
@@ -63,7 +63,7 @@ import { useHomeViewModel } from "@/viewModels";
 const mainMenu = ref<InstanceType<typeof IonMenu> | null>(null);
 
 const { commands } = useHomeViewModel();
-const currentUser = useCurrentUserStore();
+const currentUserStore = useCurrentUserStore();
 
 async function closeMainMenu() {
     if (mainMenu.value !== null) {

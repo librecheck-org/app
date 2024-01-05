@@ -45,11 +45,11 @@ const router = createRouter({
 });
 
 router.beforeEach(async to => {
-    const currentUser = useCurrentUserStore();
-    await currentUser.ensureIsInitialized();
+    const currentUserStore = useCurrentUserStore();
+    await currentUserStore.ensureIsInitialized();
     if (
         // Make sure the user is authenticated.
-        !currentUser.isAuthenticated &&
+        !currentUserStore.isAuthenticated &&
         // Avoid an infinite redirect.
         to.name !== "Login"
     ) {
