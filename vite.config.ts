@@ -61,6 +61,12 @@ export default defineConfig({
             "@": path.resolve(__dirname, "./src"),
         },
     },
+    worker: {
+        // Storage worker uses dynamic imports in order to dynamically invoke
+        // updater functions. In order for that to work, worker output format
+        // needs to be changed from "iife", the default value, to "es".
+        format: "es",
+    },
     test: {
         globals: true,
         environment: "jsdom",
