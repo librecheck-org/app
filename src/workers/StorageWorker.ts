@@ -2,7 +2,7 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-import { StorageKey, StorageWorkerMessageType, WorkerMessage } from "@/models";
+import { StorageKey, StorageUpdater, StorageWorkerMessageType, WorkerMessage } from "@/models";
 import { Storage } from "@ionic/storage";
 import { fireAndForget } from "@/helpers";
 
@@ -19,8 +19,8 @@ async function _handleMessage(msg: WorkerMessage): Promise<void> {
             break;
         }
         case StorageWorkerMessageType.Update: {
-            const { key, updates, promiseId } = msg.payload;
-            await _update(key, updates, promiseId);
+            const { key, updates, updater, promiseId } = msg.payload;
+            await _update(key, updates, updater, promiseId);
             break;
         }
         case StorageWorkerMessageType.Delete: {
@@ -65,36 +65,55 @@ function _unlockPromise(promiseId: string, value: unknown) {
     self.postMessage(new WorkerMessage(StorageWorkerMessageType.Unlock, { promiseId, value }));
 }
 
+function _rejectPromise(promiseId: string, error: unknown) {
+    self.postMessage(new WorkerMessage(StorageWorkerMessageType.RejectPromise, { promiseId, error }));
+}
+
 async function _read(key: StorageKey, promiseId: string) {
     let value: any = null;
     try {
         await navigator.locks.request(key, { mode: "shared" }, async () => {
             value = await _ionicStorage.get(key);
         });
-    } finally {
+    }
+    catch (err) {
+        _rejectPromise(promiseId, err);
+    }
+    finally {
         _unlockPromise(promiseId, value);
     }
 }
 
-async function _update(key: StorageKey, updates: object, promiseId: string) {
+async function _update(key: StorageKey, updates: object, updater: StorageUpdater, promiseId: string) {
     let value: object | null = null;
     try {
         await navigator.locks.request(key, { mode: "exclusive" }, async () => {
             value = await _ionicStorage.get(key);
-            value = { ...value, ...updates };
+            const updaterModule = await import(`../stores/${updater.module}.ts`);
+            value = updaterModule[updater.function](value, updates);
             await _ionicStorage.set(key, value);
         });
-    } finally {
+    }
+    catch (err) {
+        _rejectPromise(promiseId, err);
+    }
+    finally {
         _unlockPromise(promiseId, value);
     }
 }
 
 async function _delete(key: StorageKey, promiseId: string) {
+    let value: any = null;
     try {
         await navigator.locks.request(key, { mode: "exclusive" }, async () => {
+            value = await _ionicStorage.get(key);
             await _ionicStorage.remove(key);
         });
-    } finally {
-        _unlockPromise(promiseId, undefined);
+    }
+    catch (err) {
+        _rejectPromise(promiseId, err);
+    }
+    finally {
+        _unlockPromise(promiseId, value);
     }
 }

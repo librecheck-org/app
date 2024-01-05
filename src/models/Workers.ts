@@ -21,23 +21,29 @@ export class WorkerMessage {
  */
 export const enum StorageWorkerMessageType {
     /**
-     * Read operation.
+     * Execute a read operation.
      */
-    Read = "read",
+    Read = "execute_read",
 
     /**
-     * Update operation.
+     * Execute an update operation.
      */
-    Update = "update",
+    Update = "execute_update",
 
     /**
-     * Delete operation.
+     * Execute a delete operation.
      */
-    Delete = "delete",
+    Delete = "execute_delete",
 
     /**
-     * Unlock message, sent by the worker when a blocking operation
-     * has been completed (successfully or not).
+     * Resolve blocking promise, sent by the worker when a blocking operation
+     * has been successfully completed.
      */
-    Unlock = "unlock"
+    Unlock = "resolve_promise",
+
+    /**
+     * Reject blocking promise, sent by the worker when a blocking operation
+     * has __not__ been successfully completed.
+     */
+    RejectPromise = "reject_promise"
 }

@@ -2,7 +2,6 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-export interface StorageUpdater {
-    get module(): string;
-    get function(): string;
+export function mergeUpdates(value: object, updates: Partial<object>): object {
+    return { ...value, ...updates };
 }

@@ -5,6 +5,7 @@
 import { Ref, ref } from "vue";
 import { StorageKey, StorageWorkerMessageType, WorkerMessage } from "@/models";
 import { fireAndForget, newUuid } from "@/helpers";
+import { StorageUpdater } from "@/models";
 import _ from "lodash";
 import { defineStore } from "pinia";
 
@@ -22,7 +23,12 @@ export function setStorageWorker(storageWorker: Worker) {
         switch (msg.type) {
             case StorageWorkerMessageType.Unlock: {
                 const { promiseId, value } = msg.payload;
-                _unlockPromise(promiseId, value);
+                _resolvePromise(promiseId, value);
+                break;
+            }
+            case StorageWorkerMessageType.RejectPromise: {
+                const { promiseId, error } = msg.payload;
+                _rejectPromise(promiseId, error);
                 break;
             }
         }
@@ -33,34 +39,46 @@ async function _sendMessageToStorageWorker(type: StorageWorkerMessageType, paylo
     if (_storageWorker === undefined) {
         throw new Error("Storage worker is not available");
     }
-    const lockingPromise = _createLockingPromise();
+    const lockingPromise = _createBlockingPromise();
     _storageWorker.postMessage(new WorkerMessage(type, { ...payload, promiseId: lockingPromise.id }));
     return await lockingPromise.promise;
 }
 
-interface LockingPromise {
+interface BlockingPromise {
     id: string;
     promise: Promise<unknown>;
     resolve: (value: unknown) => void;
+    reject: (error: unknown) => void;
 }
 
-const _lockingPromiseMap = new Map<string, LockingPromise>();
+const _blockingPromiseMap = new Map<string, BlockingPromise>();
 const _dummyPromise = new Promise<unknown>(() => { });
-const _dummyResolve = () => { /* Empty function used to initialize a locking promise */ };
+const _dummyAction = () => { /* Empty function used to initialize a blocking promise */ };
 
-function _createLockingPromise(): LockingPromise {
+function _createBlockingPromise(): BlockingPromise {
     const promiseId = newUuid();
-    const lockingPromise: LockingPromise = { id: promiseId, promise: _dummyPromise, resolve: _dummyResolve };
-    lockingPromise.promise = new Promise((resolve: (value: unknown) => void) => lockingPromise.resolve = resolve);
-    _lockingPromiseMap.set(promiseId, lockingPromise);
-    return lockingPromise;
+    const blockingPromise: BlockingPromise = { id: promiseId, promise: _dummyPromise, resolve: _dummyAction, reject: _dummyAction };
+    blockingPromise.promise = new Promise((resolve, reject) => {
+        blockingPromise.resolve = resolve;
+        blockingPromise.reject = reject;
+    });
+    _blockingPromiseMap.set(promiseId, blockingPromise);
+    return blockingPromise;
 }
 
-function _unlockPromise(promiseId: string, value: unknown): void {
-    const lockingPromise = _lockingPromiseMap.get(promiseId);
-    if (lockingPromise !== undefined) {
-        lockingPromise.resolve(value);
-        _lockingPromiseMap.delete(promiseId);
+function _resolvePromise(promiseId: string, value: unknown): void {
+    const blockingPromise = _blockingPromiseMap.get(promiseId);
+    if (blockingPromise !== undefined) {
+        blockingPromise.resolve(value);
+        _blockingPromiseMap.delete(promiseId);
+    }
+}
+
+function _rejectPromise(promiseId: string, error: unknown): void {
+    const blockingPromise = _blockingPromiseMap.get(promiseId);
+    if (blockingPromise !== undefined) {
+        blockingPromise.reject(error);
+        _blockingPromiseMap.delete(promiseId);
     }
 }
 
@@ -69,11 +87,14 @@ export async function readFromStorage<T>(key: StorageKey): Promise<T | undefined
     return item !== null ? <T>item : undefined;
 }
 
-export async function updateStorage<T>(key: StorageKey, updates: Partial<T>): Promise<T | undefined> {
+export async function updateStorage<T>(key: StorageKey, updates: Partial<T>, updater: StorageUpdater | undefined = undefined): Promise<T | undefined> {
     // Update function might receive ref objects, which cannot be sent to storage worker.
     // In fact, they are proxy objects, while a plain object is expected for serialization.
     updates = _.cloneDeep(updates);
-    const item = await _sendMessageToStorageWorker(StorageWorkerMessageType.Update, { key, updates });
+    // When a storage updater is not specified, then we fall back to a default function.
+    // That function, as the name implies, simply merges given updates into stored value.
+    updater ??= { module: "shared", function: "mergeUpdates" };
+    const item = await _sendMessageToStorageWorker(StorageWorkerMessageType.Update, { key, updates, updater });
     return item !== null ? <T>item : undefined;
 }
 
