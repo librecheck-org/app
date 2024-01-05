@@ -13,17 +13,17 @@ addEventListener("message", (ev) => {
 
 async function _handleMessage(msg: WorkerMessage): Promise<void> {
     switch (msg.type) {
-        case StorageWorkerMessageType.Read: {
+        case StorageWorkerMessageType.ExecuteRead: {
             const { key, promiseId } = msg.payload;
             await _read(key, promiseId);
             break;
         }
-        case StorageWorkerMessageType.Update: {
+        case StorageWorkerMessageType.ExecuteUpdate: {
             const { key, updates, updater, promiseId } = msg.payload;
             await _update(key, updates, updater, promiseId);
             break;
         }
-        case StorageWorkerMessageType.Delete: {
+        case StorageWorkerMessageType.ExecuteDelete: {
             const { key, promiseId } = msg.payload;
             await _delete(key, promiseId);
             break;
@@ -62,7 +62,7 @@ class IonicStorageWrapper {
 const _ionicStorage = new IonicStorageWrapper();
 
 function _unlockPromise(promiseId: string, value: unknown) {
-    self.postMessage(new WorkerMessage(StorageWorkerMessageType.Unlock, { promiseId, value }));
+    self.postMessage(new WorkerMessage(StorageWorkerMessageType.ResolvePromise, { promiseId, value }));
 }
 
 function _rejectPromise(promiseId: string, error: unknown) {

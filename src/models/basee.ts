@@ -23,27 +23,56 @@ export const enum StorageWorkerMessageType {
     /**
      * Execute a read operation.
      */
-    Read = "execute_read",
+    ExecuteRead = "execute_read",
 
     /**
      * Execute an update operation.
      */
-    Update = "execute_update",
+    ExecuteUpdate = "execute_update",
 
     /**
      * Execute a delete operation.
      */
-    Delete = "execute_delete",
+    ExecuteDelete = "execute_delete",
 
     /**
      * Resolve blocking promise, sent by the worker when a blocking operation
      * has been successfully completed.
      */
-    Unlock = "resolve_promise",
+    ResolvePromise = "resolve_promise",
 
     /**
      * Reject blocking promise, sent by the worker when a blocking operation
      * has __not__ been successfully completed.
      */
     RejectPromise = "reject_promise"
+}
+
+/**
+ * Describes a function, identified by its module and its name,
+ * which will be used by storage worker to atomically update,
+ * with an exclusive lock, a stored value.
+ */
+export interface StorageUpdater {
+    /**
+     * File name, without extension, containing the updater function.
+     * File must a direct child of "stores" folder.
+     */
+    get module(): string;
+
+    /**
+     * Name of the updater function.
+     */
+    get function(): string;
+}
+
+export const enum ServerConnectionStatus {
+    Healthy = "healthy",
+    Unhealthy = "unhealthy",
+    Disconnected = "disconnected"
+}
+
+export interface SystemStatus {
+    clientVersion: string;
+    serverVersion: string;
 }

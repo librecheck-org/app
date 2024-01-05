@@ -4,7 +4,7 @@
 
 import { ServerConnectionStatus, StorageKey, SystemStatus } from "@/models";
 import { computed, ref } from "vue";
-import { defineIonicStore, useIonicStorage } from "@/infrastructure";
+import { definePersistentStore, usePersistentStorage } from "@/infrastructure";
 import { AppInfoApiClient } from "@/apiClients";
 
 async function _getClientVersion(): Promise<string> {
@@ -20,7 +20,7 @@ async function _getServerVersion(): Promise<string> {
 
 export function useSystemStatusStore() {
     const storageKey = StorageKey.SystemStatus;
-    return defineIonicStore(storageKey, () => {
+    return definePersistentStore(storageKey, () => {
         const _value = ref<SystemStatus>({ clientVersion: "0.0", serverVersion: "0.0" });
         const _clientUpdater = ref<() => void | undefined>();
         const _serverConnectionStatus = ref(ServerConnectionStatus.Healthy);
@@ -28,7 +28,7 @@ export function useSystemStatusStore() {
         const clientUpdatesAreAvailable = computed(() => _clientUpdater.value !== undefined);
         const serverConnectionStatus = computed(() => _serverConnectionStatus.value);
 
-        const { ensureIsInitialized: _ensureIsInitialized, update } = useIonicStorage(storageKey, _value);
+        const { ensureIsInitialized: _ensureIsInitialized, update } = usePersistentStorage(storageKey, _value);
 
         async function ensureIsInitialized() {
             await _ensureIsInitialized();

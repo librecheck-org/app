@@ -3,7 +3,7 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 import { ChangeStatus, StorageKey, SubmissionLocalChange, Submissions, updateChangeStatus } from "@/models";
-import { defineIonicStore, useIonicStorage } from "@/infrastructure";
+import { definePersistentStore, usePersistentStorage } from "@/infrastructure";
 import { getCurrentDate, newUuid } from "@/helpers";
 import { DefinitionDetails } from "@/apiClients";
 import { ref } from "vue";
@@ -22,10 +22,10 @@ export interface SubmissionStore {
 
 export function useSubmissionsStore(): SubmissionStore {
     const storageKey = StorageKey.Submissions;
-    return defineIonicStore(storageKey, () => {
+    return definePersistentStore(storageKey, () => {
         const _value = ref<Submissions>({ summaries: [], details: {}, workingCopies: {} });
 
-        const { ensureIsInitialized: _ensureIsInitialized, update } = useIonicStorage(storageKey, _value);
+        const { ensureIsInitialized: _ensureIsInitialized, update } = usePersistentStorage(storageKey, _value);
 
         async function ensureIsInitialized() {
             await _ensureIsInitialized();

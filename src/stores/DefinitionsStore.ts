@@ -3,7 +3,7 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 import { Definitions, StorageKey } from "@/models";
-import { defineIonicStore, useIonicStorage } from "@/infrastructure";
+import { definePersistentStore, usePersistentStorage } from "@/infrastructure";
 import { DefinitionDetails } from "@/apiClients";
 import { ref } from "vue";
 
@@ -16,10 +16,10 @@ interface DefinitionStore {
 
 export function useDefinitionsStore(): DefinitionStore {
     const storageKey = StorageKey.Definitions;
-    return defineIonicStore(storageKey, () => {
+    return definePersistentStore(storageKey, () => {
         const _value = ref<Definitions>({ summaries: [], details: {}, workingCopies: {} });
 
-        const { ensureIsInitialized: _ensureIsInitialized, update } = useIonicStorage(storageKey, _value);
+        const { ensureIsInitialized: _ensureIsInitialized, update } = usePersistentStorage(storageKey, _value);
 
         async function ensureIsInitialized() {
             await _ensureIsInitialized();

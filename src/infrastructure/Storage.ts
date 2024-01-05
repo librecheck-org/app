@@ -21,7 +21,7 @@ export function setStorageWorker(storageWorker: Worker) {
     _storageWorker.addEventListener("message", (ev) => {
         const msg = ev.data as WorkerMessage;
         switch (msg.type) {
-            case StorageWorkerMessageType.Unlock: {
+            case StorageWorkerMessageType.ResolvePromise: {
                 const { promiseId, value } = msg.payload;
                 _resolvePromise(promiseId, value);
                 break;
@@ -83,7 +83,7 @@ function _rejectPromise(promiseId: string, error: unknown): void {
 }
 
 export async function readFromStorage<T>(key: StorageKey): Promise<T | undefined> {
-    const item = await _sendMessageToStorageWorker(StorageWorkerMessageType.Read, { key });
+    const item = await _sendMessageToStorageWorker(StorageWorkerMessageType.ExecuteRead, { key });
     return item !== null ? <T>item : undefined;
 }
 
@@ -94,15 +94,15 @@ export async function updateStorage<T>(key: StorageKey, updates: Partial<T>, upd
     // When a storage updater is not specified, then we fall back to a default function.
     // That function, as the name implies, simply merges given updates into stored value.
     updater ??= { module: "shared", function: "mergeUpdates" };
-    const item = await _sendMessageToStorageWorker(StorageWorkerMessageType.Update, { key, updates, updater });
+    const item = await _sendMessageToStorageWorker(StorageWorkerMessageType.ExecuteUpdate, { key, updates, updater });
     return item !== null ? <T>item : undefined;
 }
 
 export async function deleteFromStorage(key: StorageKey): Promise<void> {
-    await _sendMessageToStorageWorker(StorageWorkerMessageType.Delete, { key });
+    await _sendMessageToStorageWorker(StorageWorkerMessageType.ExecuteDelete, { key });
 }
 
-export function useIonicStorage<T>(storageKey: StorageKey, value: Ref<T | undefined>) {
+export function usePersistentStorage<T>(storageKey: StorageKey, value: Ref<T | undefined>) {
     const isInitialized = ref(false);
 
     async function ensureIsInitialized() {
@@ -121,22 +121,21 @@ export function useIonicStorage<T>(storageKey: StorageKey, value: Ref<T | undefi
         isInitialized.value = true;
     }
 
-    async function update(updates: Partial<T>) {
-        const updated = await updateStorage(storageKey, updates);
+    async function update(updates: Partial<T>, updater: StorageUpdater | undefined = undefined) {
+        const updated = await updateStorage(storageKey, updates, updater);
         value.value = updated;
     }
 
     return { ensureIsInitialized, update };
 }
 
-interface IonicStore {
-    value: any;
-    ensureIsInitialized: any;
+interface PersistentStore {
+    get ensureIsInitialized(): any;
 }
 
 const _storeInstances = new Map<StorageKey, any>();
 
-export function defineIonicStore<SS extends IonicStore>(storageKey: StorageKey, storeSetup: () => SS) {
+export function definePersistentStore<SS extends PersistentStore>(storageKey: StorageKey, storeSetup: () => SS) {
     let store = _storeInstances.get(storageKey);
     if (store !== undefined) {
         return store;
