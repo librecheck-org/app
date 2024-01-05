@@ -2,8 +2,7 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-import { Command, useCommand } from "@/infrastructure/Command";
-import { ViewModel, useViewModel } from "@/infrastructure";
+import { Command, ViewModel, useCommand, useViewModel } from "@/infrastructure";
 import { reactive } from "vue";
 import { useSystemStatusStore } from "@/stores";
 

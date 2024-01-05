@@ -3,9 +3,8 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 import { ChangeStatus, SyncStatus } from "@/models";
-import { Command, useCommand } from "@/infrastructure/Command";
+import { Command, ViewModel, useCommand, useViewModel } from "@/infrastructure";
 import { SubmissionStore, useSubmissionStore } from "@/stores";
-import { ViewModel, useViewModel } from "@/infrastructure";
 import { compareDesc as compareDatesDesc } from "date-fns";
 import { getRecordValues } from "@/helpers";
 import { reactive } from "vue";

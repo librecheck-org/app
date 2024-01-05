@@ -2,9 +2,8 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-import { Command, useCommand } from "@/infrastructure/Command";
+import { Command, ViewModel, useCommand, useViewModel } from "@/infrastructure";
 import { SubmissionLocalChange, Submissions } from "@/models";
-import { ViewModel, useViewModel } from "@/infrastructure";
 import { PlainDarkPanelless } from "survey-core/themes/plain-dark-panelless";
 import { SubmissionSummary } from "@/apiClients";
 import { SurveyModel } from "survey-core";

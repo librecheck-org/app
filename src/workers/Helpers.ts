@@ -2,9 +2,9 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-import { fireAndForget, initDefaultApiConfig } from "@/helpers";
+import { initDefaultApiConfig, setStorageWorker } from "@/infrastructure";
 import StorageWorker from "@/workers/StorageWorker?worker";
-import { setStorageWorker } from "@/infrastructure";
+import { fireAndForget } from "@/helpers";
 
 export async function initializeWorker() {
     startStorageWorker();

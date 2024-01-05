@@ -2,10 +2,19 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-import { FetchParams, RequestContext } from "@/apiClients";
+import { Configuration, DefaultConfig, FetchParams, RequestContext } from "@/apiClients";
 import { StorageKey, Tokens } from "@/models";
 import { getCurrentUser } from "@/helpers";
-import { readFromStorage } from "./Storage";
+import { readFromStorage } from "./storagee";
+
+export async function initDefaultApiConfig(): Promise<void> {
+    const env = await (await fetch("/env.json")).json();
+
+    DefaultConfig.config = new Configuration({
+        basePath: env?.API_BASE_URL ?? import.meta.env.VITE_API_BASE_URL,
+        middleware: [new AddHeadersMiddleware()]
+    });
+}
 
 export class AddHeadersMiddleware {
     async pre(context: RequestContext): Promise<FetchParams | void> {

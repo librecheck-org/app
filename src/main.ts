@@ -9,7 +9,7 @@ import { surveyPlugin } from "survey-vue3-ui";
 
 /* LibreCheck modules */
 import { registerServiceWorker, startChecklistsWorker, startStorageWorker, startSystemStatusWorker } from "./workers";
-import { initDefaultApiConfig } from "./helpers";
+import { initDefaultApiConfig } from "./infrastructure";
 
 /* Core CSS required for Ionic components to work properly */
 import "@ionic/vue/css/core.css";

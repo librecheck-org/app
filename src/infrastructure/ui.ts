@@ -1,4 +1,20 @@
-import { ComputedRef, Ref, computed, ref } from "vue";
+// Copyright (c) LibreCheck Team and Contributors <hello@librecheck.io>. All rights reserved.
+//
+// Licensed under the MIT License. See LICENSE file in the project root for full license information.
+
+import { ComputedRef, Ref, computed, onMounted, ref } from "vue";
+
+export interface ViewModel<TData = object, TCommands = object> {
+    data: TData;
+    commands: TCommands;
+
+    initialize(): Promise<void>;
+}
+
+export function useViewModel<TData = object, TCommands = object>(vm: ViewModel<TData, TCommands>) {
+    onMounted(async () => await vm.initialize());
+    return vm;
+}
 
 export interface Command {
     get isExecuting(): Ref<boolean>;

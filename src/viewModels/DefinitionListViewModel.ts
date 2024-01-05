@@ -2,9 +2,8 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-import { Command, useCommand } from "@/infrastructure/Command";
+import { Command, ViewModel, useCommand, useViewModel } from "@/infrastructure";
 import { DefinitionStore, useDefinitionsStore, useSubmissionStore } from "@/stores";
-import { ViewModel, useViewModel } from "@/infrastructure";
 import { DefinitionSummary } from "@/apiClients";
 import { reactive } from "vue";
 import { useIonRouter } from "@ionic/vue";

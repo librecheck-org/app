@@ -25,7 +25,7 @@
 <script setup lang="ts">
 import { IonButton, IonIcon, IonItem, IonItemDivider, IonItemGroup, IonLabel } from "@ionic/vue";
 import { heart, heartDislike, heartHalf } from "ionicons/icons";
-import { Command } from "@/infrastructure/Command";
+import { Command } from "@/infrastructure";
 import { ServerConnectionStatus } from "@/models";
 import { onMounted } from "vue";
 import { useSystemStatusStore } from "@/stores";
