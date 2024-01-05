@@ -5,7 +5,7 @@
 import { Configuration, DefaultConfig, FetchParams, RequestContext } from "@/apiClients";
 import { StorageKey, Tokens } from "@/models";
 import { getCurrentUser } from "@/helpers";
-import { readFromStorage } from "./storagee";
+import { readFromStorage } from "./storage";
 
 export async function initDefaultApiConfig(): Promise<void> {
     const env = await (await fetch("/env.json")).json();

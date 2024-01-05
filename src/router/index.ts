@@ -1,3 +1,7 @@
+// Copyright (c) LibreCheck Team and Contributors <hello@librecheck.io>. All rights reserved.
+//
+// Licensed under the MIT License. See LICENSE file in the project root for full license information.
+
 import { createRouter, createWebHistory } from "@ionic/vue-router";
 import HomePage from "@/views/HomePage.vue";
 import LoginPage from "@/views/LoginPage.vue";
