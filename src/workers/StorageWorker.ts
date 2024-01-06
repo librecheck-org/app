@@ -2,8 +2,9 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
+import { Drivers, Storage } from "@ionic/storage";
 import { StorageKey, StorageUpdater, StorageWorkerMessageType, WorkerMessage } from "@/models";
-import { Storage } from "@ionic/storage";
+import { createStorageEventsBroadcastChannel } from "@/infrastructure";
 import { fireAndForget } from "@/helpers";
 
 addEventListener("message", (ev) => {
@@ -34,7 +35,8 @@ async function _handleMessage(msg: WorkerMessage): Promise<void> {
 class IonicStorageWrapper {
     private readonly _store = new Storage({
         name: "librecheck-db",
-        storeName: "librecheck-kv-v1"
+        storeName: "librecheck-kv-v1",
+        driverOrder: [Drivers.IndexedDB],
     });
     private _isCreated = false;
 
@@ -63,6 +65,11 @@ class IonicStorageWrapper {
 }
 
 const _ionicStorage = new IonicStorageWrapper();
+const _broadcastChannel = createStorageEventsBroadcastChannel();
+
+function _raiseStorageUpdateEvent(key: StorageKey) {
+    _broadcastChannel.postMessage(new WorkerMessage(StorageWorkerMessageType.StorageUpdated, { key }));
+}
 
 function _unlockPromise(promiseId: string, value: unknown) {
     self.postMessage(new WorkerMessage(StorageWorkerMessageType.ResolvePromise, { promiseId, value }));
@@ -95,6 +102,7 @@ async function _update(key: StorageKey, updates: object, updater: StorageUpdater
             const updaterModule = await import(`../stores/${updater.module}.ts`);
             value = updaterModule[updater.function](value, updates);
             await _ionicStorage.set(key, value);
+            _raiseStorageUpdateEvent(key);
         });
     }
     catch (err) {

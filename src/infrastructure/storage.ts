@@ -44,6 +44,16 @@ async function _sendMessageToStorageWorker(type: StorageWorkerMessageType, paylo
     return await lockingPromise.promise;
 }
 
+/**
+ * Creates a broadcast channel which can be used to listen to storage events.
+ * Listening to those events is required in order to keep in-memory data fresh
+ * when updates might have been performed by web workers or other tabs/pages.
+ * @returns A broadcast channel for storage events.
+ */
+export function createStorageEventsBroadcastChannel(): BroadcastChannel {
+    return new BroadcastChannel("lc.storageEvents");
+}
+
 interface BlockingPromise {
     id: string;
     promise: Promise<unknown>;

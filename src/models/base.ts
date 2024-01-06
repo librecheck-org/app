@@ -45,7 +45,14 @@ export const enum StorageWorkerMessageType {
      * Reject blocking promise, sent by the worker when a blocking operation
      * has __not__ been successfully completed.
      */
-    RejectPromise = "reject_promise"
+    RejectPromise = "reject_promise",
+
+    /**
+     * A storage event triggered when an update operation
+     * has been successfully completed. This kind of event must be used
+     * to trigger a refresh when data is changed in another tab or context.
+     */
+    StorageUpdated = "storage_updated",
 }
 
 /**
