@@ -14,18 +14,18 @@ export * from "./TokenStore";
 
 const _broadcastChannel = createStorageEventsBroadcastChannel();
 
-export function startListeningToStorageEvents() {
+export function startListeningToStorageEvents(appInstanceId: string) {
     _broadcastChannel.addEventListener("message", (ev) => {
         const msg = ev.data as WorkerMessage;
-        fireAndForget(async () => await _handleMessage(msg));
+        fireAndForget(async () => await _handleMessage(msg, appInstanceId));
     });
 }
 
-async function _handleMessage(msg: WorkerMessage): Promise<void> {
+async function _handleMessage(msg: WorkerMessage, appInstanceId: string): Promise<void> {
     switch (msg.type) {
         case StorageWorkerMessageType.StorageUpdated: {
             const { key } = msg.payload;
-            console.log(key);
+            console.log(key, appInstanceId);
             break;
         }
     }

@@ -10,6 +10,7 @@ import { surveyPlugin } from "survey-vue3-ui";
 /* LibreCheck modules */
 import { registerServiceWorker, startChecklistsWorker, startStorageWorker, startSystemStatusWorker } from "./workers";
 import { initDefaultApiConfig } from "./infrastructure";
+import { newUuid } from "./helpers";
 import { startListeningToStorageEvents } from "./stores";
 
 /* Core CSS required for Ionic components to work properly */
@@ -33,7 +34,8 @@ import "./theme/variables.css";
 
 defineCustomElements(window);
 
-startStorageWorker();
+const appInstanceId = newUuid();
+startStorageWorker(appInstanceId);
 
 const pinia = createPinia();
 const app = createApp(App)
@@ -44,7 +46,7 @@ const app = createApp(App)
 
 router.isReady().then(async () => {
     await initDefaultApiConfig();
-    startListeningToStorageEvents();
+    startListeningToStorageEvents(appInstanceId);
 
     app.mount("#app");
 

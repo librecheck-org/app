@@ -11,9 +11,10 @@ export async function initializeWorker() {
     await initDefaultApiConfig();
 }
 
-export function startStorageWorker() {
+export function startStorageWorker(appInstanceId: string | undefined = undefined) {
     const storageWorker = new StorageWorker();
     setStorageWorker(storageWorker);
+    console.log("start", appInstanceId);
 }
 
 export function scheduleNextExecution(action: () => Promise<void>, interval: number) {
