@@ -6,14 +6,10 @@ import { ChangeStatus, StorageKey, SubmissionLocalChange, Submissions, updateCha
 import { definePersistentStore, usePersistentStorage } from "@/infrastructure";
 import { getCurrentDate, newUuid } from "@/helpers";
 import { DefinitionDetails } from "@/apiClients";
+import { GenericStore } from "./shared";
 import { ref } from "vue";
 
-export interface SubmissionStore {
-    value: Submissions;
-
-    ensureIsInitialized: () => Promise<void>;
-    update: (value: Partial<Submissions> | undefined) => Promise<void>;
-
+export interface SubmissionStore extends GenericStore<Submissions> {
     createDraft(definition: DefinitionDetails): Promise<SubmissionLocalChange>;
     readDraft(submissionUuid: string): SubmissionLocalChange | undefined;
     updateDraft(submissionDraft: SubmissionLocalChange): Promise<void>;
@@ -22,10 +18,10 @@ export interface SubmissionStore {
 
 export function useSubmissionStore(): SubmissionStore {
     const storageKey = StorageKey.Submissions;
-    return definePersistentStore(storageKey, () => {
-        const _value = ref<Submissions>({ summaries: [], details: {}, workingCopies: {} });
+    return definePersistentStore<SubmissionStore>(storageKey, () => {
+        const value = ref<Submissions>({ summaries: [], details: {}, workingCopies: {} });
 
-        const { ensureIsInitialized: _ensureIsInitialized, update } = usePersistentStorage(storageKey, _value);
+        const { ensureIsInitialized: _ensureIsInitialized, read, update } = usePersistentStorage(storageKey, value);
 
         async function ensureIsInitialized() {
             await _ensureIsInitialized();
@@ -40,16 +36,16 @@ export function useSubmissionStore(): SubmissionStore {
                 changeStatus: ChangeStatus.Updated,
                 currentPageNumber: 0,
             };
-            await update({ workingCopies: { ..._value.value.workingCopies, [draft.uuid]: draft } });
+            await update({ workingCopies: { ...value.value.workingCopies, [draft.uuid]: draft } });
             return draft;
         }
 
         function readDraft(submissionUuid: string): SubmissionLocalChange | undefined {
-            return _value.value.workingCopies[submissionUuid];
+            return value.value.workingCopies[submissionUuid];
         }
 
         async function updateDraft(submissionDraft: SubmissionLocalChange): Promise<void> {
-            const submissions = _value.value.workingCopies;
+            const submissions = value.value.workingCopies;
             submissionDraft.timestamp = getCurrentDate();
             updateChangeStatus(submissionDraft, ChangeStatus.Updated);
             submissions[submissionDraft.uuid] = submissionDraft;
@@ -57,7 +53,7 @@ export function useSubmissionStore(): SubmissionStore {
         }
 
         async function deleteDraft(submissionUuid: string): Promise<void> {
-            const submissions = _value.value.workingCopies;
+            const submissions = value.value.workingCopies;
             const submissionDraft = readDraft(submissionUuid);
             if (submissionDraft === undefined) {
                 return;
@@ -69,7 +65,7 @@ export function useSubmissionStore(): SubmissionStore {
         }
 
         return {
-            value: _value, ensureIsInitialized, update,
+            value, ensureIsInitialized, read, update,
             createDraft, readDraft, updateDraft, deleteDraft
         };
     });

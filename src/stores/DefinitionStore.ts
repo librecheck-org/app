@@ -6,32 +6,29 @@ import { Definitions, StorageKey } from "@/models";
 import { definePersistentStore, usePersistentStorage } from "@/infrastructure";
 import { DefinitionDetails } from "@/apiClients";
 import { ref } from "vue";
+import { GenericStore } from "./shared";
 
-export interface DefinitionStore {
-    value: Definitions;
-
-    ensureIsInitialized: () => Promise<void>;
-    update: (value: Partial<Definitions> | undefined) => Promise<void>;
+export interface DefinitionStore extends GenericStore<Definitions> {
     readDefinition(definitionUuid: string): DefinitionDetails | undefined;
 }
 
 export function useDefinitionsStore(): DefinitionStore {
     const storageKey = StorageKey.Definitions;
-    return definePersistentStore(storageKey, () => {
-        const _value = ref<Definitions>({ summaries: [], details: {}, workingCopies: {} });
+    return definePersistentStore<DefinitionStore>(storageKey, () => {
+        const value = ref<Definitions>({ summaries: [], details: {}, workingCopies: {} });
 
-        const { ensureIsInitialized: _ensureIsInitialized, update } = usePersistentStorage(storageKey, _value);
+        const { ensureIsInitialized: _ensureIsInitialized, read, update } = usePersistentStorage(storageKey, value);
 
         async function ensureIsInitialized() {
             await _ensureIsInitialized();
         }
 
         function readDefinition(definitionUuid: string): DefinitionDetails | undefined {
-            return _value.value.details[definitionUuid];
+            return value.value.details[definitionUuid];
         }
 
         return {
-            value: _value, ensureIsInitialized, update,
+            value, ensureIsInitialized, read, update,
             readDefinition
         };
     });

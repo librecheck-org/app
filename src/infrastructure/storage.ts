@@ -168,14 +168,14 @@ interface PersistentStore {
 const _storeInstances = new Map<StorageKey, PersistentStore>();
 const _broadcastChannel = createStorageEventsBroadcastChannel();
 
-export function definePersistentStore<SS extends PersistentStore>(storageKey: StorageKey, storeSetup: () => SS) {
-    let store = _storeInstances.get(storageKey);
+export function definePersistentStore<S extends PersistentStore>(storageKey: StorageKey, storeSetup: () => PersistentStore): S {
+    let store = <S | undefined>_storeInstances.get(storageKey);
     if (store !== undefined) {
         return store;
     }
 
     const storeDefinition = defineStore(storageKey, storeSetup);
-    store = <PersistentStore><unknown>storeDefinition();
+    store = <S><unknown>storeDefinition();
 
     // Initialization happens asynchronously and the call is not awaited,
     // because underlying storage is asynchronous but store definition needs to be synchronous.

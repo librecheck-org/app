@@ -4,22 +4,19 @@
 
 import { StorageKey, Tokens } from "@/models";
 import { definePersistentStore, usePersistentStorage } from "@/infrastructure";
+import { GenericStore } from "./shared";
 import { ref } from "vue";
 
-export interface TokenStore {
-    value: Tokens | undefined;
-
-    ensureIsInitialized: () => Promise<void>;
-    update: (value: Partial<Tokens | undefined> | undefined) => Promise<void>;
+export interface TokenStore extends GenericStore<Tokens> {
 }
 
 export function useTokenStore(): TokenStore {
     const storageKey = StorageKey.Tokens;
-    return definePersistentStore(storageKey, () => {
+    return definePersistentStore<TokenStore>(storageKey, () => {
         const value = ref<Tokens | undefined>();
 
-        const { ensureIsInitialized, update } = usePersistentStorage(storageKey, value);
+        const { ensureIsInitialized, read, update } = usePersistentStorage(storageKey, value);
 
-        return { value, ensureIsInitialized, update };
+        return { value, ensureIsInitialized, read, update };
     });
 }

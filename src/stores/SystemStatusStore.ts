@@ -6,6 +6,7 @@ import { ServerConnectionStatus, StorageKey, SystemStatus } from "@/models";
 import { computed, ref } from "vue";
 import { definePersistentStore, usePersistentStorage } from "@/infrastructure";
 import { AppInfoApiClient } from "@/apiClients";
+import { GenericStore } from "./shared";
 
 async function _getClientVersion(): Promise<string> {
     const { version } = await (await fetch("/version.json")).json();
@@ -18,26 +19,36 @@ async function _getServerVersion(): Promise<string> {
     return version;
 }
 
-export function useSystemStatusStore() {
+export interface SystemStatusStore extends GenericStore<SystemStatus> {
+    get clientUpdatesAreAvailable(): boolean;
+    get serverConnectionStatus(): ServerConnectionStatus;
+
+    setClientUpdatesAreAvailable(clientUpdater: () => void): void;
+    setServerConnectionStatus(status: ServerConnectionStatus): void;
+    applyClientUpdates(): void;
+}
+
+export function useSystemStatusStore(): SystemStatusStore {
     const storageKey = StorageKey.SystemStatus;
     return definePersistentStore(storageKey, () => {
-        const _value = ref<SystemStatus>({ clientVersion: "0.0", serverVersion: "0.0" });
+        const value = ref<SystemStatus>({ clientVersion: "0.0", serverVersion: "0.0" });
+
         const _clientUpdater = ref<() => void | undefined>();
         const _serverConnectionStatus = ref(ServerConnectionStatus.Healthy);
 
         const clientUpdatesAreAvailable = computed(() => _clientUpdater.value !== undefined);
         const serverConnectionStatus = computed(() => _serverConnectionStatus.value);
 
-        const { ensureIsInitialized: _ensureIsInitialized, update } = usePersistentStorage(storageKey, _value);
+        const { ensureIsInitialized: _ensureIsInitialized, read, update } = usePersistentStorage(storageKey, value);
 
         async function ensureIsInitialized() {
             await _ensureIsInitialized();
 
-            _value.value.clientVersion = await _getClientVersion();
+            value.value.clientVersion = await _getClientVersion();
 
             try {
-                _value.value.serverVersion = await _getServerVersion();
-                await update({ serverVersion: _value.value.serverVersion });
+                value.value.serverVersion = await _getServerVersion();
+                await update({ serverVersion: value.value.serverVersion });
             }
             catch (err) {
                 // A non-blocking error occurred while reading server version.
@@ -62,7 +73,7 @@ export function useSystemStatusStore() {
         }
 
         return {
-            value: _value, ensureIsInitialized, update,
+            value, ensureIsInitialized, read, update,
             clientUpdatesAreAvailable, setClientUpdatesAreAvailable, applyClientUpdates,
             serverConnectionStatus, setServerConnectionStatus
         };

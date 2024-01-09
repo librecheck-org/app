@@ -4,26 +4,25 @@
 
 import { computed, ref } from "vue";
 import { definePersistentStore, usePersistentStorage } from "@/infrastructure";
+import { GenericStore } from "./shared";
 import { StorageKey } from "@/models";
 import { UserDetails } from "@/apiClients";
 
-export interface CurrentUserStore {
-    value: UserDetails | undefined;
-
+export interface CurrentUserStore extends GenericStore<UserDetails> {
     get isAuthenticated(): boolean;
-
-    ensureIsInitialized: () => Promise<void>;
-    update: (value: Partial<UserDetails | undefined> | undefined) => Promise<void>;
 }
 
 export function useCurrentUserStore(): CurrentUserStore {
     const storageKey = StorageKey.CurrentUser;
-    return definePersistentStore(storageKey, () => {
+    return definePersistentStore<CurrentUserStore>(storageKey, () => {
         const value = ref<UserDetails | undefined>();
         const isAuthenticated = computed(() => value.value !== undefined);
 
-        const { ensureIsInitialized, update } = usePersistentStorage(storageKey, value);
+        const { ensureIsInitialized, read, update } = usePersistentStorage(storageKey, value);
 
-        return { value, isAuthenticated, ensureIsInitialized, update };
+        return {
+            value, ensureIsInitialized, read, update,
+            isAuthenticated
+        };
     });
 }
