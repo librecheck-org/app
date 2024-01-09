@@ -20,7 +20,7 @@
                         <ion-menu-button />
                     </ion-buttons>
                     <ion-title>Login</ion-title>
-                    <ion-progress-bar type="indeterminate" v-if="isBusy"></ion-progress-bar>
+                    <ion-progress-bar type="indeterminate" v-if="isBusy" />
                 </ion-toolbar>
             </ion-header>
             <ion-content class="ion-padding">

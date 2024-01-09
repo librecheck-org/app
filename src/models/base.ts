@@ -129,17 +129,17 @@ export const enum ChecklistsSyncStatus {
  */
 export const enum ServerConnectionStatus {
     /**
-     * Server could be reached.
+     * Server could be reached and it is healthy
      */
     Healthy = "healthy",
 
     /**
-     * Server could not be reached for a short time.
+     * Server could be reached, but it is unhealthy.
      */
     Unhealthy = "unhealthy",
 
     /**
-     * Server cannot be reached.
+     * Server could not be reached.
      */
     Disconnected = "disconnected"
 }

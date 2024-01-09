@@ -149,12 +149,11 @@ export function usePersistentStorage<T = object>(storageKey: StorageKey, value: 
     }
 
     async function read() {
-
+        value.value = await readFromStorage(storageKey);
     }
 
     async function update(updates: Partial<T>, updater: StorageUpdater | undefined = undefined) {
-        const updated = await updateStorage(storageKey, updates, updater);
-        value.value = updated;
+        value.value = await updateStorage(storageKey, updates, updater);
     }
 
     return { ensureIsInitialized, read, update };

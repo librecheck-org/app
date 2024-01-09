@@ -5,10 +5,13 @@
         </ion-item-divider>
         <ion-item>
             <ion-label>Client v{{ systemStatusStore.value.clientVersion }}</ion-label>
-            <ion-button slot="end" :disabled="!canUpdateClient" @click="updateClient"
+            <ion-button id="update-client" slot="end" :disabled="!canUpdateClient" @click="updateClient"
                 v-if="systemStatusStore.clientUpdatesAreAvailable">
                 Update
             </ion-button>
+            <ion-loading trigger="update-client" message="Updating..."> </ion-loading>
+            <ion-icon :icon="sync" aria-label="Sync is idle" slot="end" color="medium"
+                v-if="systemStatusStore.serverConnectionStatus == ServerConnectionStatus.Healthy" />
         </ion-item>
         <ion-item>
             <ion-label>Server v{{ systemStatusStore.value.serverVersion }}</ion-label>
@@ -23,8 +26,8 @@
 </template>
   
 <script setup lang="ts">
-import { IonButton, IonIcon, IonItem, IonItemDivider, IonItemGroup, IonLabel } from "@ionic/vue";
-import { heart, heartDislike, heartHalf } from "ionicons/icons";
+import { IonButton, IonIcon, IonItem, IonItemDivider, IonItemGroup, IonLabel, IonLoading } from "@ionic/vue";
+import { heart, heartDislike, heartHalf, sync } from "ionicons/icons";
 import { Command } from "@/infrastructure";
 import { ServerConnectionStatus } from "@/models";
 import { onMounted } from "vue";
@@ -39,6 +42,4 @@ const { canExecute: canUpdateClient, execute: updateClient } = props.updateClien
 
 onMounted(async () => await systemStatusStore.ensureIsInitialized());
 </script>
-  
-<style scoped></style>
   

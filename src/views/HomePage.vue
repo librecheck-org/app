@@ -65,6 +65,8 @@ const mainMenu = ref<InstanceType<typeof IonMenu> | null>(null);
 const { commands } = useHomeViewModel();
 const currentUserStore = useCurrentUserStore();
 
+console.log(commands.updateClientCommand.isExecuting.value);
+
 async function closeMainMenu() {
     if (mainMenu.value !== null) {
         await mainMenu.value.$el.close();

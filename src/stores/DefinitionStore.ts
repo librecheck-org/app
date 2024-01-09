@@ -5,8 +5,8 @@
 import { Definitions, StorageKey } from "@/models";
 import { definePersistentStore, usePersistentStorage } from "@/infrastructure";
 import { DefinitionDetails } from "@/apiClients";
-import { ref } from "vue";
 import { GenericStore } from "./shared";
+import { ref } from "vue";
 
 export interface DefinitionStore extends GenericStore<Definitions> {
     readDefinition(definitionUuid: string): DefinitionDetails | undefined;
