@@ -2,12 +2,10 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
+import { ChecklistsWorkerMessageType, SystemStatusWorkerMessageType, WorkerMessage } from "@/models";
 import { useDefinitionsStore as useDefinitionStore, useSubmissionStore, useSystemStatusStore } from "@/stores";
 import ChecklistsWorker from "@/workers/ChecklistsWorker?worker";
-import { ChecklistsWorkerMessageType } from "./ChecklistsWorker";
 import SystemStatusWorker from "@/workers/SystemStatusWorker?worker";
-import { SystemStatusWorkerMessageType } from "./SystemStatusWorker";
-import { WorkerMessage } from "@/models";
 import { fireAndForget } from "@/helpers";
 import { registerSW } from "virtual:pwa-register";
 
@@ -41,7 +39,8 @@ export function startSystemStatusWorker() {
         }
     });
 
-    systemStatusWorker.postMessage(new WorkerMessage(SystemStatusWorkerMessageType.Start, {}));
+    systemStatusWorker.postMessage(new WorkerMessage(SystemStatusWorkerMessageType.Initialize, {}));
+    systemStatusWorker.postMessage(new WorkerMessage(SystemStatusWorkerMessageType.StartPeriodicServerConnectionCheck, {}));
 }
 
 export function startChecklistsWorker() {
@@ -66,5 +65,6 @@ export function startChecklistsWorker() {
         }
     });
 
-    checklistsWorker.postMessage(new WorkerMessage(ChecklistsWorkerMessageType.Start, {}));
+    checklistsWorker.postMessage(new WorkerMessage(ChecklistsWorkerMessageType.Initialize, {}));
+    checklistsWorker.postMessage(new WorkerMessage(ChecklistsWorkerMessageType.StartPeriodicSync, {}));
 }

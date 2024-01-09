@@ -2,18 +2,12 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-import { ChangeStatus, DefinitionLocalChange, Definitions, StorageKey, SubmissionLocalChange, Submissions, WorkerMessage } from "@/models";
+import { ChangeStatus, ChecklistsWorkerMessageType, DefinitionLocalChange, Definitions, LockKey, StorageKey, SubmissionLocalChange, Submissions, WorkerMessage } from "@/models";
 import { ChecklistsApiClient, DefinitionChange, DefinitionDetails, DefinitionSummary, DefinitionSummaryPagedResult, SubmissionChange, SubmissionDetails, SubmissionSummary, SubmissionSummaryPagedResult } from "@/apiClients";
 import { fireAndForget, getCurrentUser, getRecordValues, newUuid } from "@/helpers";
 import { initializeWorker, scheduleNextExecution } from "./shared";
 import { readFromStorage, updateStorage } from "@/infrastructure";
 import { isEqual as areDatesEqual } from "date-fns";
-
-export const enum ChecklistsWorkerMessageType {
-    Start = "start",
-    DefinitionsRead = "definitions_read",
-    SubmissionsRead = "submissions_read",
-}
 
 addEventListener("message", (ev) => {
     const msg = ev.data as WorkerMessage;
@@ -22,22 +16,39 @@ addEventListener("message", (ev) => {
 
 async function _handleMessage(msg: WorkerMessage): Promise<void> {
     switch (msg.type) {
-        case ChecklistsWorkerMessageType.Start:
+        case ChecklistsWorkerMessageType.Initialize:
             await initializeWorker();
-            await _readChecklistsData();
-            await _updateChecklistsData();
+            break;
+
+        case ChecklistsWorkerMessageType.StartPeriodicSync:
+            await _syncChecklistsData();
+            break;
+
+        case ChecklistsWorkerMessageType.ForceImmediateSync:
+            await _syncChecklistsDataCore();
             break;
     }
 }
 
-async function _readChecklistsData() {
+async function _syncChecklistsData() {
     try {
-        await _readDefinitions();
-        await _readSubmissions();
+        await _syncChecklistsDataCore();
     }
     finally {
-        scheduleNextExecution(_readChecklistsData, 5 * 60 * 1000 /* Five minutes */);
+        scheduleNextExecution(_syncChecklistsData, 2 * 60 * 1000 /* Two minutes */);
     }
+}
+
+async function _syncChecklistsDataCore() {
+    await navigator.locks.request(LockKey.SyncChecklistsData, { mode: "exclusive" }, async () => {
+        await _readChecklistsData();
+        await _updateChecklistsData();
+    });
+}
+
+async function _readChecklistsData() {
+    await _readDefinitions();
+    await _readSubmissions();
 }
 
 let _readingDefinitions = false;
@@ -160,12 +171,7 @@ async function _readSubmissions() {
 }
 
 async function _updateChecklistsData() {
-    try {
-        await _mergeChangeset();
-    }
-    finally {
-        scheduleNextExecution(_updateChecklistsData, 2 * 60 * 1000 /* Two minutes */);
-    }
+    await _mergeChangeset();
 }
 
 async function _mergeChangeset() {

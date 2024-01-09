@@ -2,15 +2,10 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-import { ServerConnectionStatus, WorkerMessage } from "@/models";
+import { ServerConnectionStatus, SystemStatusWorkerMessageType, WorkerMessage } from "@/models";
 import { initializeWorker, scheduleNextExecution } from "./shared";
 import { AppInfoApiClient } from "@/apiClients";
 import { fireAndForget } from "@/helpers";
-
-export const enum SystemStatusWorkerMessageType {
-    Start = "start",
-    ServerConnectionChecked = "server_connection_checked"
-}
 
 addEventListener("message", (ev) => {
     const msg = ev.data as WorkerMessage;
@@ -19,14 +14,26 @@ addEventListener("message", (ev) => {
 
 async function _handleMessage(msg: WorkerMessage): Promise<void> {
     switch (msg.type) {
-        case SystemStatusWorkerMessageType.Start:
+        case SystemStatusWorkerMessageType.Initialize:
             await initializeWorker();
+            break;
+
+        case SystemStatusWorkerMessageType.StartPeriodicServerConnectionCheck:
             await _checkServerConnection();
             break;
     }
 }
 
 async function _checkServerConnection() {
+    try {
+        await _checkServerConnectionCore();
+    }
+    finally {
+        scheduleNextExecution(_checkServerConnection, 30 * 1000 /* Thirty seconds */);
+    }
+}
+
+async function _checkServerConnectionCore() {
     try {
         const appInfoApiClient = new AppInfoApiClient();
         await appInfoApiClient.checkAppHealth();
@@ -38,8 +45,5 @@ async function _checkServerConnection() {
         self.postMessage(new WorkerMessage(
             SystemStatusWorkerMessageType.ServerConnectionChecked,
             ServerConnectionStatus.Disconnected));
-    }
-    finally {
-        scheduleNextExecution(_checkServerConnection, 30 * 1000 /* Thirty seconds */);
     }
 }

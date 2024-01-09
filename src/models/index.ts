@@ -19,3 +19,11 @@ export const enum StorageKey {
     Definitions = "lc.checklists.definitions",
     Submissions = "lc.checklists.submissions",
 }
+
+/**
+ * List of all lock keys managed by the application, grouped by "module".
+ */
+export const enum LockKey {
+    // Checklists
+    SyncChecklistsData = "lc.checklists.syncChecklistsData",
+}

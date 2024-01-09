@@ -17,6 +17,66 @@ export class WorkerMessage {
 }
 
 /**
+ * Message types which can be received or sent by checklists worker.
+ */
+export const enum ChecklistsWorkerMessageType {
+    /**
+     * Instructs the worker to initialize itself.
+     */
+    Initialize = "initialize",
+
+    /**
+     * Starts the periodic sync of checklists data.
+     */
+    StartPeriodicSync = "start_periodic_sync",
+
+    /**
+     * Forces an immediate sync, which is executed immediately
+     * or right after a periodic sync, if one is in progress.
+     */
+    ForceImmediateSync = "force_immediate_sync",
+
+    /**
+     * Event triggered when a sync operation starts.
+     */
+    SyncStarted = "sync_started",
+
+    /**
+     * Event triggered when a sync operation completes successfully
+     * or it fails due to network errors.
+     */
+    SyncCompleted = "sync_completed",
+
+    /**
+     * Event triggered when a sync operation fails due to merge issues.
+     */
+    SyncFailed = "sync_failed",
+
+    DefinitionsRead = "definitions_read",
+    SubmissionsRead = "submissions_read",
+}
+
+/**
+ * Message types which can be received or sent by system status worker.
+ */
+export const enum SystemStatusWorkerMessageType {
+    /**
+     * Instructs the worker to initialize itself.
+     */
+    Initialize = "initialize",
+
+    /**
+     * Starts the periodic server connection check.
+     */
+    StartPeriodicServerConnectionCheck = "start_periodic_server_connection_check",
+
+    /**
+     * Event triggered when server connection has been checked.
+     */
+    ServerConnectionChecked = "server_connection_checked"
+}
+
+/**
  * Message types which can be received or sent by storage worker.
  */
 export const enum StorageWorkerMessageType {
@@ -73,13 +133,60 @@ export interface StorageUpdater {
     get function(): string;
 }
 
+/**
+ * Status of checklists sync.
+ */
+export const enum ChecklistsSyncStatus {
+    /**
+     * Sync is not currently and no merge issues arose in previous runs.
+     */
+    Idle = "idle",
+
+    /**
+     * Sync is running.
+     */
+    Running = "running",
+
+    /**
+     * Previous sync failed because of merge issues. This status should be
+     * brought to user attention, because it might need to solve those issues.
+     */
+    Failed = "failed"
+}
+
+/**
+ * Status of server connection.
+ */
 export const enum ServerConnectionStatus {
+    /**
+     * Server could be reached.
+     */
     Healthy = "healthy",
+
+    /**
+     * Server could not be reached for a short time.
+     */
     Unhealthy = "unhealthy",
+
+    /**
+     * Server cannot be reached.
+     */
     Disconnected = "disconnected"
 }
 
+/**
+ * System status information which is persisted for offline usage.
+ * Volatile information, such as server connection status or checklists sync status,
+ * do not belong here because there is no need to persist them.
+ */
 export interface SystemStatus {
+    /**
+     * Client version.
+     */
     clientVersion: string;
+
+    /**
+     * Server version.
+     */
     serverVersion: string;
 }
