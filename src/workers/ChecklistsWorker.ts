@@ -2,7 +2,7 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-import { ChangeStatus, ChecklistsWorkerMessageType, DefinitionLocalChange, Definitions, LockKey, StorageKey, SubmissionLocalChange, Submissions, WorkerMessage } from "@/models";
+import { ChangeStatus, ChecklistsWorkerMessageType, DefinitionLocalChange, Definitions, GenericWorkerMessageType, LockKey, StorageKey, SubmissionLocalChange, Submissions, WorkerMessage } from "@/models";
 import { ChecklistsApiClient, DefinitionChange, DefinitionDetails, DefinitionSummary, DefinitionSummaryPagedResult, SubmissionChange, SubmissionDetails, SubmissionSummary, SubmissionSummaryPagedResult } from "@/apiClients";
 import { fireAndForget, getCurrentUser, getRecordValues, newUuid } from "@/helpers";
 import { initializeWorker, scheduleNextExecution } from "./shared";
@@ -16,7 +16,7 @@ addEventListener("message", (ev) => {
 
 async function _handleMessage(msg: WorkerMessage): Promise<void> {
     switch (msg.type) {
-        case ChecklistsWorkerMessageType.Initialize:
+        case GenericWorkerMessageType.Initialize:
             await initializeWorker();
             break;
 

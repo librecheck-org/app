@@ -4,6 +4,41 @@
 
 import type { DefinitionDetails, DefinitionSummary, SubmissionDetails, SubmissionSummary } from "@/apiClients";
 
+/**
+ * Message types which can be received or sent by checklists worker.
+ */
+export const enum ChecklistsWorkerMessageType {
+    /**
+     * Starts the periodic sync of checklists data.
+     */
+    StartPeriodicSync = "start_periodic_sync",
+
+    /**
+     * Forces an immediate sync, which is executed immediately
+     * or right after a periodic sync, if one is in progress.
+     */
+    ForceImmediateSync = "force_immediate_sync",
+
+    /**
+     * Event triggered when a sync operation starts.
+     */
+    SyncStarted = "sync_started",
+
+    /**
+     * Event triggered when a sync operation completes successfully
+     * or it fails due to network errors.
+     */
+    SyncCompleted = "sync_completed",
+
+    /**
+     * Event triggered when a sync operation fails due to merge issues.
+     */
+    SyncFailed = "sync_failed",
+
+    DefinitionsRead = "definitions_read",
+    SubmissionsRead = "submissions_read",
+}
+
 export enum ChangeStatus {
     Unchanged = 0,
     Updated = 1,

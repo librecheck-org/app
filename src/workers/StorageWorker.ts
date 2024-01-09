@@ -3,7 +3,7 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 import { Drivers, Storage } from "@ionic/storage";
-import { StorageKey, StorageUpdater, StorageWorkerMessageType, WorkerMessage } from "@/models";
+import { GenericWorkerMessageType, StorageKey, StorageUpdater, StorageWorkerMessageType, WorkerMessage } from "@/models";
 import { createStorageEventsBroadcastChannel } from "@/infrastructure";
 import { fireAndForget } from "@/helpers";
 
@@ -14,6 +14,11 @@ addEventListener("message", (ev) => {
 
 async function _handleMessage(msg: WorkerMessage): Promise<void> {
     switch (msg.type) {
+        case GenericWorkerMessageType.Initialize: {
+            const { appInstanceId } = msg.payload;
+            _appInstanceId = appInstanceId;
+            break;
+        }
         case StorageWorkerMessageType.ExecuteRead: {
             const { key, promiseId } = msg.payload;
             await _read(key, promiseId);
@@ -67,8 +72,18 @@ class IonicStorageWrapper {
 const _ionicStorage = new IonicStorageWrapper();
 const _broadcastChannel = createStorageEventsBroadcastChannel();
 
+/**
+ * UI threads, which run the Ionic/Vue application, create a unique instance ID
+ * and they pass it to storage worker. In other words, each window/tab has its own ID.
+ * 
+ * Instance ID, if available, is sent as part of the storage updated broadcast message
+ * and it is used by UI threads to determine if they triggered the update or not:
+ * if they did not trigger it, then they need to refresh their in-memory stores. 
+ */
+let _appInstanceId: string | undefined;
+
 function _raiseStorageUpdateEvent(key: StorageKey) {
-    _broadcastChannel.postMessage(new WorkerMessage(StorageWorkerMessageType.StorageUpdated, { key }));
+    _broadcastChannel.postMessage(new WorkerMessage(StorageWorkerMessageType.StorageUpdated, { key, appInstanceId: _appInstanceId }));
 }
 
 function _unlockPromise(promiseId: string, value: unknown) {

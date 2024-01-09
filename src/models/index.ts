@@ -27,3 +27,11 @@ export const enum LockKey {
     // Checklists
     SyncChecklistsData = "lc.checklists.syncChecklistsData",
 }
+
+/**
+ * List of all broadcast channels managed by the application, grouped by "module".
+ */
+export const enum BroadcastChannels {
+    // Base
+    StorageEvents = "lc.base.storageEvents",
+}

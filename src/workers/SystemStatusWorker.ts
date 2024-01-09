@@ -2,7 +2,7 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-import { ServerConnectionStatus, SystemStatusWorkerMessageType, WorkerMessage } from "@/models";
+import { GenericWorkerMessageType, ServerConnectionStatus, SystemStatusWorkerMessageType, WorkerMessage } from "@/models";
 import { initializeWorker, scheduleNextExecution } from "./shared";
 import { AppInfoApiClient } from "@/apiClients";
 import { fireAndForget } from "@/helpers";
@@ -14,7 +14,7 @@ addEventListener("message", (ev) => {
 
 async function _handleMessage(msg: WorkerMessage): Promise<void> {
     switch (msg.type) {
-        case SystemStatusWorkerMessageType.Initialize:
+        case GenericWorkerMessageType.Initialize:
             await initializeWorker();
             break;
 
@@ -42,6 +42,7 @@ async function _checkServerConnectionCore() {
             ServerConnectionStatus.Healthy));
     }
     catch (err) {
+        console.warn("An error occurred while checking server connection", err);
         self.postMessage(new WorkerMessage(
             SystemStatusWorkerMessageType.ServerConnectionChecked,
             ServerConnectionStatus.Disconnected));

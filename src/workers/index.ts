@@ -2,7 +2,7 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-import { ChecklistsWorkerMessageType, SystemStatusWorkerMessageType, WorkerMessage } from "@/models";
+import { ChecklistsWorkerMessageType, GenericWorkerMessageType, SystemStatusWorkerMessageType, WorkerMessage } from "@/models";
 import { useDefinitionsStore as useDefinitionStore, useSubmissionStore, useSystemStatusStore } from "@/stores";
 import ChecklistsWorker from "@/workers/ChecklistsWorker?worker";
 import SystemStatusWorker from "@/workers/SystemStatusWorker?worker";
@@ -33,14 +33,18 @@ export function startSystemStatusWorker() {
     systemStatusWorker.addEventListener("message", (ev) => {
         const msg = ev.data as WorkerMessage;
         switch (msg.type) {
-            case SystemStatusWorkerMessageType.ServerConnectionChecked:
+            case GenericWorkerMessageType.Initialized: {
+                systemStatusWorker.postMessage(new WorkerMessage(SystemStatusWorkerMessageType.StartPeriodicServerConnectionCheck, {}));
+                break;
+            }
+            case SystemStatusWorkerMessageType.ServerConnectionChecked: {
                 systemStatusStore.setServerConnectionStatus(msg.payload);
                 break;
+            }
         }
     });
 
-    systemStatusWorker.postMessage(new WorkerMessage(SystemStatusWorkerMessageType.Initialize, {}));
-    systemStatusWorker.postMessage(new WorkerMessage(SystemStatusWorkerMessageType.StartPeriodicServerConnectionCheck, {}));
+    systemStatusWorker.postMessage(new WorkerMessage(GenericWorkerMessageType.Initialize, {}));
 }
 
 export function startChecklistsWorker() {
@@ -51,20 +55,24 @@ export function startChecklistsWorker() {
     checklistsWorker.addEventListener("message", (ev) => {
         const msg = ev.data as WorkerMessage;
         switch (msg.type) {
-            case ChecklistsWorkerMessageType.DefinitionsRead:
+            case GenericWorkerMessageType.Initialized: {
+                checklistsWorker.postMessage(new WorkerMessage(ChecklistsWorkerMessageType.StartPeriodicSync, {}));
+                break;
+            }
+            case ChecklistsWorkerMessageType.DefinitionsRead: {
                 fireAndForget(async () => {
                     await definitionStore.update(msg.payload);
                 });
                 break;
-
-            case ChecklistsWorkerMessageType.SubmissionsRead:
+            }
+            case ChecklistsWorkerMessageType.SubmissionsRead: {
                 fireAndForget(async () => {
                     await submissionStore.update(msg.payload);
                 });
                 break;
+            }
         }
     });
 
-    checklistsWorker.postMessage(new WorkerMessage(ChecklistsWorkerMessageType.Initialize, {}));
-    checklistsWorker.postMessage(new WorkerMessage(ChecklistsWorkerMessageType.StartPeriodicSync, {}));
+    checklistsWorker.postMessage(new WorkerMessage(GenericWorkerMessageType.Initialize, {}));
 }

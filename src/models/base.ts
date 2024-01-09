@@ -17,54 +17,24 @@ export class WorkerMessage {
 }
 
 /**
- * Message types which can be received or sent by checklists worker.
+ * Message types which can be received or sent by any worker.
  */
-export const enum ChecklistsWorkerMessageType {
+export const enum GenericWorkerMessageType {
     /**
      * Instructs the worker to initialize itself.
      */
     Initialize = "initialize",
 
     /**
-     * Starts the periodic sync of checklists data.
+     * Event triggered when worker has successfully initialized itself.
      */
-    StartPeriodicSync = "start_periodic_sync",
-
-    /**
-     * Forces an immediate sync, which is executed immediately
-     * or right after a periodic sync, if one is in progress.
-     */
-    ForceImmediateSync = "force_immediate_sync",
-
-    /**
-     * Event triggered when a sync operation starts.
-     */
-    SyncStarted = "sync_started",
-
-    /**
-     * Event triggered when a sync operation completes successfully
-     * or it fails due to network errors.
-     */
-    SyncCompleted = "sync_completed",
-
-    /**
-     * Event triggered when a sync operation fails due to merge issues.
-     */
-    SyncFailed = "sync_failed",
-
-    DefinitionsRead = "definitions_read",
-    SubmissionsRead = "submissions_read",
+    Initialized = "initialized"
 }
 
 /**
  * Message types which can be received or sent by system status worker.
  */
 export const enum SystemStatusWorkerMessageType {
-    /**
-     * Instructs the worker to initialize itself.
-     */
-    Initialize = "initialize",
-
     /**
      * Starts the periodic server connection check.
      */

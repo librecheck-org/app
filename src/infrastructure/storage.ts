@@ -2,10 +2,9 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
+import { BroadcastChannels, StorageKey, StorageUpdater, StorageWorkerMessageType, WorkerMessage } from "@/models";
 import { Ref, ref } from "vue";
-import { StorageKey, StorageWorkerMessageType, WorkerMessage } from "@/models";
 import { fireAndForget, newUuid } from "@/helpers";
-import { StorageUpdater } from "@/models";
 import _ from "lodash";
 import { defineStore } from "pinia";
 
@@ -45,13 +44,27 @@ async function _sendMessageToStorageWorker(type: StorageWorkerMessageType, paylo
 }
 
 /**
+ * UI threads, which run the Ionic/Vue application, create a unique instance ID
+ * and they pass it to storage module. In other words, each window/tab has its own ID.
+ * 
+ * Instance ID is received as part of the storage updated broadcast message
+ * and it is used by UI threads to determine if they triggered the update or not:
+ * if they did not trigger it, then they need to refresh their in-memory stores. 
+ */
+let _appInstanceId: string | undefined;
+
+export function setAppInstanceId(appInstanceId: string) {
+    _appInstanceId = appInstanceId;
+}
+
+/**
  * Creates a broadcast channel which can be used to listen to storage events.
  * Listening to those events is required in order to keep in-memory data fresh
  * when updates might have been performed by web workers or other tabs/pages.
  * @returns A broadcast channel for storage events.
  */
 export function createStorageEventsBroadcastChannel(): BroadcastChannel {
-    return new BroadcastChannel("lc.storageEvents");
+    return new BroadcastChannel(BroadcastChannels.StorageEvents);
 }
 
 interface BlockingPromise {
@@ -135,19 +148,25 @@ export function usePersistentStorage<T = object>(storageKey: StorageKey, value: 
         isInitialized.value = true;
     }
 
+    async function read() {
+
+    }
+
     async function update(updates: Partial<T>, updater: StorageUpdater | undefined = undefined) {
         const updated = await updateStorage(storageKey, updates, updater);
         value.value = updated;
     }
 
-    return { ensureIsInitialized, update };
+    return { ensureIsInitialized, read, update };
 }
 
 interface PersistentStore {
-    get ensureIsInitialized(): any;
+    ensureIsInitialized(): Promise<void>;
+    read(): Promise<void>;
 }
 
-const _storeInstances = new Map<StorageKey, any>();
+const _storeInstances = new Map<StorageKey, PersistentStore>();
+const _broadcastChannel = createStorageEventsBroadcastChannel();
 
 export function definePersistentStore<SS extends PersistentStore>(storageKey: StorageKey, storeSetup: () => SS) {
     let store = _storeInstances.get(storageKey);
@@ -156,11 +175,27 @@ export function definePersistentStore<SS extends PersistentStore>(storageKey: St
     }
 
     const storeDefinition = defineStore(storageKey, storeSetup);
-    store = storeDefinition();
+    store = <PersistentStore><unknown>storeDefinition();
 
     // Initialization happens asynchronously and the call is not awaited,
     // because underlying storage is asynchronous but store definition needs to be synchronous.
     fireAndForget(store.ensureIsInitialized);
+
+    // Persistent stores need to listen to storage updated events,
+    // because they need to refresh themselves when data is changed by other threads.
+    const read = store.read;
+    _broadcastChannel.addEventListener("message", (ev) => {
+        const msg = ev.data as WorkerMessage;
+        switch (msg.type) {
+            case StorageWorkerMessageType.StorageUpdated: {
+                const { key, appInstanceId } = msg.payload;
+                if (storageKey == key && _appInstanceId !== appInstanceId) {
+                    fireAndForget(read);
+                }
+                break;
+            }
+        }
+    });
 
     _storeInstances.set(storageKey, store);
     return store;
