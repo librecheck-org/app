@@ -9,7 +9,7 @@ import { surveyPlugin } from "survey-vue3-ui";
 
 /* LibreCheck modules */
 import { initDefaultApiConfig, setAppInstanceId } from "./infrastructure";
-import { registerServiceWorker, startChecklistsWorker, startStorageWorker, startSystemStatusWorker } from "./workers";
+import { registerServiceWorker, startStorageWorker, startSyncWorker, startSystemStatusWorker } from "./workers";
 import { newUuid } from "./helpers";
 
 /* Core CSS required for Ionic components to work properly */
@@ -51,5 +51,5 @@ router.isReady().then(async () => {
 
     registerServiceWorker();
     startSystemStatusWorker();
-    startChecklistsWorker();
+    startSyncWorker();
 });

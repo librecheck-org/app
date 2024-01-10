@@ -2,7 +2,7 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-import { ChecklistsSyncStatus, ChecklistsWorkerMessageType, ServerConnectionStatus, StorageKey, SystemStatus, WorkerMessage, WorkerName } from "@/models";
+import { ChecklistsSyncStatus, ServerConnectionStatus, StorageKey, SyncWorkerMessageType, SystemStatus, WorkerMessage, WorkerName } from "@/models";
 import { computed, ref } from "vue";
 import { definePersistentStore, getWorkerRef, usePersistentStorage } from "@/infrastructure";
 import { AppInfoApiClient } from "@/apiClients";
@@ -79,9 +79,9 @@ export function useSystemStatusStore(): SystemStatusStore {
         }
 
         function forceChecklistsSync(): void {
-            const workerRef = getWorkerRef(WorkerName.Checklists);
+            const workerRef = getWorkerRef(WorkerName.Sync);
             if (workerRef !== undefined) {
-                workerRef.postMessage(new WorkerMessage(ChecklistsWorkerMessageType.ForceImmediateSync, {}));
+                workerRef.postMessage(new WorkerMessage(SyncWorkerMessageType.ForceImmediateSync, {}));
             }
         }
 

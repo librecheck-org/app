@@ -7,7 +7,7 @@ import type { DefinitionDetails, DefinitionSummary, SubmissionDetails, Submissio
 /**
  * Message types which can be received or sent by checklists worker.
  */
-export const enum ChecklistsWorkerMessageType {
+export const enum SyncWorkerMessageType {
     /**
      * Starts the periodic sync of checklists data.
      */

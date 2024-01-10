@@ -70,7 +70,7 @@ class IonicStorageWrapper {
 }
 
 const _ionicStorage = new IonicStorageWrapper();
-const _broadcastChannel = createBroadcastChannel(BroadcastChannelName.StorageEvents);
+const _storageEventsChannel = createBroadcastChannel(BroadcastChannelName.StorageEvents);
 
 /**
  * UI threads, which run the Ionic/Vue application, create a unique instance ID
@@ -82,8 +82,8 @@ const _broadcastChannel = createBroadcastChannel(BroadcastChannelName.StorageEve
  */
 let _appInstanceId: string | undefined;
 
-function _raiseStorageUpdateEvent(key: StorageKey) {
-    _broadcastChannel.postMessage(new WorkerMessage(StorageWorkerMessageType.StorageUpdated, { key, appInstanceId: _appInstanceId }));
+function _triggerStorageUpdatedEvent(key: StorageKey) {
+    _storageEventsChannel.postMessage(new WorkerMessage(StorageWorkerMessageType.StorageUpdated, { key, appInstanceId: _appInstanceId }));
 }
 
 function _unlockPromise(promiseId: string, value: unknown) {
@@ -117,7 +117,7 @@ async function _update(key: StorageKey, updates: object, updater: StorageUpdater
             const updaterModule = await import(`../stores/${updater.module}.ts`);
             value = updaterModule[updater.function](value, updates);
             await _ionicStorage.set(key, value);
-            _raiseStorageUpdateEvent(key);
+            _triggerStorageUpdatedEvent(key);
         });
     }
     catch (err) {

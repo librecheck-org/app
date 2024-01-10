@@ -2,11 +2,11 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-import { ChangeStatus, ChecklistsWorkerMessageType, DefinitionLocalChange, Definitions, GenericWorkerMessageType, LockName, StorageKey, SubmissionLocalChange, Submissions, WorkerMessage } from "@/models";
+import { BroadcastChannelName, ChangeStatus, DefinitionLocalChange, Definitions, GenericWorkerMessageType, LockName, StorageKey, SubmissionLocalChange, Submissions, SyncWorkerMessageType, WorkerMessage } from "@/models";
 import { ChecklistsApiClient, DefinitionChange, DefinitionDetails, DefinitionSummary, DefinitionSummaryPagedResult, SubmissionChange, SubmissionDetails, SubmissionSummary, SubmissionSummaryPagedResult } from "@/apiClients";
+import { createBroadcastChannel, readFromStorage, updateStorage } from "@/infrastructure";
 import { fireAndForget, getCurrentUser, getRecordValues, newUuid } from "@/helpers";
 import { initializeWorker, scheduleNextExecution } from "./shared";
-import { readFromStorage, updateStorage } from "@/infrastructure";
 import { isEqual as areDatesEqual } from "date-fns";
 
 addEventListener("message", (ev) => {
@@ -20,11 +20,11 @@ async function _handleMessage(msg: WorkerMessage): Promise<void> {
             await initializeWorker();
             break;
 
-        case ChecklistsWorkerMessageType.StartPeriodicSync:
+        case SyncWorkerMessageType.StartPeriodicSync:
             await _syncChecklistsData();
             break;
 
-        case ChecklistsWorkerMessageType.ForceImmediateSync:
+        case SyncWorkerMessageType.ForceImmediateSync:
             await _syncChecklistsDataCore();
             break;
     }
@@ -41,9 +41,21 @@ async function _syncChecklistsData() {
 
 async function _syncChecklistsDataCore() {
     await navigator.locks.request(LockName.SyncChecklistsData, { mode: "exclusive" }, async () => {
+        _triggerSyncStartedEvent();
         await _readChecklistsData();
         await _updateChecklistsData();
+        _triggerSyncCompletedEvent();
     });
+}
+
+const _syncEventsChannel = createBroadcastChannel(BroadcastChannelName.SyncEvents);
+
+function _triggerSyncStartedEvent() {
+    _syncEventsChannel.postMessage(new WorkerMessage(SyncWorkerMessageType.SyncStarted, {}));
+}
+
+function _triggerSyncCompletedEvent() {
+    _syncEventsChannel.postMessage(new WorkerMessage(SyncWorkerMessageType.SyncCompleted, {}));
 }
 
 async function _readChecklistsData() {
@@ -101,7 +113,7 @@ async function _readDefinitions() {
         }
 
         self.postMessage(new WorkerMessage(
-            ChecklistsWorkerMessageType.DefinitionsRead,
+            SyncWorkerMessageType.DefinitionsRead,
             <Definitions>{ summaries, details }));
     }
     catch (err) {
@@ -159,7 +171,7 @@ async function _readSubmissions() {
         }
 
         self.postMessage(new WorkerMessage(
-            ChecklistsWorkerMessageType.SubmissionsRead,
+            SyncWorkerMessageType.SubmissionsRead,
             <Submissions>{ summaries, details }));
     }
     catch (err) {

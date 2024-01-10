@@ -36,7 +36,7 @@ export const enum WorkerName {
     Storage = "lc.base.storage",
     SystemStatus = "lc.base.systemStatus",
     // Checklists
-    Checklists = "lc.checklists.checklists",
+    Sync = "lc.checklists.sync",
 }
 
 /**
@@ -45,4 +45,6 @@ export const enum WorkerName {
 export const enum BroadcastChannelName {
     // Base
     StorageEvents = "lc.base.storageEvents",
+    // Checklists
+    SyncEvents = "lc.checklists.syncEvents",
 }

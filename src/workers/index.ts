@@ -2,13 +2,13 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-import { ChecklistsWorkerMessageType, GenericWorkerMessageType, SystemStatusWorkerMessageType, WorkerMessage, WorkerName } from "@/models";
+import { BroadcastChannelName, ChecklistsSyncStatus, GenericWorkerMessageType, SyncWorkerMessageType, SystemStatusWorkerMessageType, WorkerMessage, WorkerName } from "@/models";
+import { createBroadcastChannel, setWorkerRef } from "@/infrastructure";
 import { useDefinitionsStore as useDefinitionStore, useSubmissionStore, useSystemStatusStore } from "@/stores";
-import ChecklistsWorker from "@/workers/ChecklistsWorker?worker";
+import SyncWorker from "@/workers/SyncWorker?worker";
 import SystemStatusWorker from "@/workers/SystemStatusWorker?worker";
 import { fireAndForget } from "@/helpers";
 import { registerSW } from "virtual:pwa-register";
-import { setWorkerRef } from "@/infrastructure";
 
 export function registerServiceWorker() {
     const updateSW = registerSW({
@@ -49,26 +49,27 @@ export function startSystemStatusWorker() {
     systemStatusWorker.postMessage(new WorkerMessage(GenericWorkerMessageType.Initialize, {}));
 }
 
-export function startChecklistsWorker() {
-    const checklistsWorker = new ChecklistsWorker();
+export function startSyncWorker() {
+    const syncWorker = new SyncWorker();
     const definitionStore = useDefinitionStore();
     const submissionStore = useSubmissionStore();
+    const systemStatusStore = useSystemStatusStore();
 
-    checklistsWorker.addEventListener("message", (ev) => {
+    syncWorker.addEventListener("message", (ev) => {
         const msg = ev.data as WorkerMessage;
         switch (msg.type) {
             case GenericWorkerMessageType.Initialized: {
-                setWorkerRef(WorkerName.Checklists, checklistsWorker);
-                checklistsWorker.postMessage(new WorkerMessage(ChecklistsWorkerMessageType.StartPeriodicSync, {}));
+                setWorkerRef(WorkerName.Sync, syncWorker);
+                syncWorker.postMessage(new WorkerMessage(SyncWorkerMessageType.StartPeriodicSync, {}));
                 break;
             }
-            case ChecklistsWorkerMessageType.DefinitionsRead: {
+            case SyncWorkerMessageType.DefinitionsRead: {
                 fireAndForget(async () => {
                     await definitionStore.update(msg.payload);
                 });
                 break;
             }
-            case ChecklistsWorkerMessageType.SubmissionsRead: {
+            case SyncWorkerMessageType.SubmissionsRead: {
                 fireAndForget(async () => {
                     await submissionStore.update(msg.payload);
                 });
@@ -77,5 +78,20 @@ export function startChecklistsWorker() {
         }
     });
 
-    checklistsWorker.postMessage(new WorkerMessage(GenericWorkerMessageType.Initialize, {}));
+    syncWorker.postMessage(new WorkerMessage(GenericWorkerMessageType.Initialize, {}));
+
+    const syncEventsChannel = createBroadcastChannel(BroadcastChannelName.SyncEvents);
+    syncEventsChannel.addEventListener("message", (ev) => {
+        const msg = ev.data as WorkerMessage;
+        switch (msg.type) {
+            case SyncWorkerMessageType.SyncStarted: {
+                systemStatusStore.setChecklistsSyncStatus(ChecklistsSyncStatus.Running);
+                break;
+            }
+            case SyncWorkerMessageType.SyncCompleted: {
+                systemStatusStore.setChecklistsSyncStatus(ChecklistsSyncStatus.Idle);
+                break;
+            }
+        }
+    });
 }
