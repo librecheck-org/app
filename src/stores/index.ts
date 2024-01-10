@@ -2,8 +2,8 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-import { StorageWorkerMessageType, WorkerMessage } from "@/models";
-import { createStorageEventsBroadcastChannel } from "@/infrastructure";
+import { BroadcastChannelName, StorageWorkerMessageType, WorkerMessage } from "@/models";
+import { createBroadcastChannel } from "@/infrastructure";
 import { fireAndForget } from "@/helpers";
 
 export * from "./CurrentUserStore";
@@ -12,10 +12,10 @@ export * from "./SubmissionStore";
 export * from "./SystemStatusStore";
 export * from "./TokenStore";
 
-const _broadcastChannel = createStorageEventsBroadcastChannel();
+const _storageEventsBroadcastChannel = createBroadcastChannel(BroadcastChannelName.StorageEvents);
 
 export function startListeningToStorageEvents(appInstanceId: string) {
-    _broadcastChannel.addEventListener("message", (ev) => {
+    _storageEventsBroadcastChannel.addEventListener("message", (ev) => {
         const msg = ev.data as WorkerMessage;
         fireAndForget(async () => await _handleMessage(msg, appInstanceId));
     });

@@ -3,6 +3,7 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 import { Command, ViewModel, useCommand, useViewModel } from "@/infrastructure";
+import { ChecklistsSyncStatus } from "@/models";
 import { reactive } from "vue";
 import { useSystemStatusStore } from "@/stores";
 
@@ -16,7 +17,8 @@ class HomeViewData {
 
 class HomeViewCommands {
     constructor(
-        public updateClientCommand: Command) {
+        public updateClientCommand: Command,
+        public forceSyncCommand: Command) {
     }
 }
 
@@ -36,8 +38,17 @@ export function useHomeViewModel(): ViewModel<HomeViewData, HomeViewCommands> {
         _systemStatusStore.applyClientUpdates();
     }
 
+    function _canForceSync(): boolean {
+        return _systemStatusStore.checklistsSyncStatus == ChecklistsSyncStatus.Idle;
+    }
+
+    async function _forceSync(): Promise<void> {
+        _systemStatusStore.forceChecklistsSync();
+    }
+
     const _updateClientCommand = useCommand(_canUpdateApp, _updateApp);
-    const commands = new HomeViewCommands(_updateClientCommand);
+    const _forceSyncCommand = useCommand(_canForceSync, _forceSync);
+    const commands = new HomeViewCommands(_updateClientCommand, _forceSyncCommand);
 
     return useViewModel({ data, commands, initialize });
 }

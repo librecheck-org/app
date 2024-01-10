@@ -2,12 +2,13 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-import { ChecklistsWorkerMessageType, GenericWorkerMessageType, SystemStatusWorkerMessageType, WorkerMessage } from "@/models";
+import { ChecklistsWorkerMessageType, GenericWorkerMessageType, SystemStatusWorkerMessageType, WorkerMessage, WorkerName } from "@/models";
 import { useDefinitionsStore as useDefinitionStore, useSubmissionStore, useSystemStatusStore } from "@/stores";
 import ChecklistsWorker from "@/workers/ChecklistsWorker?worker";
 import SystemStatusWorker from "@/workers/SystemStatusWorker?worker";
 import { fireAndForget } from "@/helpers";
 import { registerSW } from "virtual:pwa-register";
+import { setWorkerRef } from "@/infrastructure";
 
 export function registerServiceWorker() {
     const updateSW = registerSW({
@@ -34,6 +35,7 @@ export function startSystemStatusWorker() {
         const msg = ev.data as WorkerMessage;
         switch (msg.type) {
             case GenericWorkerMessageType.Initialized: {
+                setWorkerRef(WorkerName.SystemStatus, systemStatusWorker);
                 systemStatusWorker.postMessage(new WorkerMessage(SystemStatusWorkerMessageType.StartPeriodicServerConnectionCheck, {}));
                 break;
             }
@@ -56,6 +58,7 @@ export function startChecklistsWorker() {
         const msg = ev.data as WorkerMessage;
         switch (msg.type) {
             case GenericWorkerMessageType.Initialized: {
+                setWorkerRef(WorkerName.Checklists, checklistsWorker);
                 checklistsWorker.postMessage(new WorkerMessage(ChecklistsWorkerMessageType.StartPeriodicSync, {}));
                 break;
             }

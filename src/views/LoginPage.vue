@@ -8,7 +8,8 @@
             </ion-header>
             <ion-content>
                 <ion-list>
-                    <SystemStatusMenuItems :update-client-command="commands.updateClientCommand" />
+                    <SystemStatusMenuItems :update-client-command="commands.updateClientCommand"
+                        :force-sync-command="commands.forceSyncCommand" />
                 </ion-list>
             </ion-content>
         </ion-menu>

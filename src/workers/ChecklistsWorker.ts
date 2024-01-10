@@ -2,7 +2,7 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-import { ChangeStatus, ChecklistsWorkerMessageType, DefinitionLocalChange, Definitions, GenericWorkerMessageType, LockKey, StorageKey, SubmissionLocalChange, Submissions, WorkerMessage } from "@/models";
+import { ChangeStatus, ChecklistsWorkerMessageType, DefinitionLocalChange, Definitions, GenericWorkerMessageType, LockName, StorageKey, SubmissionLocalChange, Submissions, WorkerMessage } from "@/models";
 import { ChecklistsApiClient, DefinitionChange, DefinitionDetails, DefinitionSummary, DefinitionSummaryPagedResult, SubmissionChange, SubmissionDetails, SubmissionSummary, SubmissionSummaryPagedResult } from "@/apiClients";
 import { fireAndForget, getCurrentUser, getRecordValues, newUuid } from "@/helpers";
 import { initializeWorker, scheduleNextExecution } from "./shared";
@@ -40,7 +40,7 @@ async function _syncChecklistsData() {
 }
 
 async function _syncChecklistsDataCore() {
-    await navigator.locks.request(LockKey.SyncChecklistsData, { mode: "exclusive" }, async () => {
+    await navigator.locks.request(LockName.SyncChecklistsData, { mode: "exclusive" }, async () => {
         await _readChecklistsData();
         await _updateChecklistsData();
     });

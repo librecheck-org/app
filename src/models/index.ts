@@ -21,17 +21,28 @@ export const enum StorageKey {
 }
 
 /**
- * List of all lock keys managed by the application, grouped by "module".
+ * List of all lock names managed by the application, grouped by "module".
  */
-export const enum LockKey {
+export const enum LockName {
     // Checklists
     SyncChecklistsData = "lc.checklists.syncChecklistsData",
 }
 
 /**
- * List of all broadcast channels managed by the application, grouped by "module".
+ * List of all worker names managed by the application, grouped by "module".
  */
-export const enum BroadcastChannels {
+export const enum WorkerName {
+    // Base
+    Storage = "lc.base.storage",
+    SystemStatus = "lc.base.systemStatus",
+    // Checklists
+    Checklists = "lc.checklists.checklists",
+}
+
+/**
+ * List of all broadcast channel names managed by the application, grouped by "module".
+ */
+export const enum BroadcastChannelName {
     // Base
     StorageEvents = "lc.base.storageEvents",
 }

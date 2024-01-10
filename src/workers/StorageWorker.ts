@@ -2,9 +2,9 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
+import { BroadcastChannelName, GenericWorkerMessageType, StorageKey, StorageUpdater, StorageWorkerMessageType, WorkerMessage } from "@/models";
 import { Drivers, Storage } from "@ionic/storage";
-import { GenericWorkerMessageType, StorageKey, StorageUpdater, StorageWorkerMessageType, WorkerMessage } from "@/models";
-import { createStorageEventsBroadcastChannel } from "@/infrastructure";
+import { createBroadcastChannel } from "@/infrastructure";
 import { fireAndForget } from "@/helpers";
 
 addEventListener("message", (ev) => {
@@ -70,7 +70,7 @@ class IonicStorageWrapper {
 }
 
 const _ionicStorage = new IonicStorageWrapper();
-const _broadcastChannel = createStorageEventsBroadcastChannel();
+const _broadcastChannel = createBroadcastChannel(BroadcastChannelName.StorageEvents);
 
 /**
  * UI threads, which run the Ionic/Vue application, create a unique instance ID

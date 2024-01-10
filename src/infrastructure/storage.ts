@@ -2,10 +2,11 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-import { BroadcastChannels, StorageKey, StorageUpdater, StorageWorkerMessageType, WorkerMessage } from "@/models";
+import { BroadcastChannelName, StorageKey, StorageUpdater, StorageWorkerMessageType, WorkerMessage } from "@/models";
 import { Ref, ref } from "vue";
 import { fireAndForget, newUuid } from "@/helpers";
 import _ from "lodash";
+import { createBroadcastChannel } from "./workers";
 import { defineStore } from "pinia";
 
 /**
@@ -55,16 +56,6 @@ let _appInstanceId: string | undefined;
 
 export function setAppInstanceId(appInstanceId: string) {
     _appInstanceId = appInstanceId;
-}
-
-/**
- * Creates a broadcast channel which can be used to listen to storage events.
- * Listening to those events is required in order to keep in-memory data fresh
- * when updates might have been performed by web workers or other tabs/pages.
- * @returns A broadcast channel for storage events.
- */
-export function createStorageEventsBroadcastChannel(): BroadcastChannel {
-    return new BroadcastChannel(BroadcastChannels.StorageEvents);
 }
 
 interface BlockingPromise {
@@ -164,8 +155,17 @@ interface PersistentStore {
     read(): Promise<void>;
 }
 
+/**
+ * A map of store instances, which is used to avoid initializing them multiple times.
+ */
 const _storeInstances = new Map<StorageKey, PersistentStore>();
-const _broadcastChannel = createStorageEventsBroadcastChannel();
+
+/**
+ * A broadcast channel which is used to listen to storage events.
+ * Listening to those events is required in order to keep in-memory data fresh
+ * when updates might have been performed by web workers or other tabs/pages.
+ */
+const _broadcastChannel = createBroadcastChannel(BroadcastChannelName.StorageEvents);
 
 export function definePersistentStore<S extends PersistentStore>(storageKey: StorageKey, storeSetup: () => PersistentStore): S {
     let store = <S | undefined>_storeInstances.get(storageKey);

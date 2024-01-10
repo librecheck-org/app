@@ -147,7 +147,7 @@ export const enum ServerConnectionStatus {
 /**
  * System status information which is persisted for offline usage.
  * Volatile information, such as server connection status or checklists sync status,
- * do not belong here because there is no need to persist them.
+ * do not belong here because there is no need to persist it.
  */
 export interface SystemStatus {
     /**

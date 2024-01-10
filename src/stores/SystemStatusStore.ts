@@ -2,9 +2,9 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-import { ServerConnectionStatus, StorageKey, SystemStatus } from "@/models";
+import { ChecklistsSyncStatus, ChecklistsWorkerMessageType, ServerConnectionStatus, StorageKey, SystemStatus, WorkerMessage, WorkerName } from "@/models";
 import { computed, ref } from "vue";
-import { definePersistentStore, usePersistentStorage } from "@/infrastructure";
+import { definePersistentStore, getWorkerRef, usePersistentStorage } from "@/infrastructure";
 import { AppInfoApiClient } from "@/apiClients";
 import { GenericStore } from "./shared";
 
@@ -21,11 +21,15 @@ async function _getServerVersion(): Promise<string> {
 
 export interface SystemStatusStore extends GenericStore<SystemStatus> {
     get clientUpdatesAreAvailable(): boolean;
-    get serverConnectionStatus(): ServerConnectionStatus;
-
     setClientUpdatesAreAvailable(clientUpdater: () => void): void;
-    setServerConnectionStatus(status: ServerConnectionStatus): void;
     applyClientUpdates(): void;
+
+    get checklistsSyncStatus(): ChecklistsSyncStatus;
+    setChecklistsSyncStatus(status: ChecklistsSyncStatus): void;
+    forceChecklistsSync(): void;
+
+    get serverConnectionStatus(): ServerConnectionStatus;
+    setServerConnectionStatus(status: ServerConnectionStatus): void;
 }
 
 export function useSystemStatusStore(): SystemStatusStore {
@@ -35,9 +39,11 @@ export function useSystemStatusStore(): SystemStatusStore {
 
         const _clientUpdater = ref<() => void | undefined>();
         const _serverConnectionStatus = ref(ServerConnectionStatus.Healthy);
+        const _checklistsSyncStatus = ref(ChecklistsSyncStatus.Idle);
 
         const clientUpdatesAreAvailable = computed(() => _clientUpdater.value !== undefined);
         const serverConnectionStatus = computed(() => _serverConnectionStatus.value);
+        const checklistsSyncStatus = computed(() => _checklistsSyncStatus.value);
 
         const { ensureIsInitialized: _ensureIsInitialized, read, update } = usePersistentStorage(storageKey, value);
 
@@ -62,20 +68,32 @@ export function useSystemStatusStore(): SystemStatusStore {
             _clientUpdater.value = clientUpdater;
         }
 
-        function setServerConnectionStatus(status: ServerConnectionStatus): void {
-            _serverConnectionStatus.value = status;
-        }
-
         function applyClientUpdates(): void {
             if (_clientUpdater.value !== undefined) {
                 _clientUpdater.value();
             }
         }
 
+        function setChecklistsSyncStatus(status: ChecklistsSyncStatus): void {
+            _checklistsSyncStatus.value = status;
+        }
+
+        function forceChecklistsSync(): void {
+            const workerRef = getWorkerRef(WorkerName.Checklists);
+            if (workerRef !== undefined) {
+                workerRef.postMessage(new WorkerMessage(ChecklistsWorkerMessageType.ForceImmediateSync, {}));
+            }
+        }
+
+        function setServerConnectionStatus(status: ServerConnectionStatus): void {
+            _serverConnectionStatus.value = status;
+        }
+
         return {
             value, ensureIsInitialized, read, update,
             clientUpdatesAreAvailable, setClientUpdatesAreAvailable, applyClientUpdates,
-            serverConnectionStatus, setServerConnectionStatus
+            checklistsSyncStatus, setChecklistsSyncStatus, forceChecklistsSync,
+            serverConnectionStatus, setServerConnectionStatus,
         };
     });
 }

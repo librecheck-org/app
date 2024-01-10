@@ -6,7 +6,7 @@ import * as EmailValidator from "email-validator";
 import { FairUseTokenApiClient, IamApiClient } from "@/apiClients";
 import { ViewModel, useCommand, useViewModel } from "@/infrastructure";
 import { useCurrentUserStore, useSystemStatusStore, useTokenStore } from "@/stores";
-import { Command } from "@/infrastructure/Command";
+import { Command } from "@/infrastructure";
 import { reactive } from "vue";
 import router from "@/router";
 
@@ -25,6 +25,7 @@ class LoginViewData {
 class LoginViewCommands {
     constructor(
         public updateClientCommand: Command,
+        public forceSyncCommand: Command,
         public requestAuthCodeCommand: Command,
         public verifyAuthCodeCommand: Command) {
     }
@@ -47,6 +48,15 @@ export function useLoginViewModel(): ViewModel<LoginViewData, LoginViewCommands>
 
     async function _updateApp(): Promise<void> {
         _systemStatusStore.applyClientUpdates();
+    }
+
+    function _canForceSync(): boolean {
+        // Sync cannot be forced without a logged-in user.
+        return false;
+    }
+
+    async function _forceSync(): Promise<void> {
+        // Empty body, as sync cannot be forced without a logged-in user.
     }
 
     async function _getFairUseToken() {
@@ -102,9 +112,13 @@ export function useLoginViewModel(): ViewModel<LoginViewData, LoginViewCommands>
     }
 
     const _updateClientCommand = useCommand(_canUpdateApp, _updateApp);
+    const _forceSyncCommand = useCommand(_canForceSync, _forceSync);
     const _requestAuthCodeCommand = useCommand(_canRequestAuthCode, _requestAuthCode);
     const _verifyAuthCodeCommand = useCommand(_canVerifyAuthCode, _verifyAuthCode);
-    const commands = new LoginViewCommands(_updateClientCommand, _requestAuthCodeCommand, _verifyAuthCodeCommand);
+    const commands = new LoginViewCommands(
+        _updateClientCommand, _forceSyncCommand,
+        _requestAuthCodeCommand, _verifyAuthCodeCommand
+    );
 
     return useViewModel({ data, commands, initialize });
 }
