@@ -7,7 +7,7 @@ import { StorageKey, Tokens } from "@/models";
 import { getCurrentUser } from "@/helpers";
 import { readFromStorage } from "./storage";
 
-export async function initDefaultApiConfig(): Promise<void> {
+export async function initializeApiModule(): Promise<void> {
     const env = await (await fetch("/env.json")).json();
 
     DefaultConfig.config = new Configuration({

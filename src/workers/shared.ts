@@ -3,21 +3,12 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 import { GenericWorkerMessageType, WorkerMessage } from "@/models";
-import { initDefaultApiConfig, setStorageWorker } from "@/infrastructure";
-import StorageWorker from "@/workers/StorageWorker?worker";
 import { fireAndForget } from "@/helpers";
+import { initializeApiModule } from "@/infrastructure";
 
 export async function initializeWorker() {
-    startStorageWorker();
-    await initDefaultApiConfig();
+    await initializeApiModule();
     self.postMessage(new WorkerMessage(GenericWorkerMessageType.Initialized, {}));
-}
-
-export function startStorageWorker(appInstanceId: string | undefined = undefined) {
-    const storageWorker = new StorageWorker();
-    storageWorker.postMessage(new WorkerMessage(GenericWorkerMessageType.Initialize, { appInstanceId }));
-    // Saves a reference to storage worker, so that storage functions can send it commands.
-    setStorageWorker(storageWorker);
 }
 
 export function scheduleNextExecution(action: () => Promise<void>, interval: number) {

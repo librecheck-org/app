@@ -10,7 +10,6 @@
                 v-if="systemStatusStore.clientUpdatesAreAvailable">
                 Update
             </ion-button>
-            <ion-loading trigger="update-client" message="Updating..."> </ion-loading>
 
             <ion-button slot="end" :disabled="!canForceSync" @click="forceSync" fill="clear" aria-label="Force sync">
                 <ion-icon :icon="sync" aria-label="Sync is idle" slot="icon-only" color="medium"
@@ -36,7 +35,7 @@
   
 <script setup lang="ts">
 import { ChecklistsSyncStatus, ServerConnectionStatus } from "@/models";
-import { IonButton, IonIcon, IonItem, IonItemDivider, IonItemGroup, IonLabel, IonLoading } from "@ionic/vue";
+import { IonButton, IonIcon, IonItem, IonItemDivider, IonItemGroup, IonLabel, loadingController } from "@ionic/vue";
 import { heart, heartDislike, heartHalf, sync } from "ionicons/icons";
 import { Command } from "@/infrastructure";
 import { onMounted } from "vue";
@@ -48,8 +47,16 @@ const props = defineProps<{
 }>();
 
 const systemStatusStore = useSystemStatusStore();
-const { canExecute: canUpdateClient, execute: updateClient } = props.updateClientCommand;
+const { canExecute: canUpdateClient, execute: _updateClient } = props.updateClientCommand;
 const { canExecute: canForceSync, execute: forceSync } = props.forceSyncCommand;
+
+async function updateClient() {
+    const loading = await loadingController.create({
+        message: "Updating...",
+    });
+    loading.present();
+    await _updateClient();
+}
 
 onMounted(async () => await systemStatusStore.ensureIsInitialized());
 </script>

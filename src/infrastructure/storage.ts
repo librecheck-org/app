@@ -2,47 +2,13 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-import { BroadcastChannelName, StorageKey, StorageUpdater, StorageWorkerMessageType, WorkerMessage } from "@/models";
+import { BroadcastChannelName, StorageKey, StorageWorkerMessageType, WorkerMessage } from "@/models";
+import { Drivers, Storage } from "@ionic/storage";
 import { Ref, ref } from "vue";
-import { fireAndForget, newUuid } from "@/helpers";
 import _ from "lodash";
 import { createBroadcastChannel } from "./workers";
 import { defineStore } from "pinia";
-
-/**
- * Storage worker handles direct operations on storage, in order to
- * take advantage of locks. CRUD operations are sent to this worker,
- * which sends back a message with operation result.
- */
-let _storageWorker: Worker | undefined;
-
-export function setStorageWorker(storageWorker: Worker) {
-    _storageWorker = storageWorker;
-    _storageWorker.addEventListener("message", (ev) => {
-        const msg = ev.data as WorkerMessage;
-        switch (msg.type) {
-            case StorageWorkerMessageType.ResolvePromise: {
-                const { promiseId, value } = msg.payload;
-                _resolvePromise(promiseId, value);
-                break;
-            }
-            case StorageWorkerMessageType.RejectPromise: {
-                const { promiseId, error } = msg.payload;
-                _rejectPromise(promiseId, error);
-                break;
-            }
-        }
-    });
-}
-
-async function _sendMessageToStorageWorker(type: StorageWorkerMessageType, payload: object): Promise<unknown> {
-    if (_storageWorker === undefined) {
-        throw new Error("Storage worker is not available");
-    }
-    const lockingPromise = _createBlockingPromise();
-    _storageWorker.postMessage(new WorkerMessage(type, { ...payload, promiseId: lockingPromise.id }));
-    return await lockingPromise.promise;
-}
+import { fireAndForget } from "@/helpers";
 
 /**
  * UI threads, which run the Ionic/Vue application, create a unique instance ID
@@ -54,70 +20,94 @@ async function _sendMessageToStorageWorker(type: StorageWorkerMessageType, paylo
  */
 let _appInstanceId: string | undefined;
 
-export function setAppInstanceId(appInstanceId: string) {
+export function initializeStorageModule(appInstanceId: string) {
     _appInstanceId = appInstanceId;
 }
 
-interface BlockingPromise {
-    id: string;
-    promise: Promise<unknown>;
-    resolve: (value: unknown) => void;
-    reject: (error: unknown) => void;
+/**
+ * A broadcast channel which is used to listen to storage events.
+ * Listening to those events is required in order to keep in-memory data fresh
+ * when updates might have been performed by web workers or other tabs/pages.
+ */
+const _storageEventsChannel = createBroadcastChannel(BroadcastChannelName.StorageEvents);
+
+function _triggerStorageUpdatedEvent(key: StorageKey) {
+    _storageEventsChannel.postMessage(new WorkerMessage(StorageWorkerMessageType.StorageUpdated, { key, appInstanceId: _appInstanceId }));
 }
 
-const _blockingPromiseMap = new Map<string, BlockingPromise>();
-const _dummyPromise = new Promise<unknown>(() => { });
-const _dummyAction = () => { /* Empty function used to initialize a blocking promise */ };
-
-function _createBlockingPromise(): BlockingPromise {
-    const promiseId = newUuid();
-    const blockingPromise: BlockingPromise = { id: promiseId, promise: _dummyPromise, resolve: _dummyAction, reject: _dummyAction };
-    blockingPromise.promise = new Promise((resolve, reject) => {
-        blockingPromise.resolve = resolve;
-        blockingPromise.reject = reject;
+class IonicStorageWrapper {
+    private readonly _store = new Storage({
+        name: "librecheck-db",
+        storeName: "librecheck-kv-v1",
+        driverOrder: [Drivers.IndexedDB],
     });
-    _blockingPromiseMap.set(promiseId, blockingPromise);
-    return blockingPromise;
-}
+    private _isCreated = false;
 
-function _resolvePromise(promiseId: string, value: unknown): void {
-    const blockingPromise = _blockingPromiseMap.get(promiseId);
-    if (blockingPromise !== undefined) {
-        blockingPromise.resolve(value);
-        _blockingPromiseMap.delete(promiseId);
+    public async get(key: string): Promise<any> {
+        await this._ensureCreated();
+        return await this._store.get(key);
+    }
+
+    public async set(key: string, value: any): Promise<void> {
+        await this._ensureCreated();
+        await this._store.set(key, value);
+    }
+
+    public async remove(key: string): Promise<void> {
+        await this._ensureCreated();
+        await this._store.remove(key);
+    }
+
+    private async _ensureCreated() {
+        if (this._isCreated) {
+            return;
+        }
+        await this._store.create();
+        this._isCreated = true;
     }
 }
 
-function _rejectPromise(promiseId: string, error: unknown): void {
-    const blockingPromise = _blockingPromiseMap.get(promiseId);
-    if (blockingPromise !== undefined) {
-        blockingPromise.reject(error);
-        _blockingPromiseMap.delete(promiseId);
-    }
-}
+const _ionicStorage = new IonicStorageWrapper();
 
 function _convertValue<T = object>(value: unknown) {
     return Object.keys(value ?? {}).length > 0 ? <T>value : undefined;
 }
 
 export async function readFromStorage<T = object>(key: StorageKey): Promise<T | undefined> {
-    const value = await _sendMessageToStorageWorker(StorageWorkerMessageType.ExecuteRead, { key });
-    return _convertValue(value);
+    let value: any = null;
+    await navigator.locks.request(key, { mode: "shared" }, async () => {
+        value = await _ionicStorage.get(key);
+    });
+    return _convertValue<T | undefined>(value);
 }
 
-export async function updateStorage<T = object>(key: StorageKey, updates: Partial<T>, updater: StorageUpdater | undefined = undefined): Promise<T | undefined> {
-    // Update function might receive ref objects, which cannot be sent to storage worker.
+type StorageUpdater<T> = (value: T | null, updates: Partial<T>) => T;
+
+function _mergeUpdates<T = object>(value: T | null, updates: Partial<T>): T {
+    return <T>{ ...value, ...updates };
+}
+
+export async function updateStorage<T = object>(key: StorageKey, updates: Partial<T>, updater: StorageUpdater<T> = _mergeUpdates): Promise<T | undefined> {
+    // Storage update function might receive ref objects, which cannot be stored.
     // In fact, they are proxy objects, while a plain object is expected for serialization.
+    // Therefore, a deep clone is applied to updates before applying them.
     updates = _.cloneDeep(updates);
-    // When a storage updater is not specified, then we fall back to a default function.
-    // That function, as the name implies, simply merges given updates into stored value.
-    updater ??= { module: "shared", function: "mergeUpdates" };
-    const value = await _sendMessageToStorageWorker(StorageWorkerMessageType.ExecuteUpdate, { key, updates, updater });
+
+    let value: any = null;
+    await navigator.locks.request(key, { mode: "exclusive" }, async () => {
+        value = await _ionicStorage.get(key);
+        value = updater(value, updates);
+        await _ionicStorage.set(key, value);
+        _triggerStorageUpdatedEvent(key);
+    });
+
     return _convertValue(value);
 }
 
 export async function deleteFromStorage(key: StorageKey): Promise<void> {
-    await _sendMessageToStorageWorker(StorageWorkerMessageType.ExecuteDelete, { key });
+    await navigator.locks.request(key, { mode: "exclusive" }, async () => {
+        await _ionicStorage.remove(key);
+    });
 }
 
 export function usePersistentStorage<T = object>(storageKey: StorageKey, value: Ref<T | undefined>) {
@@ -143,8 +133,8 @@ export function usePersistentStorage<T = object>(storageKey: StorageKey, value: 
         value.value = await readFromStorage(storageKey);
     }
 
-    async function update(updates: Partial<T>, updater: StorageUpdater | undefined = undefined) {
-        value.value = await updateStorage(storageKey, updates, updater);
+    async function update(updates: Partial<T>, updater: StorageUpdater<T> | undefined = undefined) {
+        value.value = await updateStorage(storageKey, updates, updater ?? _mergeUpdates);
     }
 
     return { ensureIsInitialized, read, update };
@@ -159,13 +149,6 @@ interface PersistentStore {
  * A map of store instances, which is used to avoid initializing them multiple times.
  */
 const _storeInstances = new Map<StorageKey, PersistentStore>();
-
-/**
- * A broadcast channel which is used to listen to storage events.
- * Listening to those events is required in order to keep in-memory data fresh
- * when updates might have been performed by web workers or other tabs/pages.
- */
-const _broadcastChannel = createBroadcastChannel(BroadcastChannelName.StorageEvents);
 
 export function definePersistentStore<S extends PersistentStore>(storageKey: StorageKey, storeSetup: () => PersistentStore): S {
     let store = <S | undefined>_storeInstances.get(storageKey);
@@ -183,7 +166,7 @@ export function definePersistentStore<S extends PersistentStore>(storageKey: Sto
     // Persistent stores need to listen to storage updated events,
     // because they need to refresh themselves when data is changed by other threads.
     const read = store.read;
-    _broadcastChannel.addEventListener("message", (ev) => {
+    _storageEventsChannel.addEventListener("message", (ev) => {
         const msg = ev.data as WorkerMessage;
         switch (msg.type) {
             case StorageWorkerMessageType.StorageUpdated: {

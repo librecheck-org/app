@@ -86,24 +86,6 @@ export const enum StorageWorkerMessageType {
 }
 
 /**
- * Describes a function, identified by its module and its name,
- * which will be used by storage worker to atomically update,
- * with an exclusive lock, a stored value.
- */
-export interface StorageUpdater {
-    /**
-     * File name, without extension, containing the updater function.
-     * File must a direct child of "stores" folder.
-     */
-    get module(): string;
-
-    /**
-     * Name of the updater function.
-     */
-    get function(): string;
-}
-
-/**
  * Status of checklists sync.
  */
 export const enum ChecklistsSyncStatus {

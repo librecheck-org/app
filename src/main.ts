@@ -8,8 +8,8 @@ import router from "./router";
 import { surveyPlugin } from "survey-vue3-ui";
 
 /* LibreCheck modules */
-import { initDefaultApiConfig, setAppInstanceId } from "./infrastructure";
-import { registerServiceWorker, startStorageWorker, startSyncWorker, startSystemStatusWorker } from "./workers";
+import { initializeApiModule, initializeStorageModule } from "./infrastructure";
+import { registerServiceWorker, startSyncWorker, startSystemStatusWorker } from "./workers";
 import { newUuid } from "./helpers";
 
 /* Core CSS required for Ionic components to work properly */
@@ -34,7 +34,7 @@ import "./theme/variables.css";
 defineCustomElements(window);
 
 const appInstanceId = newUuid();
-startStorageWorker(appInstanceId);
+initializeStorageModule(appInstanceId);
 
 const pinia = createPinia();
 const app = createApp(App)
@@ -44,8 +44,7 @@ const app = createApp(App)
     .use(surveyPlugin);
 
 router.isReady().then(async () => {
-    setAppInstanceId(appInstanceId);
-    await initDefaultApiConfig();
+    await initializeApiModule();
 
     app.mount("#app");
 
