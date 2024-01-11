@@ -32,7 +32,7 @@
     "ionicons": "7.2.2",
     "lodash": "4.17.21",
     "pinia": "2.1.7",
-    "survey-vue3-ui": "1.9.124",
+    "survey-vue3-ui": "1.9.125",
     "vue": "3.4.9",
     "vue-router": "4.2.5"
   },
