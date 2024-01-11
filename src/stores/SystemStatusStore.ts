@@ -50,17 +50,16 @@ export function useSystemStatusStore(): SystemStatusStore {
         async function ensureIsInitialized() {
             await _ensureIsInitialized();
 
-            value.value.clientVersion = await _getClientVersion();
-
             try {
-                value.value.serverVersion = await _getServerVersion();
-                await update({ serverVersion: value.value.serverVersion });
+                const clientVersion = await _getClientVersion();
+                const serverVersion = await _getServerVersion();
+                await update({ clientVersion, serverVersion });
             }
             catch (err) {
-                // A non-blocking error occurred while reading server version.
+                // A non-blocking error occurred while reading client or server version.
                 // That information should be available within client storage and,
                 // if it is not, then a default value is used.
-                console.warn("A non-blocking error occurred while reading server version", err);
+                console.warn("A non-blocking error occurred while reading client or server version", err);
             }
         }
 

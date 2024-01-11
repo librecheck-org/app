@@ -115,8 +115,8 @@ export function usePersistentStorage<T = object>(storageKey: StorageKey, value: 
 
     async function ensureIsInitialized() {
         if (!isInitialized.value) {
-            // If value is stored within client storage, then it replaces default value.
-            // Stored value is merged with default value, because new properties
+            // If a value has been persisted, then it replaces default store value.
+            // However, stored value is merged with default value, because new properties
             // might have been added to default value.
             const storedValue = await readFromStorage<T>(storageKey);
             if (storedValue !== undefined) {
@@ -124,7 +124,10 @@ export function usePersistentStorage<T = object>(storageKey: StorageKey, value: 
             }
             // Stored value is updated with merged value, in order to let workers,
             // which do not use stores, directly read the merged value.
-            await update(value.value);
+            // Value can be undefined when both stored value and default value are undefined.
+            if (value.value !== undefined) {
+                await update(value.value);
+            }
         }
         isInitialized.value = true;
     }
