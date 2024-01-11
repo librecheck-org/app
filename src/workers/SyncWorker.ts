@@ -40,7 +40,13 @@ async function _syncChecklistsData() {
 }
 
 async function _syncChecklistsDataCore() {
-    await navigator.locks.request(LockName.SyncChecklistsData, { mode: "exclusive" }, async () => {
+    const lockOptions: LockOptions = { mode: "exclusive", ifAvailable: true };
+    await navigator.locks.request(LockName.SyncChecklistsData, lockOptions, async (lock) => {
+        if (lock === null) {
+            // Another worker instance is already synchronizing checklists data
+            // and this instance should not do it now.
+            return;
+        }
         _triggerSyncStartedEvent();
         await _readChecklistsData();
         await _updateChecklistsData();

@@ -24,6 +24,8 @@ export const enum StorageKey {
  * List of all lock names managed by the application, grouped by "module".
  */
 export const enum LockName {
+    // Base
+    CheckServerConnection = "lc.base.checkServerConnection",
     // Checklists
     SyncChecklistsData = "lc.checklists.syncChecklistsData",
 }

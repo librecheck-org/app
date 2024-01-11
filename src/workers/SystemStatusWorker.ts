@@ -2,7 +2,7 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-import { GenericWorkerMessageType, ServerConnectionStatus, SystemStatusWorkerMessageType, WorkerMessage } from "@/models";
+import { GenericWorkerMessageType, LockName, ServerConnectionStatus, SystemStatusWorkerMessageType, WorkerMessage } from "@/models";
 import { initializeWorker, scheduleNextExecution } from "./shared";
 import { AppInfoApiClient } from "@/apiClients";
 import { fireAndForget } from "@/helpers";
@@ -34,17 +34,25 @@ async function _checkServerConnection() {
 }
 
 async function _checkServerConnectionCore() {
-    try {
-        const appInfoApiClient = new AppInfoApiClient();
-        await appInfoApiClient.checkAppHealth();
-        self.postMessage(new WorkerMessage(
-            SystemStatusWorkerMessageType.ServerConnectionChecked,
-            ServerConnectionStatus.Healthy));
-    }
-    catch (err) {
-        console.warn("An error occurred while checking server connection", err);
-        self.postMessage(new WorkerMessage(
-            SystemStatusWorkerMessageType.ServerConnectionChecked,
-            ServerConnectionStatus.Disconnected));
-    }
+    const lockOptions: LockOptions = { mode: "exclusive", ifAvailable: true };
+    await navigator.locks.request(LockName.CheckServerConnection, lockOptions, async (lock) => {
+        if (lock === null) {
+            // Another worker instance is already checking server connection
+            // and this instance should not check it now.
+            return;
+        }
+        try {
+            const appInfoApiClient = new AppInfoApiClient();
+            await appInfoApiClient.checkAppHealth();
+            self.postMessage(new WorkerMessage(
+                SystemStatusWorkerMessageType.ServerConnectionChecked,
+                ServerConnectionStatus.Healthy));
+        }
+        catch (err) {
+            console.warn("An error occurred while checking server connection", err);
+            self.postMessage(new WorkerMessage(
+                SystemStatusWorkerMessageType.ServerConnectionChecked,
+                ServerConnectionStatus.Disconnected));
+        }
+    });
 }
