@@ -1,7 +1,8 @@
 <template>
     <ion-page>
         <ion-content class="ion-padding">
-            <JsonEditorVue v-model="data.workingCopy.contents" v-bind="{/* local props & attrs */ }" />
+            <JsonEditorVue v-model="data.workingCopy.contents" v-bind="{/* local props & attrs */ }"
+                v-if="data.workingCopy !== undefined" />
         </ion-content>
     </ion-page>
 </template>

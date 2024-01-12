@@ -13,16 +13,16 @@ export enum DefinitionEditorViewState {
 
 interface DefinitionEditorViewData {
     get state(): DefinitionEditorViewState;
-    get workingCopy(): DefinitionLocalChange;
+    get workingCopy(): DefinitionLocalChange | undefined;
 }
 
 class DefinitionEditorViewDataImpl implements DefinitionEditorViewData {
-    constructor(private _workingCopy: DefinitionLocalChange) {
+    constructor(private _workingCopy: DefinitionLocalChange | undefined) {
         this.workingCopy = _workingCopy;
     }
 
     state: DefinitionEditorViewState = DefinitionEditorViewState.None;
-    workingCopy: DefinitionLocalChange;
+    workingCopy: DefinitionLocalChange | undefined;
 }
 
 class DefinitionEditorViewCommands {
@@ -34,14 +34,14 @@ class DefinitionEditorViewCommands {
 export function useDefinitionEditorViewModel(definitionUuid: string): ViewModel<DefinitionEditorViewData, DefinitionEditorViewCommands> {
     const _definitionStore = useDefinitionStore();
 
-    const _workingCopy = _definitionStore.readWorkingCopy(definitionUuid);
-    if (_workingCopy === undefined) {
-        throw new Error("Given definition UUID does not have a working copy");
-    }
-
-    const data = reactive(new DefinitionEditorViewDataImpl(_workingCopy));
+    const data = reactive(new DefinitionEditorViewDataImpl(undefined));
 
     async function initialize() {
+        await _definitionStore.ensureIsInitialized();
+        data.workingCopy = _definitionStore.readWorkingCopy(definitionUuid);
+        if (data.workingCopy === undefined) {
+            throw new Error("Given definition UUID does not have a working copy");
+        }
     }
 
     function _canSave(): boolean {
