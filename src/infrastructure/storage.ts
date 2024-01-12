@@ -81,13 +81,13 @@ export async function readFromStorage<T = object>(key: StorageKey): Promise<T | 
     return _convertValue<T | undefined>(value);
 }
 
-type StorageUpdater<T> = (value: T | null, updates: Partial<T>) => T;
+type StorageUpdaterFunc<T> = (value: T | null, updates: Partial<T>) => T;
 
 function _mergeUpdates<T = object>(value: T | null, updates: Partial<T>): T {
     return <T>{ ...value, ...updates };
 }
 
-export async function updateStorage<T = object>(key: StorageKey, updates: Partial<T>, updater: StorageUpdater<T> = _mergeUpdates): Promise<T | undefined> {
+export async function updateStorage<T = object>(key: StorageKey, updates: Partial<T>, updater: StorageUpdaterFunc<T> = _mergeUpdates): Promise<T | undefined> {
     // Storage update function might receive ref objects, which cannot be stored.
     // In fact, they are proxy objects, while a plain object is expected for serialization.
     // Therefore, a deep clone is applied to updates before applying them.
@@ -136,7 +136,7 @@ export function usePersistentStorage<T = object>(storageKey: StorageKey, value: 
         value.value = await readFromStorage(storageKey);
     }
 
-    async function update(updates: Partial<T>, updater: StorageUpdater<T> | undefined = undefined) {
+    async function update(updates: Partial<T>, updater: StorageUpdaterFunc<T> | undefined = undefined) {
         value.value = await updateStorage(storageKey, updates, updater ?? _mergeUpdates);
     }
 

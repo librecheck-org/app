@@ -30,6 +30,12 @@ const routes: Array<RouteRecordRaw> = [
                 name: "Definitions",
                 component: () => import("@/views/DefinitionListPage.vue"),
             },
+            {
+                path: "definitions/:definitionUuid",
+                name: "Definition",
+                component: () => import("@/views/DefinitionEditorPage.vue"),
+                props: true,
+            },
         ],
     },
     {

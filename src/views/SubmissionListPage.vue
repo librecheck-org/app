@@ -16,12 +16,12 @@
                                 {{ sub.timestamp }}
                             </ion-card-content>
 
-                            <ion-button fill="clear" @click="editSubmissionDraft(sub.uuid)">Fill</ion-button>
+                            <ion-button fill="clear" @click="edit(sub.uuid)">Fill</ion-button>
 
-                            <ion-button fill="clear" @click="editSubmissionDraft(sub.uuid)"
-                                :disabled="!canEditSubmissionDraft" v-if="sub.hasWorkingCopy">Edit</ion-button>
-                            <ion-button fill="clear" @click="deleteSubmissionDraft(sub.uuid)"
-                                :disabled="!canDeleteSubmissionDraft" v-if="sub.hasWorkingCopy">Delete</ion-button>
+                            <ion-button fill="clear" @click="edit(sub.uuid)" :disabled="!canEdit()"
+                                v-if="sub.hasWorkingCopy">Edit</ion-button>
+                            <ion-button fill="clear" @click="deleteSubmissionDraft(sub.uuid)" :disabled="!canDelete()"
+                                v-if="sub.hasWorkingCopy">Delete</ion-button>
                         </ion-card>
                     </ion-col>
                 </ion-row>
@@ -35,6 +35,6 @@ import { IonButton, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, Ion
 import { useSubmissionListViewModel } from "@/viewModels";
 
 const { data, commands } = useSubmissionListViewModel();
-const { canExecute: canEditSubmissionDraft, execute: editSubmissionDraft } = commands.editSubmissionDraft;
-const { canExecute: canDeleteSubmissionDraft, execute: deleteSubmissionDraft } = commands.deleteSubmissionDraft;
+const { canExecute: canEdit, execute: edit } = commands.editSubmissionDraft;
+const { canExecute: canDelete, execute: deleteSubmissionDraft } = commands.deleteSubmissionDraft;
 </script>

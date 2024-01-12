@@ -53,12 +53,12 @@ export function useSubmissionEditorViewModel(submissionUuid: string): ViewModel<
 
         survey.onValueChanged.add(async (s: SurveyModel) => {
             submissionDraft.contents = JSON.stringify(s.data);
-            await _submissionStore.updateDraft(submissionDraft);
+            await _submissionStore.updateWorkingCopy(submissionDraft);
         });
 
         survey.onCurrentPageChanged.add(async (s: SurveyModel) => {
             submissionDraft.currentPageNumber = s.currentPageNo;
-            await _submissionStore.updateDraft(submissionDraft);
+            await _submissionStore.updateWorkingCopy(submissionDraft);
         });
 
         survey.applyTheme(PlainDarkPanelless);
@@ -67,7 +67,7 @@ export function useSubmissionEditorViewModel(submissionUuid: string): ViewModel<
     }
 
     async function initialize() {
-        const submissionDraft = _submissionStore.readDraft(submissionUuid);
+        const submissionDraft = _submissionStore.readWorkingCopy(submissionUuid);
         if (submissionDraft !== undefined) {
             data.survey = _initializeSurvey(submissionDraft);
         }
@@ -78,7 +78,7 @@ export function useSubmissionEditorViewModel(submissionUuid: string): ViewModel<
     }
 
     async function _createSubmissionDraft(definitionUuid: string): Promise<void> {
-        const submissionDraft = await _submissionStore.createDraft(definitionUuid);
+        const submissionDraft = await _submissionStore.createWorkingCopy(definitionUuid);
         _ionRouter.push("/submissions/" + submissionDraft.uuid);
     }
 

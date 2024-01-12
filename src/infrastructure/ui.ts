@@ -2,7 +2,8 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-import { ComputedRef, Ref, computed, onMounted, ref } from "vue";
+import { Ref, onMounted, ref } from "vue";
+import { ActionSheetButton } from "@ionic/vue";
 
 export interface ViewModel<TData = object, TCommands = object> {
     data: TData;
@@ -18,19 +19,21 @@ export function useViewModel<TData = object, TCommands = object>(vm: ViewModel<T
 
 export interface Command {
     get isExecuting(): Ref<boolean>;
-    get canExecute(): ComputedRef<boolean>;
 
+    canExecute(...args: any[]): boolean;
     execute(...args: any[]): Promise<void>;
 }
 
-export const useCommand = (canExecute: () => boolean, execute: (...args: any[]) => Promise<void>): Command => {
+type CanExecuteFunc = (...args: any[]) => boolean;
+type ExecuteFunc = (...args: any[]) => Promise<void>;
+
+export const useCommand = (canExecute: CanExecuteFunc, execute: ExecuteFunc): Command => {
     const isExecutingRef = ref(false);
 
-    const canExecuteWrapper = () => !isExecutingRef.value && canExecute();
-    const canExecuteCmp = computed(canExecuteWrapper);
+    const canExecuteWrapper = (...args: any[]) => !isExecutingRef.value && canExecute(args);
 
     const executeWrapper = async (...args: any[]) => {
-        if (canExecuteWrapper()) {
+        if (canExecuteWrapper(args)) {
             try {
                 isExecutingRef.value = true;
                 await execute(args);
@@ -40,5 +43,29 @@ export const useCommand = (canExecute: () => boolean, execute: (...args: any[]) 
         }
     };
 
-    return { isExecuting: isExecutingRef, canExecute: canExecuteCmp, execute: executeWrapper };
+    return { isExecuting: isExecutingRef, canExecute: canExecuteWrapper, execute: executeWrapper };
 };
+
+export interface ActionSheetCommand {
+    command: Command;
+    args?: any[] | undefined;
+}
+
+export function getDefaultActionSheetButtons(): ActionSheetButton[] {
+    return [
+        {
+            // Ionic loads every button with "cancel" role as the bottom button.
+            // Therefore, it is correct that this is the first button in the array.
+            text: "Cancel",
+            role: "cancel",
+        }
+    ];
+}
+
+export function onActionSheetDidDismiss(ev: CustomEvent) {
+    const data = ev.detail?.data;
+    if ("command" in data) {
+        const { command, args } = ev.detail.data;
+        command.execute(...args);
+    }
+}

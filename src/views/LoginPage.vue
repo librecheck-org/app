@@ -35,7 +35,7 @@
                     </ion-row>
                     <ion-row v-if="data.state == LoginViewState.EmailAddressCollection">
                         <ion-col v-bind="columnSizes">
-                            <ion-button @click="requestAuthCode()" :disabled="!canRequestAuthCode" expand="block">
+                            <ion-button @click="requestAuthCode()" :disabled="!canRequestAuthCode()" expand="block">
                                 Send auth code
                             </ion-button>
                         </ion-col>
@@ -48,7 +48,7 @@
                     </ion-row>
                     <ion-row v-if="data.state == LoginViewState.AuthCodeCollection">
                         <ion-col v-bind="columnSizes">
-                            <ion-button @click="verifyAuthCode()" :disabled="!canVerifyAuthCode" expand="block">
+                            <ion-button @click="verifyAuthCode()" :disabled="!canVerifyAuthCode()" expand="block">
                                 Verify auth code
                             </ion-button>
                         </ion-col>

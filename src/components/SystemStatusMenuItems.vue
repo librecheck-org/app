@@ -6,12 +6,12 @@
         <ion-item>
             <ion-label>Client v{{ systemStatusStore.value.clientVersion }}</ion-label>
 
-            <ion-button id="update-client" slot="end" :disabled="!canUpdateClient" @click="updateClient"
+            <ion-button id="update-client" slot="end" :disabled="!canUpdateClient()" @click="updateClient"
                 v-if="systemStatusStore.clientUpdatesAreAvailable">
                 Update
             </ion-button>
 
-            <ion-button slot="end" :disabled="!canForceSync" @click="forceSync" fill="clear" aria-label="Force sync">
+            <ion-button slot="end" :disabled="!canForceSync()" @click="forceSync" fill="clear" aria-label="Force sync">
                 <ion-icon :icon="sync" aria-label="Sync is idle" slot="icon-only" color="medium"
                     v-if="systemStatusStore.checklistsSyncStatus == ChecklistsSyncStatus.Idle" />
                 <ion-icon :icon="sync" aria-label="Sync is running" slot="icon-only" color="medium" class="lc-icon-spin"

@@ -18,8 +18,17 @@ export function getCurrentDate(): Date {
     return new Date();
 }
 
+interface KeyValuePair<TKey, TValue> {
+    get key(): TKey;
+    get value(): TValue;
+}
+
+export function getRecordPairs<T>(record: Record<string, T>): KeyValuePair<string, T>[] {
+    return Object.entries(record).map(kv => { return { key: kv[0], value: kv[1] }; });
+}
+
 export function getRecordValues<T>(record: Record<string, T>): T[] {
-    return Object.entries(record).map(kv => kv[1]);
+    return getRecordPairs(record).map(kv => kv.value);
 }
 
 export function fireAndForget(action: () => Promise<void>) {

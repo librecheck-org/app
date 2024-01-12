@@ -4,7 +4,7 @@
 
 import { BroadcastChannelName, ChecklistsSyncStatus, GenericWorkerMessageType, SyncWorkerMessageType, SystemStatusWorkerMessageType, WorkerMessage, WorkerName } from "@/models";
 import { createBroadcastChannel, setWorkerRef } from "@/infrastructure";
-import { useDefinitionsStore as useDefinitionStore, useSubmissionStore, useSystemStatusStore } from "@/stores";
+import { useDefinitionStore as useDefinitionStore, useSubmissionStore, useSystemStatusStore } from "@/stores";
 import SyncWorker from "@/workers/SyncWorker?worker";
 import SystemStatusWorker from "@/workers/SystemStatusWorker?worker";
 import { fireAndForget } from "@/helpers";

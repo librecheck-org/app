@@ -10,10 +10,10 @@ import { GenericStore } from "./shared";
 import { ref } from "vue";
 
 export interface SubmissionStore extends GenericStore<Submissions> {
-    createDraft(definition: DefinitionDetails): Promise<SubmissionLocalChange>;
-    readDraft(submissionUuid: string): SubmissionLocalChange | undefined;
-    updateDraft(submissionDraft: SubmissionLocalChange): Promise<void>;
-    deleteDraft(submissionUuid: string): Promise<void>;
+    createWorkingCopy(definition: DefinitionDetails): Promise<SubmissionLocalChange>;
+    readWorkingCopy(submissionUuid: string): SubmissionLocalChange | undefined;
+    updateWorkingCopy(submissionDraft: SubmissionLocalChange): Promise<void>;
+    deleteWorkingCopy(submissionUuid: string): Promise<void>;
 }
 
 export function useSubmissionStore(): SubmissionStore {
@@ -27,8 +27,8 @@ export function useSubmissionStore(): SubmissionStore {
             await _ensureIsInitialized();
         }
 
-        async function createDraft(definition: DefinitionDetails): Promise<SubmissionLocalChange> {
-            const draft = <SubmissionLocalChange>{
+        async function createWorkingCopy(definition: DefinitionDetails): Promise<SubmissionLocalChange> {
+            const workingCopy = <SubmissionLocalChange>{
                 uuid: newUuid(),
                 definition: definition,
                 contents: "{}",
@@ -36,15 +36,15 @@ export function useSubmissionStore(): SubmissionStore {
                 changeStatus: ChangeStatus.Updated,
                 currentPageNumber: 0,
             };
-            await update({ workingCopies: { ...value.value.workingCopies, [draft.uuid]: draft } });
-            return draft;
+            await update({ workingCopies: { ...value.value.workingCopies, [workingCopy.uuid]: workingCopy } });
+            return workingCopy;
         }
 
-        function readDraft(submissionUuid: string): SubmissionLocalChange | undefined {
+        function readWorkingCopy(submissionUuid: string): SubmissionLocalChange | undefined {
             return value.value.workingCopies[submissionUuid];
         }
 
-        async function updateDraft(submissionDraft: SubmissionLocalChange): Promise<void> {
+        async function updateWorkingCopy(submissionDraft: SubmissionLocalChange): Promise<void> {
             const submissions = value.value.workingCopies;
             submissionDraft.timestamp = getCurrentDate();
             updateChangeStatus(submissionDraft, ChangeStatus.Updated);
@@ -52,9 +52,9 @@ export function useSubmissionStore(): SubmissionStore {
             await update({ workingCopies: submissions });
         }
 
-        async function deleteDraft(submissionUuid: string): Promise<void> {
+        async function deleteWorkingCopy(submissionUuid: string): Promise<void> {
             const submissions = value.value.workingCopies;
-            const submissionDraft = readDraft(submissionUuid);
+            const submissionDraft = readWorkingCopy(submissionUuid);
             if (submissionDraft === undefined) {
                 return;
             }
@@ -66,7 +66,7 @@ export function useSubmissionStore(): SubmissionStore {
 
         return {
             value, ensureIsInitialized, read, update,
-            createDraft, readDraft, updateDraft, deleteDraft
+            createWorkingCopy, readWorkingCopy, updateWorkingCopy, deleteWorkingCopy
         };
     });
 }

@@ -100,7 +100,7 @@ export function useSubmissionListViewModel(): ViewModel<SubmissionListViewData, 
     }
 
     async function _deleteSubmissionDraft(submissionUuid: string): Promise<void> {
-        await _submissionStore.deleteDraft(submissionUuid);
+        await _submissionStore.deleteWorkingCopy(submissionUuid);
     }
 
     const _editSubmissionDraftCommand = useCommand(_canEditSubmissionDraft, _editSubmissionDraft);

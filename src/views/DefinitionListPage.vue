@@ -15,7 +15,13 @@
                                 Here's a small text description for the card content. Nothing more, nothing less.
                             </ion-card-content>
 
-                            <ion-button fill="clear" @click="createSubmissionDraft(def.uuid)">Fill</ion-button>
+                            <ion-button fill="clear" @click="fill(def.uuid)" :disabled="!canFill(def.uuid)">
+                                Fill
+                            </ion-button>
+
+                            <ion-button :id="getOpenActionSheetId(def.uuid)" fill="clear">More</ion-button>
+                            <ion-action-sheet :trigger="getOpenActionSheetId(def.uuid)" header="Actions"
+                                :buttons="getActionSheetButtons(def.uuid)" @didDismiss="onActionSheetDidDismiss($event)" />
                         </ion-card>
                     </ion-col>
                 </ion-row>
@@ -25,9 +31,35 @@
 </template>
   
 <script setup lang="ts">
-import { IonButton, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonCol, IonContent, IonGrid, IonPage, IonRow } from "@ionic/vue";
+import { ActionSheetButton, IonActionSheet, IonButton, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonCol, IonContent, IonGrid, IonPage, IonRow } from "@ionic/vue";
+import { getDefaultActionSheetButtons, onActionSheetDidDismiss } from "@/infrastructure";
 import { useDefinitionListViewModel } from "@/viewModels";
 
 const { data, commands } = useDefinitionListViewModel();
-const { execute: createSubmissionDraft } = commands.createSubmissionDraft;
+const { canExecute: canFill, execute: fill } = commands.fill;
+
+function getOpenActionSheetId(definitionUuid: string): string {
+    return `open-action-sheet-${definitionUuid}`;
+}
+
+function getActionSheetButtons(definitionUuid: string): ActionSheetButton[] {
+    const buttons = getDefaultActionSheetButtons();
+
+    if (canFill(definitionUuid)) {
+        buttons.push({
+            text: "Fill",
+            data: {
+                command: commands.fill,
+                args: [definitionUuid]
+            },
+        });
+    }
+
+    buttons.push({
+        text: "Delete",
+        role: "destructive",
+    });
+
+    return buttons;
+}
 </script>
