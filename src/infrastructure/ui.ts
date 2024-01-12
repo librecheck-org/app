@@ -64,7 +64,7 @@ export function getDefaultActionSheetButtons(): ActionSheetButton[] {
 
 export function onActionSheetDidDismiss(ev: CustomEvent) {
     const data = ev.detail?.data;
-    if ("command" in data) {
+    if (data !== undefined && "command" in data) {
         const { command, args } = ev.detail.data;
         command.execute(...args);
     }

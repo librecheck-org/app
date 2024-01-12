@@ -31,6 +31,7 @@ class DefinitionListViewDataImpl implements DefinitionListViewData {
 
 class DefinitionListViewCommands {
     constructor(
+        public edit: Command,
         public fill: Command) {
     }
 }
@@ -45,6 +46,15 @@ export function useDefinitionListViewModel(): ViewModel<DefinitionListViewData, 
     async function initialize() {
     }
 
+    function _canEdit(): boolean {
+        return true;
+    }
+
+    async function _edit(definitionUuid: string): Promise<void> {
+        const workingCopy = await _definitionStore.createWorkingCopy(definitionUuid);
+        _ionRouter.push("/definitions/" + workingCopy.uuid);
+    }
+
     function _canFill(): boolean {
         return true;
     }
@@ -57,8 +67,9 @@ export function useDefinitionListViewModel(): ViewModel<DefinitionListViewData, 
         }
     }
 
+    const _editCommand = useCommand(_canEdit, _edit);
     const _fillCommand = useCommand(_canFill, _fill);
-    const commands = new DefinitionListViewCommands(_fillCommand);
+    const commands = new DefinitionListViewCommands(_editCommand, _fillCommand);
 
     return useViewModel({ data, commands, initialize });
 }

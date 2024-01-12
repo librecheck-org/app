@@ -8,6 +8,7 @@
   
 <script setup lang="ts">
 import { IonContent, IonPage } from "@ionic/vue";
+import JsonEditorVue from "json-editor-vue";
 import { useDefinitionEditorViewModel } from "@/viewModels";
 
 const props = defineProps<{

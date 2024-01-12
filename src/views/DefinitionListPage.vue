@@ -15,10 +15,6 @@
                                 Here's a small text description for the card content. Nothing more, nothing less.
                             </ion-card-content>
 
-                            <ion-button fill="clear" @click="fill(def.uuid)" :disabled="!canFill(def.uuid)">
-                                Fill
-                            </ion-button>
-
                             <ion-button :id="getOpenActionSheetId(def.uuid)" fill="clear">More</ion-button>
                             <ion-action-sheet :trigger="getOpenActionSheetId(def.uuid)" header="Actions"
                                 :buttons="getActionSheetButtons(def.uuid)" @didDismiss="onActionSheetDidDismiss($event)" />
@@ -36,7 +32,8 @@ import { getDefaultActionSheetButtons, onActionSheetDidDismiss } from "@/infrast
 import { useDefinitionListViewModel } from "@/viewModels";
 
 const { data, commands } = useDefinitionListViewModel();
-const { canExecute: canFill, execute: fill } = commands.fill;
+const { canExecute: canEdit } = commands.edit;
+const { canExecute: canFill } = commands.fill;
 
 function getOpenActionSheetId(definitionUuid: string): string {
     return `open-action-sheet-${definitionUuid}`;
@@ -44,6 +41,16 @@ function getOpenActionSheetId(definitionUuid: string): string {
 
 function getActionSheetButtons(definitionUuid: string): ActionSheetButton[] {
     const buttons = getDefaultActionSheetButtons();
+
+    if (canEdit(definitionUuid)) {
+        buttons.push({
+            text: "Edit",
+            data: {
+                command: commands.edit,
+                args: [definitionUuid]
+            },
+        });
+    }
 
     if (canFill(definitionUuid)) {
         buttons.push({

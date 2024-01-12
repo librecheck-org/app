@@ -12,7 +12,7 @@ import { ref } from "vue";
 export interface DefinitionStore extends GenericStore<Definitions> {
     readByUuid(definitionUuid: string): DefinitionDetails | undefined;
 
-    createWorkingCopy(): Promise<DefinitionLocalChange>;
+    createWorkingCopy(definitionUuid: string | undefined): Promise<DefinitionLocalChange>;
     readWorkingCopy(definitionUuid: string): DefinitionLocalChange | undefined;
 }
 
@@ -31,13 +31,18 @@ export function useDefinitionStore(): DefinitionStore {
             return value.value.details[definitionUuid];
         }
 
-        async function createWorkingCopy(): Promise<DefinitionLocalChange> {
-            const workingCopy = <DefinitionLocalChange>{
-                uuid: newUuid(),
-                title: "New definition",
-                contents: "{}",
-                timestamp: getCurrentDate(),
-                changeStatus: ChangeStatus.Updated,
+        async function createWorkingCopy(definitionUuid: string | undefined): Promise<DefinitionLocalChange> {
+            let workingCopy = readWorkingCopy(definitionUuid);
+            if (workingCopy !== undefined) {
+                return workingCopy;
+            }
+            const definition = readByUuid(definitionUuid);
+            workingCopy = <DefinitionLocalChange>{
+                uuid: definition?.uuid ?? newUuid(),
+                title: definition?.title ?? "New definition",
+                contents: definition?.contents ?? "{}",
+                timestamp: definition?.timestamp ?? getCurrentDate(),
+                changeStatus: ChangeStatus.Unchanged,
             };
             await update({ workingCopies: { [workingCopy.uuid]: workingCopy } }, (v, u) => {
                 return <Definitions>{ ...v, workingCopies: { ...v?.workingCopies, ...u.workingCopies } };
