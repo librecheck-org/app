@@ -39,13 +39,37 @@ export const enum SyncWorkerMessageType {
     SubmissionsRead = "submissions_read",
 }
 
-export enum ChangeStatus {
+/**
+ * Change status used to perform synchronization.
+ * Positive numbers must match with corresponding server-side enumeration,
+ * while negative numbers can be used to represent special client statuses,
+ * as they are not considered by the synchronization flow.
+ */
+export const enum ChangeStatus {
+    /**
+     * Placeholder status, assigned to a new object when it is created
+     * but not yet saved by the user. For example, when a user creates a new definition,
+     * change status of given definition is set to placeholder until the first save.
+     */
+    Placeholder = -1,
+
+    /**
+     * Object does not have any change that should be synchronized.
+     */
     Unchanged = 0,
+
+    /**
+     * Object has been created, or updated, and it must be synchronized.
+     */
     Updated = 1,
+
+    /**
+     * Object has been deleted and it must be synchronized.
+     */
     Deleted = 2
 }
 
-export enum SyncStatus {
+export const enum SyncStatus {
     RemoteOnly = 0,
     Synced = 1,
     WaitingForSync = 2,
@@ -57,11 +81,6 @@ export interface MergeableObject {
 
 export function updateChangeStatus(obj: MergeableObject, newStatus: ChangeStatus): void {
     switch (obj.changeStatus) {
-        case ChangeStatus.Unchanged:
-        case ChangeStatus.Updated:
-            obj.changeStatus = newStatus;
-            break;
-
         case ChangeStatus.Deleted:
             throw new Error("A deleted object cannot be updated");
 

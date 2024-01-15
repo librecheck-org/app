@@ -32,18 +32,33 @@ export function useDefinitionStore(): DefinitionStore {
         }
 
         async function createWorkingCopy(definitionUuid: string | undefined): Promise<DefinitionLocalChange> {
-            let workingCopy = readWorkingCopy(definitionUuid);
-            if (workingCopy !== undefined) {
-                return workingCopy;
+            let workingCopy: DefinitionLocalChange | undefined;
+            if (definitionUuid === undefined) {
+                workingCopy = <DefinitionLocalChange>{
+                    uuid: newUuid(),
+                    title: "",
+                    contents: "{}",
+                    timestamp: getCurrentDate(),
+                    changeStatus: ChangeStatus.Placeholder,
+                };
+            } else {
+                workingCopy = readWorkingCopy(definitionUuid);
+                if (workingCopy !== undefined) {
+                    // A working copy already exists and it should not be created.
+                    return workingCopy;
+                }
+                const definition = readByUuid(definitionUuid);
+                if (definition === undefined) {
+                    throw new Error(`Definition with UUID ${definitionUuid} does not exist`);
+                }
+                workingCopy = <DefinitionLocalChange>{
+                    uuid: newUuid(),
+                    title: definition.title,
+                    contents: definition.contents,
+                    timestamp: definition.timestamp,
+                    changeStatus: ChangeStatus.Placeholder,
+                };
             }
-            const definition = readByUuid(definitionUuid);
-            workingCopy = <DefinitionLocalChange>{
-                uuid: definition?.uuid ?? newUuid(),
-                title: definition?.title ?? "New definition",
-                contents: definition?.contents ?? "{}",
-                timestamp: definition?.timestamp ?? getCurrentDate(),
-                changeStatus: ChangeStatus.Unchanged,
-            };
             await update({ workingCopies: { [workingCopy.uuid]: workingCopy } }, (v, u) => {
                 return <Definitions>{ ...v, workingCopies: { ...v?.workingCopies, ...u.workingCopies } };
             });

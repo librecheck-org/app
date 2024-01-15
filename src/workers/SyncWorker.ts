@@ -238,7 +238,7 @@ async function _mergeChangeset() {
 
 function _mapDefinitionWorkingCopiesToChanges(workingCopies: Record<string, DefinitionLocalChange> | undefined): DefinitionChange[] {
     return getRecordValues(workingCopies ?? {})
-        .filter(x => x.changeStatus != ChangeStatus.Unchanged)
+        .filter(x => x.changeStatus > 0 /* Not Unchanged and not internal negative statuses */)
         .map(x => <DefinitionChange>{
             uuid: x.uuid,
             timestamp: x.timestamp,
@@ -249,7 +249,7 @@ function _mapDefinitionWorkingCopiesToChanges(workingCopies: Record<string, Defi
 
 function _mapSubmissionWorkingCopiesToChanges(workingCopies: Record<string, SubmissionLocalChange> | undefined): SubmissionChange[] {
     return getRecordValues(workingCopies ?? {})
-        .filter(x => x.changeStatus != ChangeStatus.Unchanged)
+        .filter(x => x.changeStatus > 0 /* Not Unchanged and not internal negative statuses */)
         .map(x => <SubmissionChange>{
             uuid: x.uuid,
             timestamp: x.timestamp,

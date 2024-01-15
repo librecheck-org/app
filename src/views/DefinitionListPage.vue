@@ -22,13 +22,20 @@
                     </ion-col>
                 </ion-row>
             </ion-grid>
+
+            <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+                <ion-fab-button @click="commands.add.execute()">
+                    <ion-icon :icon="add"></ion-icon>
+                </ion-fab-button>
+            </ion-fab>
         </ion-content>
     </ion-page>
 </template>
   
 <script setup lang="ts">
-import { ActionSheetButton, IonActionSheet, IonButton, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonCol, IonContent, IonGrid, IonPage, IonRow } from "@ionic/vue";
+import { ActionSheetButton, IonActionSheet, IonButton, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonCol, IonContent, IonFab, IonFabButton, IonGrid, IonIcon, IonPage, IonRow } from "@ionic/vue";
 import { getDefaultActionSheetButtons, onActionSheetDidDismiss } from "@/infrastructure";
+import { add } from "ionicons/icons";
 import { useDefinitionListViewModel } from "@/viewModels";
 
 const { data, commands } = useDefinitionListViewModel();

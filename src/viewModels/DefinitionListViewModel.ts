@@ -31,6 +31,7 @@ class DefinitionListViewDataImpl implements DefinitionListViewData {
 
 class DefinitionListViewCommands {
     constructor(
+        public add: Command,
         public edit: Command,
         public fill: Command) {
     }
@@ -44,6 +45,15 @@ export function useDefinitionListViewModel(): ViewModel<DefinitionListViewData, 
     const data = reactive(new DefinitionListViewDataImpl(_definitionStore));
 
     async function initialize() {
+    }
+
+    function _canAdd(): boolean {
+        return true;
+    }
+
+    async function _add(): Promise<void> {
+        const workingCopy = await _definitionStore.createWorkingCopy(undefined);
+        _ionRouter.push("/definitions/" + workingCopy.uuid);
     }
 
     function _canEdit(): boolean {
@@ -62,14 +72,15 @@ export function useDefinitionListViewModel(): ViewModel<DefinitionListViewData, 
     async function _fill(definitionUuid: string): Promise<void> {
         const definition = _definitionStore.readByUuid(definitionUuid);
         if (definition !== undefined) {
-            const submissionDraft = await _submissionStore.createWorkingCopy(definition);
-            _ionRouter.push("/submissions/" + submissionDraft.uuid);
+            const workingCopy = await _submissionStore.createWorkingCopy(definition);
+            _ionRouter.push("/submissions/" + workingCopy.uuid);
         }
     }
 
+    const _addCommand = useCommand(_canAdd, _add);
     const _editCommand = useCommand(_canEdit, _edit);
     const _fillCommand = useCommand(_canFill, _fill);
-    const commands = new DefinitionListViewCommands(_editCommand, _fillCommand);
+    const commands = new DefinitionListViewCommands(_addCommand, _editCommand, _fillCommand);
 
     return useViewModel({ data, commands, initialize });
 }
