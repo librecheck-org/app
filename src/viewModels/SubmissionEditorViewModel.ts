@@ -2,7 +2,7 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-import { Command, ViewModel, useCommand, useViewModel } from "@/infrastructure";
+import { Command, ViewEvents, ViewModel, useCommand, useViewModel } from "@/infrastructure";
 import { SubmissionLocalChange, Submissions } from "@/models";
 import { PlainDarkPanelless } from "survey-core/themes/plain-dark-panelless";
 import { SubmissionSummary } from "@/apiClients";
@@ -40,7 +40,7 @@ class SubmissionEditorViewCommands {
     }
 }
 
-export function useSubmissionEditorViewModel(submissionUuid: string): ViewModel<SubmissionEditorViewData, SubmissionEditorViewCommands> {
+export function useSubmissionEditorViewModel(submissionUuid: string): ViewModel<SubmissionEditorViewData, SubmissionEditorViewCommands, ViewEvents> {
     const _submissionStore = useSubmissionStore();
     const _ionRouter = useIonRouter();
 
@@ -85,5 +85,7 @@ export function useSubmissionEditorViewModel(submissionUuid: string): ViewModel<
     const _createSubmissionDraftCommand = useCommand(_canCreateSubmissionDraft, _createSubmissionDraft);
     const commands = new SubmissionEditorViewCommands(_createSubmissionDraftCommand);
 
-    return useViewModel({ data, commands, initialize });
+    const events = new ViewEvents();
+
+    return useViewModel({ data, commands, events, initialize });
 }

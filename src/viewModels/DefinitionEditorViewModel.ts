@@ -2,7 +2,7 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-import { Command, ViewModel, useCommand, useViewModel } from "@/infrastructure";
+import { Command, ViewEvents, ViewModel, useCommand, useViewModel } from "@/infrastructure";
 import { DefinitionLocalChange } from "@/models";
 import { reactive } from "vue";
 import { useDefinitionStore } from "@/stores";
@@ -31,7 +31,7 @@ class DefinitionEditorViewCommands {
     }
 }
 
-export function useDefinitionEditorViewModel(definitionUuid: string): ViewModel<DefinitionEditorViewData, DefinitionEditorViewCommands> {
+export function useDefinitionEditorViewModel(definitionUuid: string): ViewModel<DefinitionEditorViewData, DefinitionEditorViewCommands, ViewEvents> {
     const _definitionStore = useDefinitionStore();
 
     const data = reactive(new DefinitionEditorViewDataImpl(undefined));
@@ -45,14 +45,18 @@ export function useDefinitionEditorViewModel(definitionUuid: string): ViewModel<
     }
 
     function _canSave(): boolean {
-        return true;
+        return data.workingCopy !== undefined;
     }
 
     async function _save(): Promise<void> {
+        await _definitionStore.updateWorkingCopy(data.workingCopy!);
+        data.workingCopy = _definitionStore.readWorkingCopy(definitionUuid);
     }
 
     const _saveCommand = useCommand(_canSave, _save);
     const commands = new DefinitionEditorViewCommands(_saveCommand);
 
-    return useViewModel({ data, commands, initialize });
+    const events = new ViewEvents();
+
+    return useViewModel({ data, commands, events, initialize });
 }

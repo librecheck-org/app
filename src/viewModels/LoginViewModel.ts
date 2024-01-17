@@ -4,7 +4,7 @@
 
 import * as EmailValidator from "email-validator";
 import { FairUseTokenApiClient, IamApiClient } from "@/apiClients";
-import { ViewModel, useCommand, useViewModel } from "@/infrastructure";
+import { ViewEvents, ViewModel, useCommand, useViewModel } from "@/infrastructure";
 import { useCurrentUserStore, useSystemStatusStore, useTokenStore } from "@/stores";
 import { Command } from "@/infrastructure";
 import { reactive } from "vue";
@@ -31,7 +31,7 @@ class LoginViewCommands {
     }
 }
 
-export function useLoginViewModel(): ViewModel<LoginViewData, LoginViewCommands> {
+export function useLoginViewModel(): ViewModel<LoginViewData, LoginViewCommands, ViewEvents> {
     const _systemStatusStore = useSystemStatusStore();
     const _tokenStore = useTokenStore();
     const _currentUserStore = useCurrentUserStore();
@@ -120,5 +120,7 @@ export function useLoginViewModel(): ViewModel<LoginViewData, LoginViewCommands>
         _requestAuthCodeCommand, _verifyAuthCodeCommand
     );
 
-    return useViewModel({ data, commands, initialize });
+    const events = new ViewEvents();
+
+    return useViewModel({ data, commands, events, initialize });
 }

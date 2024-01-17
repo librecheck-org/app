@@ -2,7 +2,7 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-import { Command, ViewModel, useCommand, useViewModel } from "@/infrastructure";
+import { Command, ViewEvents, ViewModel, useCommand, useViewModel } from "@/infrastructure";
 import { ChecklistsSyncStatus } from "@/models";
 import { reactive } from "vue";
 import { useSystemStatusStore } from "@/stores";
@@ -22,7 +22,7 @@ class HomeViewCommands {
     }
 }
 
-export function useHomeViewModel(): ViewModel<HomeViewData, HomeViewCommands> {
+export function useHomeViewModel(): ViewModel<HomeViewData, HomeViewCommands, ViewEvents> {
     const _systemStatusStore = useSystemStatusStore();
 
     const data = reactive(new HomeViewData());
@@ -50,5 +50,7 @@ export function useHomeViewModel(): ViewModel<HomeViewData, HomeViewCommands> {
     const _forceSyncCommand = useCommand(_canForceSync, _forceSync);
     const commands = new HomeViewCommands(_updateClientCommand, _forceSyncCommand);
 
-    return useViewModel({ data, commands, initialize });
+    const events = new ViewEvents();
+
+    return useViewModel({ data, commands, events, initialize });
 }

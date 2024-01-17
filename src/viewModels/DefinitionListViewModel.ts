@@ -2,7 +2,7 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-import { Command, ViewModel, useCommand, useViewModel } from "@/infrastructure";
+import { Command, ViewEvents, ViewModel, useCommand, useViewModel } from "@/infrastructure";
 import { DefinitionStore, useDefinitionStore, useSubmissionStore } from "@/stores";
 import { DefinitionSummary } from "@/apiClients";
 import { reactive } from "vue";
@@ -37,7 +37,7 @@ class DefinitionListViewCommands {
     }
 }
 
-export function useDefinitionListViewModel(): ViewModel<DefinitionListViewData, DefinitionListViewCommands> {
+export function useDefinitionListViewModel(): ViewModel<DefinitionListViewData, DefinitionListViewCommands, ViewEvents> {
     const _definitionStore = useDefinitionStore();
     const _submissionStore = useSubmissionStore();
     const _ionRouter = useIonRouter();
@@ -82,5 +82,7 @@ export function useDefinitionListViewModel(): ViewModel<DefinitionListViewData, 
     const _fillCommand = useCommand(_canFill, _fill);
     const commands = new DefinitionListViewCommands(_addCommand, _editCommand, _fillCommand);
 
-    return useViewModel({ data, commands, initialize });
+    const events = new ViewEvents();
+
+    return useViewModel({ data, commands, events, initialize });
 }

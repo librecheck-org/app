@@ -3,7 +3,7 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 import { ChangeStatus, SyncStatus } from "@/models";
-import { Command, ViewModel, useCommand, useViewModel } from "@/infrastructure";
+import { Command, ViewEvents, ViewModel, useCommand, useViewModel } from "@/infrastructure";
 import { SubmissionStore, useSubmissionStore } from "@/stores";
 import { compareDesc as compareDatesDesc } from "date-fns";
 import { getRecordValues } from "@/helpers";
@@ -78,7 +78,7 @@ class SubmissionListViewCommands {
     }
 }
 
-export function useSubmissionListViewModel(): ViewModel<SubmissionListViewData, SubmissionListViewCommands> {
+export function useSubmissionListViewModel(): ViewModel<SubmissionListViewData, SubmissionListViewCommands, ViewEvents> {
     const _submissionStore = useSubmissionStore();
     const _ionRouter = useIonRouter();
 
@@ -107,5 +107,7 @@ export function useSubmissionListViewModel(): ViewModel<SubmissionListViewData, 
     const _deleteSubmissionDraftCommand = useCommand(_canDeleteSubmissionDraft, _deleteSubmissionDraft);
     const commands = new SubmissionListViewCommands(_editSubmissionDraftCommand, _deleteSubmissionDraftCommand);
 
-    return useViewModel({ data, commands, initialize });
+    const events = new ViewEvents();
+
+    return useViewModel({ data, commands, events, initialize });
 }

@@ -9,7 +9,7 @@ import { surveyPlugin } from "survey-vue3-ui";
 
 /* LibreCheck modules */
 import { initializeApiModule, initializeStorageModule } from "./infrastructure";
-import { registerServiceWorker, startSyncWorker, startSystemStatusWorker } from "./workers";
+import { registerMonacoWorkers, registerServiceWorker, startSyncWorker, startSystemStatusWorker } from "./workers";
 import { newUuid } from "./helpers";
 
 /* Core CSS required for Ionic components to work properly */
@@ -49,6 +49,7 @@ router.isReady().then(async () => {
     app.mount("#app");
 
     registerServiceWorker();
+    registerMonacoWorkers();
     startSystemStatusWorker();
     startSyncWorker();
 });

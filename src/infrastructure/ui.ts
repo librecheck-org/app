@@ -5,15 +5,25 @@
 import { Ref, onMounted, ref } from "vue";
 import { ActionSheetButton } from "@ionic/vue";
 
-export interface ViewModel<TData = object, TCommands = object> {
+export class ViewEvents {
+    onInitialized: (() => Promise<void>) | undefined;
+}
+
+export interface ViewModel<TData extends object, TCommands extends object, TEvents extends ViewEvents> {
     data: TData;
     commands: TCommands;
+    events: TEvents;
 
     initialize(): Promise<void>;
 }
 
-export function useViewModel<TData = object, TCommands = object>(vm: ViewModel<TData, TCommands>) {
-    onMounted(async () => await vm.initialize());
+export function useViewModel<TData extends object, TCommands extends object, TEvents extends ViewEvents>(vm: ViewModel<TData, TCommands, TEvents>) {
+    onMounted(async () => {
+        await vm.initialize();
+        if (vm.events.onInitialized !== undefined) {
+            await vm.events.onInitialized();
+        }
+    });
     return vm;
 }
 

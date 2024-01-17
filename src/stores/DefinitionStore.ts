@@ -2,9 +2,9 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-import { ChangeStatus, DefinitionLocalChange, Definitions, StorageKey } from "@/models";
+import { ChangeStatus, DefinitionLocalChange, Definitions, StorageKey, updateChangeStatus } from "@/models";
 import { definePersistentStore, usePersistentStorage } from "@/infrastructure";
-import { getCurrentDate, newUuid } from "@/helpers";
+import { getCurrentDate, getRecordValues, newUuid } from "@/helpers";
 import { DefinitionDetails } from "@/apiClients";
 import { GenericStore } from "./shared";
 import { ref } from "vue";
@@ -14,6 +14,7 @@ export interface DefinitionStore extends GenericStore<Definitions> {
 
     createWorkingCopy(definitionUuid: string | undefined): Promise<DefinitionLocalChange>;
     readWorkingCopy(definitionUuid: string): DefinitionLocalChange | undefined;
+    updateWorkingCopy(workingCopy: DefinitionLocalChange): Promise<void>;
 }
 
 export function useDefinitionStore(): DefinitionStore {
@@ -37,7 +38,7 @@ export function useDefinitionStore(): DefinitionStore {
                 workingCopy = <DefinitionLocalChange>{
                     uuid: newUuid(),
                     title: "",
-                    contents: "{}",
+                    contents: '{"x": true}',
                     timestamp: getCurrentDate(),
                     changeStatus: ChangeStatus.Placeholder,
                 };
@@ -69,10 +70,18 @@ export function useDefinitionStore(): DefinitionStore {
             return value.value.workingCopies[definitionUuid];
         }
 
+        async function updateWorkingCopy(workingCopy: DefinitionLocalChange): Promise<void> {           
+            await update({ workingCopies: { [workingCopy.uuid]: workingCopy } }, (v, u) => {
+                const wc = getRecordValues(u.workingCopies!)[0];
+                updateChangeStatus(wc, ChangeStatus.Updated);
+                return <Definitions>{ ...v, workingCopies: { ...v?.workingCopies, ...u.workingCopies } };
+            });
+        }
+
         return {
             value, ensureIsInitialized, read, update,
             readByUuid,
-            createWorkingCopy, readWorkingCopy
+            createWorkingCopy, readWorkingCopy, updateWorkingCopy
         };
     });
 }
