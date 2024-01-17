@@ -11,7 +11,8 @@ import { fireAndForget } from "@/helpers";
 import { registerSW } from "virtual:pwa-register";
 
 // Monaco Editor
-import * as monaco from "monaco-editor";
+import "monaco-editor/esm/vs/language/json/monaco.contribution";
+import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 import CssWorker from "monaco-editor/esm/vs/language/css/css.worker?worker";
 import EditorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
 import HtmlWorker from "monaco-editor/esm/vs/language/html/html.worker?worker";
