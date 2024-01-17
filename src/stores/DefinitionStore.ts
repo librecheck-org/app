@@ -29,7 +29,20 @@ export function useDefinitionStore(): DefinitionStore {
         }
 
         function readByUuid(definitionUuid: string): DefinitionDetails | undefined {
-            return value.value.details[definitionUuid];
+            const details = value.value.details[definitionUuid];
+            if (details !== undefined) {
+                return details;
+            }
+            const workingCopy = readWorkingCopy(definitionUuid);
+            if (workingCopy !== undefined) {
+                return <DefinitionDetails>{
+                    uuid: workingCopy.uuid,
+                    title: workingCopy.title,
+                    contents: workingCopy.contents,
+                    timestamp: workingCopy.timestamp,
+                };
+            }
+            return undefined;
         }
 
         async function createWorkingCopy(definitionUuid: string | undefined): Promise<DefinitionLocalChange> {

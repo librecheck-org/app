@@ -206,8 +206,8 @@ async function _mergeChangeset() {
         const definitionChanges = _mapDefinitionWorkingCopiesToChanges(storedDefinitions?.workingCopies);
         const submissionChanges = _mapSubmissionWorkingCopiesToChanges(storedSubmissions?.workingCopies);
 
-        const definitionsHaveChanges = definitionChanges.length == 0;
-        const submissionsHaveChanges = submissionChanges.length == 0;
+        const definitionsHaveChanges = definitionChanges.length > 0;
+        const submissionsHaveChanges = submissionChanges.length > 0;
 
         if (!definitionsHaveChanges && !submissionsHaveChanges) {
             console.info("There are no changes to be sent");
