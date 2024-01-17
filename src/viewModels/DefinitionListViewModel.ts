@@ -2,14 +2,25 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
+import { ChangeStatus, SyncStatus } from "@/models";
 import { Command, ViewEvents, ViewModel, useCommand, useViewModel } from "@/infrastructure";
 import { DefinitionStore, useDefinitionStore, useSubmissionStore } from "@/stores";
 import { DefinitionSummary } from "@/apiClients";
+import { compareDesc as compareDatesDesc } from "date-fns";
+import { getRecordValues } from "@/helpers";
 import { reactive } from "vue";
 import { useIonRouter } from "@ionic/vue";
 
 export enum DefinitionListViewState {
     None
+}
+
+interface Definition {
+    get uuid(): string;
+    get timestamp(): Date;
+    get title(): string;
+    get hasWorkingCopy(): boolean;
+    get syncStatus(): SyncStatus;
 }
 
 interface DefinitionListViewData {
@@ -25,7 +36,39 @@ class DefinitionListViewDataImpl implements DefinitionListViewData {
     state: DefinitionListViewState = DefinitionListViewState.None;
 
     get definitions(): DefinitionSummary[] {
-        return this._definitionStore.value.summaries;
+        const storedDefinitions = this._definitionStore.value;
+
+        const mappedSummaries = new Map<string, Definition>(
+            storedDefinitions.summaries
+                .map(x => <Definition>{
+                    uuid: x.uuid,
+                    timestamp: x.timestamp,
+                    title: x.title,
+                    hasWorkingCopy: false,
+                    syncStatus: SyncStatus.RemoteOnly,
+                })
+                .map(x => [x.uuid, x]));
+
+        const mappedWorkingCopies = new Map<string, Definition>(
+            getRecordValues(storedDefinitions.workingCopies)
+                .filter(x => x.changeStatus >= ChangeStatus.Unchanged && x.changeStatus != ChangeStatus.Deleted)
+                .map(x => <Definition>{
+                    uuid: x.uuid,
+                    timestamp: x.timestamp,
+                    title: x.title,
+                    hasWorkingCopy: true,
+                    syncStatus: x.changeStatus == ChangeStatus.Unchanged
+                        ? SyncStatus.Synced
+                        : SyncStatus.WaitingForSync,
+                })
+                .map(x => [x.uuid, x]));
+
+        const definitions: Definition[] = [];
+
+        definitions.push(...mappedWorkingCopies.values());
+        definitions.push(...new Array(...mappedSummaries.values()).filter(x => !mappedWorkingCopies.has(x.uuid)));
+
+        return definitions.toSorted((x, y) => compareDatesDesc(x.timestamp, y.timestamp));
     }
 }
 

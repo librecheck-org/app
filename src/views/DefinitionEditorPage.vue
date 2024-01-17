@@ -1,6 +1,7 @@
 <template>
     <ion-page>
         <ion-content class="ion-padding">
+            <h2>{{ data.workingCopy?.title }}</h2>
             <div id="lc-json-editor" ref="editorElem"></div>
 
             <ion-fab slot="fixed" vertical="bottom" horizontal="end">
@@ -33,7 +34,11 @@ events.onInitialized = async () => {
     editor = monaco.editor.create(editorElem.value!, {
         value: data.workingCopy?.contents,
         language: "json",
-        automaticLayout: true
+        automaticLayout: true,
+    });
+
+    editor.onDidBlurEditorText(() => {
+        data.workingCopy!.contents = editor!.getValue();
     });
 };
 
@@ -45,8 +50,8 @@ onBeforeMount(() => {
 </script>
 
 <style>
-    #lc-json-editor {
-        width: 100%;
-        height: 100%;
-    }
+#lc-json-editor {
+    width: 100%;
+    height: 100%;
+}
 </style>
