@@ -2,14 +2,6 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-import { StorageKey } from "@/models";
-import { UserDetails } from "@/apiClients";
-import { readFromStorage } from "@/infrastructure";
-
-export async function getCurrentUser(): Promise<UserDetails | undefined> {
-    return await readFromStorage<UserDetails>(StorageKey.CurrentUser);
-}
-
 export function newUuid(): string {
     return crypto.randomUUID();
 }

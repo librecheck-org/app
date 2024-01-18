@@ -93,6 +93,7 @@ export function useDefinitionStore(): DefinitionStore {
 
             await update({ workingCopies: { [workingCopy.uuid]: workingCopy } }, (v, u) => {
                 const wc = getRecordValues(u.workingCopies!)[0];
+                wc.timestamp = getCurrentDate();
                 updateChangeStatus(wc, ChangeStatus.Updated);
                 return <Definitions>{ ...v, workingCopies: { ...v?.workingCopies, ...u.workingCopies } };
             });

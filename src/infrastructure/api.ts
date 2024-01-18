@@ -4,7 +4,7 @@
 
 import { Configuration, DefaultConfig, FetchParams, RequestContext } from "@/apiClients";
 import { StorageKey, Tokens } from "@/models";
-import { getCurrentUser } from "@/helpers";
+import { getCurrentUser } from "./iam";
 import { readFromStorage } from "./storage";
 
 export async function initializeApiModule(): Promise<void> {
