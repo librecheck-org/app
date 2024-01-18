@@ -2,11 +2,12 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-import { ChangeStatus, DefinitionLocalChange, Definitions, StorageKey, updateChangeStatus } from "@/models";
-import { PersistentStore, definePersistentStore, unrefType, usePersistentStore } from "@/infrastructure";
-import { getCurrentDate, getRecordValues, newUuid } from "@/helpers";
+import { ChangeStatus, DefinitionLocalChange, Definitions, StorageKey } from "@/models";
+import { PersistentStore, definePersistentStore, unrefType } from "@/infrastructure";
+import { Ref, ref } from "vue";
+import { getCurrentDate, newUuid } from "@/helpers";
 import { DefinitionDetails } from "@/apiClients";
-import { ref } from "vue";
+import { useMergeableObjectStore } from "./shared";
 
 export interface DefinitionStore extends PersistentStore<Definitions> {
     readByUuid(definitionUuid: string): DefinitionDetails | undefined;
@@ -19,9 +20,38 @@ export interface DefinitionStore extends PersistentStore<Definitions> {
 export function useDefinitionStore(): DefinitionStore {
     const storageKey = StorageKey.Definitions;
     return definePersistentStore<DefinitionStore, Definitions>(storageKey, () => {
-        const value = ref<Definitions>({ summaries: [], details: {}, workingCopies: {} });
 
-        const { ensureIsInitialized: _ensureIsInitialized, read, update } = usePersistentStore(storageKey, value);
+        function _createNewWorkingCopy(): DefinitionLocalChange {
+            return {
+                uuid: newUuid(),
+                title: "New definition",
+                contents: "{}",
+                timestamp: getCurrentDate(),
+                changeStatus: ChangeStatus.Placeholder,
+            };
+        }
+
+        function _mapToWorkingCopy(definitionUuid: string): DefinitionLocalChange {
+            const definition = readByUuid(definitionUuid);
+            if (definition === undefined) {
+                throw new Error(`Definition with UUID ${definitionUuid} does not exist`);
+            }
+            return {
+                uuid: definition.uuid,
+                title: definition.title,
+                contents: definition.contents,
+                timestamp: definition.timestamp,
+                changeStatus: ChangeStatus.Placeholder,
+            };
+        }
+
+        const value = ref() as Ref<Definitions>;
+        const {
+            ensureIsInitialized: _ensureIsInitialized, read, update,
+            createWorkingCopy, readWorkingCopy, updateWorkingCopy: _updateWorkingCopy
+        } = useMergeableObjectStore(
+            storageKey, value, _createNewWorkingCopy, _mapToWorkingCopy
+        );
 
         async function ensureIsInitialized() {
             await _ensureIsInitialized();
@@ -44,58 +74,13 @@ export function useDefinitionStore(): DefinitionStore {
             return undefined;
         }
 
-        async function createWorkingCopy(definitionUuid: string | undefined): Promise<DefinitionLocalChange> {
-            let workingCopy: DefinitionLocalChange | undefined;
-            if (definitionUuid === undefined) {
-                // A completely new definition.
-                workingCopy = <DefinitionLocalChange>{
-                    uuid: newUuid(),
-                    title: "New definition",
-                    contents: "{}",
-                    timestamp: getCurrentDate(),
-                    changeStatus: ChangeStatus.Placeholder,
-                };
-            } else {
-                workingCopy = readWorkingCopy(definitionUuid);
-                if (workingCopy !== undefined) {
-                    // A working copy already exists and it should not be created.
-                    return workingCopy;
-                }
-                const definition = readByUuid(definitionUuid);
-                if (definition === undefined) {
-                    throw new Error(`Definition with UUID ${definitionUuid} does not exist`);
-                }
-                // Working copy is created from existing definition.
-                workingCopy = <DefinitionLocalChange>{
-                    uuid: definition.uuid,
-                    title: definition.title,
-                    contents: definition.contents,
-                    timestamp: definition.timestamp,
-                    changeStatus: ChangeStatus.Placeholder,
-                };
-            }
-            await update({ workingCopies: { [workingCopy.uuid]: workingCopy } }, (v, u) => {
-                return <Definitions>{ ...v, workingCopies: { ...v?.workingCopies, ...u.workingCopies } };
-            });
-            return workingCopy;
-        }
-
-        function readWorkingCopy(definitionUuid: string): DefinitionLocalChange | undefined {
-            return value.value.workingCopies[definitionUuid];
-        }
-
         async function updateWorkingCopy(workingCopy: DefinitionLocalChange): Promise<void> {
             // Definition title is set within JSON contents. Therefore, before saving,
             // it should be extracted and related property should be manually updated.
             const parsedContents = JSON.parse(workingCopy.contents);
             workingCopy.title = parsedContents["title"] ?? "Missing title";
 
-            await update({ workingCopies: { [workingCopy.uuid]: workingCopy } }, (v, u) => {
-                const wc = getRecordValues(u.workingCopies!)[0];
-                wc.timestamp = getCurrentDate();
-                updateChangeStatus(wc, ChangeStatus.Updated);
-                return <Definitions>{ ...v, workingCopies: { ...v?.workingCopies, ...u.workingCopies } };
-            });
+            await _updateWorkingCopy(workingCopy);
         }
 
         return {

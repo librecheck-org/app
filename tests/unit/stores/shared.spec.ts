@@ -5,8 +5,9 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { StorageKey } from "@/models";
 import { newUuid } from "@/helpers";
+import { ref } from "vue";
 
-describe("mergeableObjectStoreSetup", () => {
+describe("useMergeableObjectStore", () => {
     afterEach(() => {
         vi.restoreAllMocks();
     });
@@ -23,13 +24,14 @@ describe("mergeableObjectStoreSetup", () => {
         // Arrange
         vi.mock("@/infrastructure");
         const { usePersistentStore } = await import("@/infrastructure");
-        const { mergeableObjectStoreSetup } = await import("@/stores/shared");
+        const { useMergeableObjectStore } = await import("@/stores/shared");
 
         const mockPersistentStore = useMockPersistentStore(usePersistentStore);
 
+        const value = ref();
         const createNewWorkingCopy = vi.fn().mockReturnValue({ uuid: newUuid() });
         const mapToWorkingCopy = vi.fn();
-        const store = mergeableObjectStoreSetup(StorageKey.Submissions, createNewWorkingCopy, mapToWorkingCopy);
+        const store = useMergeableObjectStore(StorageKey.Submissions, value, createNewWorkingCopy, mapToWorkingCopy);
 
         // Act
         await store.createWorkingCopy(undefined);

@@ -3,9 +3,9 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 import { ChangeStatus, MergeableObject, MergeableObjects, StorageKey, updateChangeStatus } from "@/models";
-import { PersistentStore, definePersistentStore, unrefType, usePersistentStore } from "@/infrastructure";
-import { Ref, ref } from "vue";
+import { PersistentStore, unrefType, usePersistentStore } from "@/infrastructure";
 import { getCurrentDate, getRecordValues } from "@/helpers";
+import { Ref } from "vue";
 
 export interface MergeableObjectStore<TSummary, TDetails, TWorkingCopy extends MergeableObject> extends PersistentStore<MergeableObjects<TSummary, TDetails, TWorkingCopy>> {
     createWorkingCopy(objectUuid: string | undefined): Promise<TWorkingCopy>;
@@ -13,16 +13,16 @@ export interface MergeableObjectStore<TSummary, TDetails, TWorkingCopy extends M
     updateWorkingCopy(workingCopy: TWorkingCopy): Promise<void>;
 }
 
-export function mergeableObjectStoreSetup<TSummary, TDetails, TWorkingCopy extends MergeableObject>(
+export function useMergeableObjectStore<TSummary, TDetails, TWorkingCopy extends MergeableObject>(
     storageKey: StorageKey,
+    value: Ref<MergeableObjects<TSummary, TDetails, TWorkingCopy>>,
     createNewWorkingCopy: () => TWorkingCopy,
     mapToWorkingCopy: (objectUuid: string) => TWorkingCopy
 ): MergeableObjectStore<TSummary, TDetails, TWorkingCopy> {
 
     type TObjects = MergeableObjects<TSummary, TDetails, TWorkingCopy>;
 
-    const value = ref({ summaries: [], details: {}, workingCopies: {} }) as Ref<TObjects>;
-
+    value.value = { summaries: [], details: {}, workingCopies: {} };
     const { ensureIsInitialized, read, update } = usePersistentStore(storageKey, value);
 
     async function createWorkingCopy(definitionUuid: string | undefined): Promise<TWorkingCopy> {
@@ -62,17 +62,4 @@ export function mergeableObjectStoreSetup<TSummary, TDetails, TWorkingCopy exten
         value: unrefType(value), ensureIsInitialized, read, update,
         createWorkingCopy, readWorkingCopy, updateWorkingCopy
     };
-}
-
-export function defineMergeableObjectStore<TSummary, TDetails, TWorkingCopy extends MergeableObject>(
-    storageKey: StorageKey,
-    createNewWorkingCopy: () => TWorkingCopy,
-    mapToWorkingCopy: (objectUuid: string) => TWorkingCopy
-): MergeableObjectStore<TSummary, TDetails, TWorkingCopy> {
-
-    type TObjectStore = MergeableObjectStore<TSummary, TDetails, TWorkingCopy>;
-    type TObjects = MergeableObjects<TSummary, TDetails, TWorkingCopy>;
-
-    return definePersistentStore<TObjectStore, TObjects>(storageKey,
-        () => mergeableObjectStoreSetup(storageKey, createNewWorkingCopy, mapToWorkingCopy));
 }
