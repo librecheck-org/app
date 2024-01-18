@@ -23,6 +23,6 @@ export function getRecordValues<T>(record: Record<string, T>): T[] {
     return getRecordPairs(record).map(kv => kv.value);
 }
 
-export function fireAndForget(action: () => Promise<void>) {
-    Promise.resolve().then(action);
+export function fireAndForget(action: () => Promise<void>): Promise<void> {
+    return Promise.resolve().then(action);
 }
