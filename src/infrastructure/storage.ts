@@ -73,7 +73,7 @@ function _convertValue<T>(value: unknown): T | undefined {
     return Object.keys(value ?? {}).length > 0 ? <T>value : undefined;
 }
 
-export async function readFromStorage<T extends object | undefined>(key: StorageKey): Promise<T | undefined> {
+export async function readFromStorage<T>(key: StorageKey): Promise<T | undefined> {
     let value;
     await navigator.locks.request(key, { mode: "shared" }, async () => {
         value = await _ionicStorage.get(key);
@@ -81,13 +81,13 @@ export async function readFromStorage<T extends object | undefined>(key: Storage
     return _convertValue<T>(value);
 }
 
-type StorageUpdaterFunc<T extends object | undefined> = (value: T, updates: Partial<T>) => T;
+type StorageUpdaterFunc<T> = (value: T, updates: Partial<T>) => T;
 
-function _mergeUpdates<T extends object | undefined>(value: T, updates: Partial<T>): T {
+function _mergeUpdates<T>(value: T, updates: Partial<T>): T {
     return <T>{ ...value, ...updates };
 }
 
-export async function updateStorage<T extends object | undefined>(key: StorageKey, updates: Partial<T>, updater: StorageUpdaterFunc<T> = _mergeUpdates): Promise<T> {
+export async function updateStorage<T>(key: StorageKey, updates: Partial<T>, updater: StorageUpdaterFunc<T> = _mergeUpdates): Promise<T> {
     // Storage update function might receive ref objects, which cannot be stored.
     // In fact, they are proxy objects, while a plain object is expected for serialization.
     // Therefore, a deep clone is applied to updates before applying them.
@@ -110,15 +110,15 @@ export async function deleteFromStorage(key: StorageKey): Promise<void> {
     });
 }
 
-export interface PersistentStore<T extends object> {
-    value: T | undefined;
+export interface PersistentStore<T> {
+    value: T;
 
     ensureIsInitialized(): Promise<void>;
     read(): Promise<void>;
     update: (updates: Partial<T>, updater?: StorageUpdaterFunc<T> | undefined) => Promise<void>;
 }
 
-export function usePersistentStore<T extends object>(storageKey: StorageKey, value: Ref<T | undefined>): PersistentStore<T> {
+export function usePersistentStore<T>(storageKey: StorageKey, value: Ref<T>): PersistentStore<T> {
     const isInitialized = ref(false);
 
     async function ensureIsInitialized() {
@@ -159,7 +159,7 @@ export function usePersistentStore<T extends object>(storageKey: StorageKey, val
  */
 const _storeInstances = new Map<StorageKey, PersistentStore<any>>();
 
-export function definePersistentStore<TStore extends PersistentStore<TValue>, TValue extends object>(storageKey: StorageKey, storeSetup: () => TStore): TStore {
+export function definePersistentStore<TStore extends PersistentStore<TValue>, TValue>(storageKey: StorageKey, storeSetup: () => TStore): TStore {
     let store = <TStore | undefined>_storeInstances.get(storageKey);
     if (store !== undefined) {
         return store;

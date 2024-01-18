@@ -7,13 +7,13 @@ import { computed, ref } from "vue";
 import { StorageKey } from "@/models";
 import { UserDetails } from "@/apiClients";
 
-export interface CurrentUserStore extends PersistentStore<UserDetails> {
+export interface CurrentUserStore extends PersistentStore<UserDetails | undefined> {
     get isAuthenticated(): boolean;
 }
 
 export function useCurrentUserStore(): CurrentUserStore {
     const storageKey = StorageKey.CurrentUser;
-    return definePersistentStore<CurrentUserStore, UserDetails>(storageKey, () => {
+    return definePersistentStore<CurrentUserStore, UserDetails | undefined>(storageKey, () => {
         const value = ref<UserDetails | undefined>();
         const isAuthenticated = computed(() => value.value !== undefined);
 

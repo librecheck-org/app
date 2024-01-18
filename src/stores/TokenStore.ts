@@ -6,12 +6,12 @@ import { PersistentStore, definePersistentStore, unrefType, usePersistentStore }
 import { StorageKey, Tokens } from "@/models";
 import { ref } from "vue";
 
-export interface TokenStore extends PersistentStore<Tokens> {
+export interface TokenStore extends PersistentStore<Tokens | undefined> {
 }
 
 export function useTokenStore(): TokenStore {
     const storageKey = StorageKey.Tokens;
-    return definePersistentStore<TokenStore, Tokens>(storageKey, () => {
+    return definePersistentStore<TokenStore, Tokens | undefined>(storageKey, () => {
         const value = ref<Tokens | undefined>();
 
         const { ensureIsInitialized, read, update } = usePersistentStore(storageKey, value);
