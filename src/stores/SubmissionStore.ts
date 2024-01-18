@@ -3,13 +3,12 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 import { ChangeStatus, StorageKey, SubmissionLocalChange, Submissions, updateChangeStatus } from "@/models";
-import { definePersistentStore, usePersistentStorage } from "@/infrastructure";
+import { PersistentStore, definePersistentStore, unrefType, usePersistentStore } from "@/infrastructure";
 import { getCurrentDate, newUuid } from "@/helpers";
 import { DefinitionDetails } from "@/apiClients";
-import { GenericStore } from "./shared";
 import { ref } from "vue";
 
-export interface SubmissionStore extends GenericStore<Submissions> {
+export interface SubmissionStore extends PersistentStore<Submissions> {
     createWorkingCopy(definition: DefinitionDetails): Promise<SubmissionLocalChange>;
     readWorkingCopy(submissionUuid: string): SubmissionLocalChange | undefined;
     updateWorkingCopy(submissionDraft: SubmissionLocalChange): Promise<void>;
@@ -18,10 +17,10 @@ export interface SubmissionStore extends GenericStore<Submissions> {
 
 export function useSubmissionStore(): SubmissionStore {
     const storageKey = StorageKey.Submissions;
-    return definePersistentStore<SubmissionStore>(storageKey, () => {
+    return definePersistentStore<SubmissionStore, Submissions>(storageKey, () => {
         const value = ref<Submissions>({ summaries: [], details: {}, workingCopies: {} });
 
-        const { ensureIsInitialized: _ensureIsInitialized, read, update } = usePersistentStorage(storageKey, value);
+        const { ensureIsInitialized: _ensureIsInitialized, read, update } = usePersistentStore(storageKey, value);
 
         async function ensureIsInitialized() {
             await _ensureIsInitialized();
@@ -65,7 +64,7 @@ export function useSubmissionStore(): SubmissionStore {
         }
 
         return {
-            value, ensureIsInitialized, read, update,
+            value: unrefType(value), ensureIsInitialized, read, update,
             createWorkingCopy, readWorkingCopy, updateWorkingCopy, deleteWorkingCopy
         };
     });

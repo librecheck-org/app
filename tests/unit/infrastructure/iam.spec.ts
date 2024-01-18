@@ -3,7 +3,6 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { readFromStorage } from "@/infrastructure/storage";
 
 describe("getCurrentUser", () => {
     afterEach(() => {
@@ -13,6 +12,7 @@ describe("getCurrentUser", () => {
     test("when invoked, should read user details from storage", async () => {
         // Arrange
         vi.mock("@/infrastructure/storage");
+        const { readFromStorage } = await import("@/infrastructure/storage");
         const { getCurrentUser } = await import("@/infrastructure/iam");
 
         // Act

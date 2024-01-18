@@ -3,10 +3,9 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 import { ChecklistsSyncStatus, ServerConnectionStatus, StorageKey, SyncWorkerMessageType, SystemStatus, WorkerMessage, WorkerName } from "@/models";
+import { PersistentStore, definePersistentStore, getWorkerRef, unrefType, usePersistentStore } from "@/infrastructure";
 import { computed, ref } from "vue";
-import { definePersistentStore, getWorkerRef, usePersistentStorage } from "@/infrastructure";
 import { AppInfoApiClient } from "@/apiClients";
-import { GenericStore } from "./shared";
 
 async function _getClientVersion(): Promise<string> {
     const { version } = await (await fetch("/version.json")).json();
@@ -19,7 +18,7 @@ async function _getServerVersion(): Promise<string> {
     return version;
 }
 
-export interface SystemStatusStore extends GenericStore<SystemStatus> {
+export interface SystemStatusStore extends PersistentStore<SystemStatus> {
     get clientUpdatesAreAvailable(): boolean;
     setClientUpdatesAreAvailable(clientUpdater: () => void): void;
     applyClientUpdates(): void;
@@ -34,7 +33,7 @@ export interface SystemStatusStore extends GenericStore<SystemStatus> {
 
 export function useSystemStatusStore(): SystemStatusStore {
     const storageKey = StorageKey.SystemStatus;
-    return definePersistentStore(storageKey, () => {
+    return definePersistentStore<SystemStatusStore, SystemStatus>(storageKey, () => {
         const value = ref<SystemStatus>({ clientVersion: "0.0", serverVersion: "0.0" });
 
         const _clientUpdater = ref<() => void | undefined>();
@@ -45,7 +44,7 @@ export function useSystemStatusStore(): SystemStatusStore {
         const serverConnectionStatus = computed(() => _serverConnectionStatus.value);
         const checklistsSyncStatus = computed(() => _checklistsSyncStatus.value);
 
-        const { ensureIsInitialized: _ensureIsInitialized, read, update } = usePersistentStorage(storageKey, value);
+        const { ensureIsInitialized: _ensureIsInitialized, read, update } = usePersistentStore(storageKey, value);
 
         async function ensureIsInitialized() {
             await _ensureIsInitialized();
@@ -89,10 +88,13 @@ export function useSystemStatusStore(): SystemStatusStore {
         }
 
         return {
-            value, ensureIsInitialized, read, update,
-            clientUpdatesAreAvailable, setClientUpdatesAreAvailable, applyClientUpdates,
-            checklistsSyncStatus, setChecklistsSyncStatus, forceChecklistsSync,
-            serverConnectionStatus, setServerConnectionStatus,
+            value: unrefType(value), ensureIsInitialized, read, update,
+            clientUpdatesAreAvailable: unrefType(clientUpdatesAreAvailable),
+            setClientUpdatesAreAvailable, applyClientUpdates,
+            checklistsSyncStatus: unrefType(checklistsSyncStatus),
+            setChecklistsSyncStatus, forceChecklistsSync,
+            serverConnectionStatus: unrefType(serverConnectionStatus),
+            setServerConnectionStatus,
         };
     });
 }

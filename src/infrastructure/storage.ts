@@ -3,8 +3,8 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 import { BroadcastChannelName, StorageKey, StorageWorkerMessageType, WorkerMessage } from "@/models";
+import { ComputedRef, Ref, ref } from "vue";
 import { Drivers, Storage } from "@ionic/storage";
-import { Ref, ref } from "vue";
 import _ from "lodash";
 import { createBroadcastChannel } from "./workers";
 import { defineStore } from "pinia";
@@ -69,31 +69,31 @@ class IonicStorageWrapper {
 
 const _ionicStorage = new IonicStorageWrapper();
 
-function _convertValue<T = object>(value: unknown) {
+function _convertValue<T>(value: unknown): T | undefined {
     return Object.keys(value ?? {}).length > 0 ? <T>value : undefined;
 }
 
-export async function readFromStorage<T = object>(key: StorageKey): Promise<T | undefined> {
-    let value: any = null;
+export async function readFromStorage<T extends object | undefined>(key: StorageKey): Promise<T | undefined> {
+    let value;
     await navigator.locks.request(key, { mode: "shared" }, async () => {
         value = await _ionicStorage.get(key);
     });
-    return _convertValue<T | undefined>(value);
+    return _convertValue<T>(value);
 }
 
-type StorageUpdaterFunc<T> = (value: T | null, updates: Partial<T>) => T;
+type StorageUpdaterFunc<T extends object | undefined> = (value: T, updates: Partial<T>) => T;
 
-function _mergeUpdates<T = object>(value: T | null, updates: Partial<T>): T {
+function _mergeUpdates<T extends object | undefined>(value: T, updates: Partial<T>): T {
     return <T>{ ...value, ...updates };
 }
 
-export async function updateStorage<T = object>(key: StorageKey, updates: Partial<T>, updater: StorageUpdaterFunc<T> = _mergeUpdates): Promise<T | undefined> {
+export async function updateStorage<T extends object | undefined>(key: StorageKey, updates: Partial<T>, updater: StorageUpdaterFunc<T> = _mergeUpdates): Promise<T> {
     // Storage update function might receive ref objects, which cannot be stored.
     // In fact, they are proxy objects, while a plain object is expected for serialization.
     // Therefore, a deep clone is applied to updates before applying them.
     updates = _.cloneDeep(updates);
 
-    let value: any = null;
+    let value;
     await navigator.locks.request(key, { mode: "exclusive" }, async () => {
         value = await _ionicStorage.get(key);
         value = updater(value, updates);
@@ -101,7 +101,7 @@ export async function updateStorage<T = object>(key: StorageKey, updates: Partia
         _triggerStorageUpdatedEvent(key);
     });
 
-    return _convertValue(value);
+    return _convertValue<T>(value)!;
 }
 
 export async function deleteFromStorage(key: StorageKey): Promise<void> {
@@ -110,7 +110,15 @@ export async function deleteFromStorage(key: StorageKey): Promise<void> {
     });
 }
 
-export function usePersistentStorage<T = object>(storageKey: StorageKey, value: Ref<T | undefined>) {
+export interface PersistentStore<T extends object> {
+    value: T | undefined;
+
+    ensureIsInitialized(): Promise<void>;
+    read(): Promise<void>;
+    update: (updates: Partial<T>, updater?: StorageUpdaterFunc<T> | undefined) => Promise<void>;
+}
+
+export function usePersistentStore<T extends object>(storageKey: StorageKey, value: Ref<T | undefined>): PersistentStore<T> {
     const isInitialized = ref(false);
 
     async function ensureIsInitialized() {
@@ -133,34 +141,32 @@ export function usePersistentStorage<T = object>(storageKey: StorageKey, value: 
     }
 
     async function read() {
-        value.value = await readFromStorage(storageKey);
+        const storedValue = await readFromStorage<T>(storageKey);
+        if (storedValue !== undefined) {
+            value.value = storedValue;
+        }
     }
 
     async function update(updates: Partial<T>, updater: StorageUpdaterFunc<T> | undefined = undefined) {
-        value.value = await updateStorage(storageKey, updates, updater ?? _mergeUpdates);
+        value.value = await updateStorage<T>(storageKey, updates, updater ?? _mergeUpdates);
     }
 
-    return { ensureIsInitialized, read, update };
-}
-
-interface PersistentStore {
-    ensureIsInitialized(): Promise<void>;
-    read(): Promise<void>;
+    return { value: unrefType(value), ensureIsInitialized, read, update };
 }
 
 /**
  * A map of store instances, which is used to avoid initializing them multiple times.
  */
-const _storeInstances = new Map<StorageKey, PersistentStore>();
+const _storeInstances = new Map<StorageKey, PersistentStore<any>>();
 
-export function definePersistentStore<S extends PersistentStore>(storageKey: StorageKey, storeSetup: () => PersistentStore): S {
-    let store = <S | undefined>_storeInstances.get(storageKey);
+export function definePersistentStore<TStore extends PersistentStore<TValue>, TValue extends object>(storageKey: StorageKey, storeSetup: () => TStore): TStore {
+    let store = <TStore | undefined>_storeInstances.get(storageKey);
     if (store !== undefined) {
         return store;
     }
 
     const storeDefinition = defineStore(storageKey, storeSetup);
-    store = <S><unknown>storeDefinition();
+    store = <TStore><unknown>storeDefinition();
 
     // Initialization happens asynchronously and the call is not awaited,
     // because underlying storage is asynchronous but store definition needs to be synchronous.
@@ -184,4 +190,14 @@ export function definePersistentStore<S extends PersistentStore>(storageKey: Sto
 
     _storeInstances.set(storageKey, store);
     return store;
+}
+
+/**
+ * Casts given ref to its underlying type.
+ * It is used to workaround typing issues related to how Pinia handles refs. 
+ * @param r A ref.
+ * @returns The same ref, cast to its underlying type.
+ */
+export function unrefType<T>(r: Ref<T> | ComputedRef<T>) {
+    return <T><unknown>r;
 }

@@ -3,13 +3,12 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 import { ChangeStatus, DefinitionLocalChange, Definitions, StorageKey, updateChangeStatus } from "@/models";
-import { definePersistentStore, usePersistentStorage } from "@/infrastructure";
+import { PersistentStore, definePersistentStore, unrefType, usePersistentStore } from "@/infrastructure";
 import { getCurrentDate, getRecordValues, newUuid } from "@/helpers";
 import { DefinitionDetails } from "@/apiClients";
-import { GenericStore } from "./shared";
 import { ref } from "vue";
 
-export interface DefinitionStore extends GenericStore<Definitions> {
+export interface DefinitionStore extends PersistentStore<Definitions> {
     readByUuid(definitionUuid: string): DefinitionDetails | undefined;
 
     createWorkingCopy(definitionUuid: string | undefined): Promise<DefinitionLocalChange>;
@@ -19,10 +18,10 @@ export interface DefinitionStore extends GenericStore<Definitions> {
 
 export function useDefinitionStore(): DefinitionStore {
     const storageKey = StorageKey.Definitions;
-    return definePersistentStore<DefinitionStore>(storageKey, () => {
+    return definePersistentStore<DefinitionStore, Definitions>(storageKey, () => {
         const value = ref<Definitions>({ summaries: [], details: {}, workingCopies: {} });
 
-        const { ensureIsInitialized: _ensureIsInitialized, read, update } = usePersistentStorage(storageKey, value);
+        const { ensureIsInitialized: _ensureIsInitialized, read, update } = usePersistentStore(storageKey, value);
 
         async function ensureIsInitialized() {
             await _ensureIsInitialized();
@@ -100,7 +99,7 @@ export function useDefinitionStore(): DefinitionStore {
         }
 
         return {
-            value, ensureIsInitialized, read, update,
+            value: unrefType(value), ensureIsInitialized, read, update,
             readByUuid,
             createWorkingCopy, readWorkingCopy, updateWorkingCopy
         };
