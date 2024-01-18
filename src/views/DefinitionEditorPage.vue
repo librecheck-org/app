@@ -30,7 +30,6 @@ const editorElem = ref(null);
 let editor: monaco.editor.IStandaloneCodeEditor | undefined;
 
 events.onInitialized = async () => {
-    console.log("contents", data.workingCopy?.contents);
     editor = monaco.editor.create(editorElem.value!, {
         value: data.workingCopy?.contents,
         language: "json",

@@ -5,10 +5,19 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "command": "npm run serve",
-            "name": "Serve",
+            "type": "firefox",
             "request": "launch",
-            "type": "node-terminal"
+            "name": "Debug on Firefox",
+            "url": "http://localhost:8100",
+            "webRoot": "${workspaceFolder}",
+            "profile": "librecheck-debug",
+            "keepProfileChanges": true,
+            "pathMappings": [
+                {
+                    "url": "http://localhost:8100/src",
+                    "path": "${workspaceFolder}/src"
+                }
+            ]
         }
     ]
 }

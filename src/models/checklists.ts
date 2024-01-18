@@ -76,6 +76,8 @@ export const enum SyncStatus {
 }
 
 export interface MergeableObject {
+    uuid: string;
+    timestamp: Date;
     changeStatus: ChangeStatus;
 }
 
@@ -90,17 +92,15 @@ export function updateChangeStatus(obj: MergeableObject, newStatus: ChangeStatus
     }
 }
 
-export interface Definitions {
-    get summaries(): DefinitionSummary[];
-    get details(): Record<string, DefinitionDetails>;
-    get workingCopies(): Record<string, DefinitionLocalChange>;
+export interface MergeableObjects<TSummary, TDetails, TWorkingCopy extends MergeableObject> {
+    get summaries(): TSummary[];
+    get details(): Record<string, TDetails>;
+    get workingCopies(): Record<string, TWorkingCopy>;
 }
 
-export interface Submissions {
-    get summaries(): SubmissionSummary[];
-    get details(): Record<string, SubmissionDetails>;
-    get workingCopies(): Record<string, SubmissionLocalChange>;
-}
+export type Definitions = MergeableObjects<DefinitionSummary, DefinitionDetails, DefinitionLocalChange>;
+
+export type Submissions = MergeableObjects<SubmissionSummary, SubmissionDetails, SubmissionLocalChange>;
 
 export interface DefinitionLocalChange extends DefinitionDetails, MergeableObject {
     changeStatus: ChangeStatus;

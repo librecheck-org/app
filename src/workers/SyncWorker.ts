@@ -2,7 +2,7 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-import { BroadcastChannelName, ChangeStatus, DefinitionLocalChange, Definitions, GenericWorkerMessageType, LockName, StorageKey, SubmissionLocalChange, Submissions, SyncWorkerMessageType, WorkerMessage } from "@/models";
+import { BroadcastChannelName, ChangeStatus, DefinitionLocalChange, Definitions, GenericWorkerMessageType, LockName, MergeableObject, MergeableObjects, StorageKey, SubmissionLocalChange, Submissions, SyncWorkerMessageType, WorkerMessage, updateChangeStatus } from "@/models";
 import { ChecklistsApiClient, DefinitionChange, DefinitionDetails, DefinitionSummary, DefinitionSummaryPagedResult, SubmissionChange, SubmissionDetails, SubmissionSummary, SubmissionSummaryPagedResult } from "@/apiClients";
 import { createBroadcastChannel, readFromStorage, updateStorage } from "@/infrastructure";
 import { fireAndForget, getCurrentUser, getRecordValues, newUuid } from "@/helpers";
@@ -224,10 +224,11 @@ async function _mergeChangeset() {
         });
 
         if (definitionsHaveChanges) {
+            await _resetChangeStatus(StorageKey.Definitions, definitionChanges);
             await _readDefinitions();
         }
         if (submissionsHaveChanges) {
-            await _resetSubmissionsChangeStatus(submissionChanges);
+            await _resetChangeStatus(StorageKey.Submissions, submissionChanges);
             await _readSubmissions();
         }
     }
@@ -259,16 +260,19 @@ function _mapSubmissionWorkingCopiesToChanges(workingCopies: Record<string, Subm
         });
 }
 
-async function _resetSubmissionsChangeStatus(changes: SubmissionChange[]) {
+async function _resetChangeStatus<TWorkingCopy extends MergeableObject>(key: StorageKey, changes: TWorkingCopy[]) {
     for (const change of changes) {
-        const storedSubmissions = await readFromStorage<Submissions>(StorageKey.Submissions);
-        if (storedSubmissions === undefined) {
+        const storedObjects = await readFromStorage<MergeableObjects<unknown, unknown, TWorkingCopy>>(key);
+        if (storedObjects === undefined) {
             return;
         }
-        const submission = storedSubmissions.workingCopies[change.uuid];
-        if (areDatesEqual(submission.timestamp, change.timestamp)) {
-            submission.changeStatus = ChangeStatus.Unchanged;
-            await updateStorage<Submissions>(StorageKey.Submissions, { workingCopies: storedSubmissions.workingCopies });
+        const workingCopy = storedObjects.workingCopies[change.uuid];
+        if (areDatesEqual(workingCopy.timestamp, change.timestamp)) {
+            await updateStorage<MergeableObjects<unknown, unknown, TWorkingCopy>>(key, { workingCopies: { [workingCopy.uuid]: workingCopy } }, (v, u) => {
+                const wc = getRecordValues(u.workingCopies!)[0];
+                updateChangeStatus(wc, ChangeStatus.Unchanged);
+                return <MergeableObjects<unknown, unknown, TWorkingCopy>>{ ...v, workingCopies: { ...v?.workingCopies, ...u.workingCopies } };
+            });
         }
     }
 }
