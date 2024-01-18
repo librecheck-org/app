@@ -3,25 +3,39 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { ChangeStatus, StorageKey, SubmissionLocalChange, Submissions, updateChangeStatus } from "@/models";
+import { StorageKey } from "@/models";
+import { newUuid } from "@/helpers";
 
-describe("newUuid", () => {
+describe("mergeableObjectStoreSetup", () => {
     afterEach(() => {
         vi.restoreAllMocks();
     });
 
-    test("when invoked, should return non-empty string", async () => {
+    function useMockPersistentStore(usePersistentStore) {
+        const read = vi.fn();
+        const update = vi.fn();
+        const mocks = { read, update };
+        usePersistentStore.mockReturnValue(mocks);
+        return mocks;
+    }
+
+    test("when createWorkingCopy is invoked with undefined, a new working copy should be created", async () => {
         // Arrange
         vi.mock("@/infrastructure");
         const { usePersistentStore } = await import("@/infrastructure");
-        const { setupMergeableObjectStore } = await import("@/stores/shared");
+        const { mergeableObjectStoreSetup } = await import("@/stores/shared");
 
-        usePersistentStore.mockReturnValue(1);
+        const mockPersistentStore = useMockPersistentStore(usePersistentStore);
+
+        const createNewWorkingCopy = vi.fn().mockReturnValue({ uuid: newUuid() });
+        const mapToWorkingCopy = vi.fn();
+        const store = mergeableObjectStoreSetup(StorageKey.Submissions, createNewWorkingCopy, mapToWorkingCopy);
 
         // Act
-        const store = setupMergeableObjectStore(StorageKey.Submissions);
+        await store.createWorkingCopy(undefined);
 
         // Assert
-        expect(store.length).toBeGreaterThan(0);
+        expect(createNewWorkingCopy).toBeCalledTimes(1);
+        expect(mockPersistentStore.update).toBeCalledTimes(1);
     });
 });

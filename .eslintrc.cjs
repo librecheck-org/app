@@ -21,6 +21,7 @@ module.exports = {
         "sort-imports": ["warn", { "allowSeparatedGroups": true }]
     },
     ignorePatterns: [
+        "dev-dist/**/*",
         "dist/**/*"
     ]
 };

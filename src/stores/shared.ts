@@ -13,7 +13,7 @@ export interface MergeableObjectStore<TSummary, TDetails, TWorkingCopy extends M
     updateWorkingCopy(workingCopy: TWorkingCopy): Promise<void>;
 }
 
-export function setupMergeableObjectStore<TSummary, TDetails, TWorkingCopy extends MergeableObject>(
+export function mergeableObjectStoreSetup<TSummary, TDetails, TWorkingCopy extends MergeableObject>(
     storageKey: StorageKey,
     createNewWorkingCopy: () => TWorkingCopy,
     mapToWorkingCopy: (objectUuid: string) => TWorkingCopy
@@ -23,11 +23,7 @@ export function setupMergeableObjectStore<TSummary, TDetails, TWorkingCopy exten
 
     const value = ref({ summaries: [], details: {}, workingCopies: {} }) as Ref<TObjects>;
 
-    const { ensureIsInitialized: _ensureIsInitialized, read, update } = usePersistentStore(storageKey, value);
-
-    async function ensureIsInitialized() {
-        await _ensureIsInitialized();
-    }
+    const { ensureIsInitialized, read, update } = usePersistentStore(storageKey, value);
 
     async function createWorkingCopy(definitionUuid: string | undefined): Promise<TWorkingCopy> {
         let workingCopy: TWorkingCopy | undefined;
@@ -68,7 +64,7 @@ export function setupMergeableObjectStore<TSummary, TDetails, TWorkingCopy exten
     };
 }
 
-export function useMergeableObjectStore<TSummary, TDetails, TWorkingCopy extends MergeableObject>(
+export function defineMergeableObjectStore<TSummary, TDetails, TWorkingCopy extends MergeableObject>(
     storageKey: StorageKey,
     createNewWorkingCopy: () => TWorkingCopy,
     mapToWorkingCopy: (objectUuid: string) => TWorkingCopy
@@ -78,5 +74,5 @@ export function useMergeableObjectStore<TSummary, TDetails, TWorkingCopy extends
     type TObjects = MergeableObjects<TSummary, TDetails, TWorkingCopy>;
 
     return definePersistentStore<TObjectStore, TObjects>(storageKey,
-        () => setupMergeableObjectStore(storageKey, createNewWorkingCopy, mapToWorkingCopy));
+        () => mergeableObjectStoreSetup(storageKey, createNewWorkingCopy, mapToWorkingCopy));
 }
