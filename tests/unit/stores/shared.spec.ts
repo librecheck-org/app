@@ -2,8 +2,8 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
+import { ChangeStatus, StorageKey } from "@/models";
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { StorageKey } from "@/models";
 import { newUuid } from "@/helpers";
 import { ref } from "vue";
 
@@ -77,7 +77,7 @@ describe("useMergeableObjectStore", () => {
         expect(newWorkingCopy.uuid).toBe(existingObjectUuid);
     });
 
-    test("when ensureWorkingCopy is invoked with a UUID, and its working exists but it is stale, a new working copy should be created from existing object", async () => {
+    test("when ensureWorkingCopy is invoked with a UUID, and its working copy exists but it is stale, a new working copy should be created from existing object", async () => {
         // Arrange
         vi.mock("@/infrastructure");
         const { usePersistentStore } = await import("@/infrastructure");
@@ -115,5 +115,41 @@ describe("useMergeableObjectStore", () => {
         expect(newWorkingCopy).toBeDefined();
         expect(newWorkingCopy.uuid).toBe(existingObjectUuid);
         expect(newWorkingCopy.timestamp).toBe(existingObjectTimestamp);
+    });
+
+    test("when ensureWorkingCopy is invoked with a UUID, and its working copy exists and it has changes, the same working copy should be returned", async () => {
+        // Arrange
+        vi.mock("@/infrastructure");
+        const { usePersistentStore } = await import("@/infrastructure");
+        const { useMergeableObjectStore } = await import("@/stores/shared");
+
+        const mockPersistentStore = useMockPersistentStore(usePersistentStore);
+
+        const existingObjectUuid = newUuid();
+        const existingObjectTimestamp = new Date();
+
+        const value = ref();
+        const createWorkingCopy = vi.fn();
+        const mapToWorkingCopy = vi.fn().mockReturnValue({ uuid: existingObjectUuid, timestamp: existingObjectTimestamp });
+        const store = useMergeableObjectStore(StorageKey.Submissions, value, createWorkingCopy, mapToWorkingCopy);
+
+        value.value.workingCopies[existingObjectUuid] = {
+            uuid: existingObjectUuid,
+            timestamp: new Date(existingObjectTimestamp.getTime() + 1),
+            changeStatus: ChangeStatus.Updated,
+        };
+
+        value.value.details[existingObjectUuid] = {
+            uuid: existingObjectUuid,
+            timestamp: existingObjectTimestamp,
+        };
+
+        // Act
+        const result = await store.ensureWorkingCopy(existingObjectUuid);
+
+        // Assert
+        expect(mapToWorkingCopy).toBeCalledTimes(0);
+        expect(mockPersistentStore.update).toBeCalledTimes(0);
+        expect(result).toBe(value.value.workingCopies[existingObjectUuid]);
     });
 });

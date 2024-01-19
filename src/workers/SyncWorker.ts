@@ -262,16 +262,16 @@ function _mapSubmissionWorkingCopiesToChanges(workingCopies: Record<string, Subm
 
 async function _resetChangeStatus<TWorkingCopy extends MergeableObject>(key: StorageKey, changes: TWorkingCopy[]) {
     for (const change of changes) {
-        const storedObjects = await readFromStorage<MergeableObjects<unknown, unknown, TWorkingCopy>>(key);
+        const storedObjects = await readFromStorage<MergeableObjects<any, any, TWorkingCopy>>(key);
         if (storedObjects === undefined) {
             return;
         }
         const workingCopy = storedObjects.workingCopies[change.uuid];
         if (areDatesEqual(workingCopy.timestamp, change.timestamp)) {
-            await updateStorage<MergeableObjects<unknown, unknown, TWorkingCopy>>(key, { workingCopies: { [workingCopy.uuid]: workingCopy } }, (v, u) => {
+            await updateStorage<MergeableObjects<any, any, TWorkingCopy>>(key, { workingCopies: { [workingCopy.uuid]: workingCopy } }, (v, u) => {
                 const wc = getRecordValues(u.workingCopies!)[0];
                 updateChangeStatus(wc, ChangeStatus.Unchanged);
-                return <MergeableObjects<unknown, unknown, TWorkingCopy>>{ ...v, workingCopies: { ...v?.workingCopies, ...u.workingCopies } };
+                return <MergeableObjects<any, any, TWorkingCopy>>{ ...v, workingCopies: { ...v?.workingCopies, ...u.workingCopies } };
             });
         }
     }
