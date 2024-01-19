@@ -2,10 +2,11 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-import { PersistentStore, definePersistentStore, unrefType, usePersistentStore } from "@/infrastructure";
+import { PersistentStore, definePersistentStore, usePersistentStore } from "@/infrastructure";
 import { computed, ref } from "vue";
 import { StorageKey } from "@/models";
 import { UserDetails } from "@/apiClients";
+import { unrefType } from "@/helpers";
 
 export interface CurrentUserStore extends PersistentStore<UserDetails | undefined> {
     get isAuthenticated(): boolean;

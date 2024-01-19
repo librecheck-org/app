@@ -3,6 +3,7 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 import { describe, expect, test } from "vitest";
+import { ref } from "vue";
 
 describe("newUuid", () => {
     test("when invoked, should return non-empty string", async () => {
@@ -101,5 +102,19 @@ describe("fireAndForget", () => {
 
         // Assert
         expect(executed).toBe(true);
+    });
+});
+
+describe("unrefType", () => {
+    test("when invoked, should simply change argument type", async () => {
+        // Arrange
+        const { unrefType } = await import("@/helpers");
+        const input = ref();
+
+        // Act
+        const output = unrefType(input);
+
+        // Assert
+        expect(output).toBe(input);
     });
 });

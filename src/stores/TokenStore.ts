@@ -2,9 +2,10 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-import { PersistentStore, definePersistentStore, unrefType, usePersistentStore } from "@/infrastructure";
+import { PersistentStore, definePersistentStore, usePersistentStore } from "@/infrastructure";
 import { StorageKey, Tokens } from "@/models";
 import { ref } from "vue";
+import { unrefType } from "@/helpers";
 
 export interface TokenStore extends PersistentStore<Tokens | undefined> {
 }

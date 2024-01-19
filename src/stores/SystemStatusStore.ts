@@ -3,9 +3,10 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 import { ChecklistsSyncStatus, ServerConnectionStatus, StorageKey, SyncWorkerMessageType, SystemStatus, WorkerMessage, WorkerName } from "@/models";
-import { PersistentStore, definePersistentStore, getWorkerRef, unrefType, usePersistentStore } from "@/infrastructure";
+import { PersistentStore, definePersistentStore, getWorkerRef, usePersistentStore } from "@/infrastructure";
 import { computed, ref } from "vue";
 import { AppInfoApiClient } from "@/apiClients";
+import { unrefType } from "@/helpers";
 
 async function _getClientVersion(): Promise<string> {
     const { version } = await (await fetch("/version.json")).json();

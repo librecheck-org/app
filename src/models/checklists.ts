@@ -75,6 +75,10 @@ export const enum SyncStatus {
     WaitingForSync = 2,
 }
 
+export interface ObjectDetails {
+    timestamp: Date;
+}
+
 export interface MergeableObject {
     uuid: string;
     timestamp: Date;
@@ -92,7 +96,7 @@ export function updateChangeStatus(obj: MergeableObject, newStatus: ChangeStatus
     }
 }
 
-export interface MergeableObjects<TSummary, TDetails, TWorkingCopy extends MergeableObject> {
+export interface MergeableObjects<TSummary, TDetails extends ObjectDetails, TWorkingCopy extends MergeableObject> {
     get summaries(): TSummary[];
     get details(): Record<string, TDetails>;
     get workingCopies(): Record<string, TWorkingCopy>;

@@ -3,12 +3,12 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 import { BroadcastChannelName, StorageKey, StorageWorkerMessageType, WorkerMessage } from "@/models";
-import { ComputedRef, Ref, ref } from "vue";
 import { Drivers, Storage } from "@ionic/storage";
+import { Ref, ref } from "vue";
+import { fireAndForget, unrefType } from "@/helpers";
 import _ from "lodash";
 import { createBroadcastChannel } from "./workers";
 import { defineStore } from "pinia";
-import { fireAndForget } from "@/helpers";
 
 /**
  * UI threads, which run the Ionic/Vue application, create a unique instance ID
@@ -190,14 +190,4 @@ export function definePersistentStore<TStore extends PersistentStore<TValue>, TV
 
     _storeInstances.set(storageKey, store);
     return store;
-}
-
-/**
- * Casts given ref to its underlying type.
- * It is used to workaround typing issues related to how Pinia handles refs. 
- * @param r A ref.
- * @returns The same ref, cast to its underlying type.
- */
-export function unrefType<T>(r: Ref<T> | ComputedRef<T>) {
-    return <T><unknown>r;
 }

@@ -3,9 +3,9 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 import { ChangeStatus, DefinitionLocalChange, Definitions, StorageKey } from "@/models";
-import { PersistentStore, definePersistentStore, unrefType } from "@/infrastructure";
+import { PersistentStore, definePersistentStore } from "@/infrastructure";
 import { Ref, ref } from "vue";
-import { getCurrentDate, newUuid } from "@/helpers";
+import { getCurrentDate, newUuid, unrefType } from "@/helpers";
 import { DefinitionDetails } from "@/apiClients";
 import { useMergeableObjectStore } from "./shared";
 

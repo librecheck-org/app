@@ -2,6 +2,8 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
+import { ComputedRef, Ref } from "vue";
+
 export function newUuid(): string {
     return crypto.randomUUID();
 }
@@ -25,4 +27,14 @@ export function getRecordValues<T>(record: Record<string, T>): T[] {
 
 export function fireAndForget(action: () => Promise<void>): Promise<void> {
     return Promise.resolve().then(action);
+}
+
+/**
+ * Casts given ref to its underlying type.
+ * It is used to workaround typing issues related to how Pinia handles refs. 
+ * @param r A ref.
+ * @returns The same ref, cast to its underlying type.
+ */
+export function unrefType<T>(r: Ref<T> | ComputedRef<T>): T {
+    return r as T;
 }
