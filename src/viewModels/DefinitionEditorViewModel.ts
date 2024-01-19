@@ -3,7 +3,7 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 import { Command, ViewEvents, ViewModel, useCommand, useViewModel } from "@/infrastructure";
-import { DefinitionLocalChange } from "@/models";
+import { DefinitionWorkingCopy } from "@/models";
 import { reactive } from "vue";
 import { useDefinitionStore } from "@/stores";
 
@@ -13,16 +13,16 @@ export enum DefinitionEditorViewState {
 
 interface DefinitionEditorViewData {
     get state(): DefinitionEditorViewState;
-    get workingCopy(): DefinitionLocalChange | undefined;
+    get workingCopy(): DefinitionWorkingCopy | undefined;
 }
 
 class DefinitionEditorViewDataImpl implements DefinitionEditorViewData {
-    constructor(private _workingCopy: DefinitionLocalChange | undefined) {
+    constructor(private _workingCopy: DefinitionWorkingCopy | undefined) {
         this.workingCopy = _workingCopy;
     }
 
     state: DefinitionEditorViewState = DefinitionEditorViewState.None;
-    workingCopy: DefinitionLocalChange | undefined;
+    workingCopy: DefinitionWorkingCopy | undefined;
 }
 
 class DefinitionEditorViewCommands {

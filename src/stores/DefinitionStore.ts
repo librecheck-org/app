@@ -2,26 +2,22 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-import { ChangeStatus, DefinitionLocalChange, Definitions, StorageKey } from "@/models";
-import { PersistentStore, definePersistentStore } from "@/infrastructure";
+import { ChangeStatus, DefinitionWorkingCopy, Definitions, StorageKey } from "@/models";
+import { DefinitionDetails, DefinitionSummary } from "@/apiClients";
+import { MergeableObjectStore, useMergeableObjectStore } from "./shared";
 import { Ref, ref } from "vue";
 import { getCurrentDate, newUuid, unrefType } from "@/helpers";
-import { DefinitionDetails } from "@/apiClients";
-import { useMergeableObjectStore } from "./shared";
+import { definePersistentStore } from "@/infrastructure";
 
-export interface DefinitionStore extends PersistentStore<Definitions> {
+export interface DefinitionStore extends MergeableObjectStore<DefinitionSummary, DefinitionDetails, DefinitionWorkingCopy> {
     readByUuid(definitionUuid: string): DefinitionDetails | undefined;
-
-    ensureWorkingCopy(definitionUuid: string | undefined): Promise<DefinitionLocalChange>;
-    readWorkingCopy(definitionUuid: string): DefinitionLocalChange | undefined;
-    updateWorkingCopy(workingCopy: DefinitionLocalChange): Promise<void>;
 }
 
 export function useDefinitionStore(): DefinitionStore {
     const storageKey = StorageKey.Definitions;
     return definePersistentStore<DefinitionStore, Definitions>(storageKey, () => {
 
-        function _createWorkingCopy(): DefinitionLocalChange {
+        function _createWorkingCopy(): DefinitionWorkingCopy {
             return {
                 uuid: newUuid(),
                 title: "New definition",
@@ -31,7 +27,7 @@ export function useDefinitionStore(): DefinitionStore {
             };
         }
 
-        function _mapToWorkingCopy(definitionUuid: string): DefinitionLocalChange {
+        function _mapToWorkingCopy(definitionUuid: string): DefinitionWorkingCopy {
             const definition = readByUuid(definitionUuid);
             if (definition === undefined) {
                 throw new Error(`Definition with UUID ${definitionUuid} does not exist`);
@@ -74,7 +70,7 @@ export function useDefinitionStore(): DefinitionStore {
             return undefined;
         }
 
-        async function updateWorkingCopy(workingCopy: DefinitionLocalChange): Promise<void> {
+        async function updateWorkingCopy(workingCopy: DefinitionWorkingCopy): Promise<void> {
             // Definition title is set within JSON contents. Therefore, before saving,
             // it should be extracted and related property should be manually updated.
             const parsedContents = JSON.parse(workingCopy.contents);

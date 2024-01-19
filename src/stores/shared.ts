@@ -2,22 +2,22 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-import { ChangeStatus, MergeableObject, MergeableObjects, ObjectDetails, StorageKey, updateChangeStatus } from "@/models";
+import { ChangeStatus, MergeableObjects, ObjectDetails, StorageKey, WorkingCopy, updateChangeStatus } from "@/models";
 import { PersistentStore, usePersistentStore } from "@/infrastructure";
 import { getCurrentDate, getRecordValues, unrefType } from "@/helpers";
 import { Ref } from "vue";
 
-export interface MergeableObjectStore<TSummary, TDetails extends ObjectDetails, TWorkingCopy extends MergeableObject> extends PersistentStore<MergeableObjects<TSummary, TDetails, TWorkingCopy>> {
-    ensureWorkingCopy(objectUuid: string | undefined): Promise<TWorkingCopy>;
+export interface MergeableObjectStore<TSummary, TDetails extends ObjectDetails, TWorkingCopy extends WorkingCopy> extends PersistentStore<MergeableObjects<TSummary, TDetails, TWorkingCopy>> {
+    ensureWorkingCopy(objectUuid: string | undefined, ...args: any[]): Promise<TWorkingCopy>;
     readWorkingCopy(objectUuid: string): TWorkingCopy | undefined;
     updateWorkingCopy(workingCopy: TWorkingCopy): Promise<void>;
 }
 
-export function useMergeableObjectStore<TSummary, TDetails extends ObjectDetails, TWorkingCopy extends MergeableObject>(
+export function useMergeableObjectStore<TSummary, TDetails extends ObjectDetails, TWorkingCopy extends WorkingCopy>(
     storageKey: StorageKey,
     value: Ref<MergeableObjects<TSummary, TDetails, TWorkingCopy>>,
-    createWorkingCopy: () => TWorkingCopy,
-    mapToWorkingCopy: (objectUuid: string) => TWorkingCopy
+    createWorkingCopy: (...args: any[]) => TWorkingCopy,
+    mapToWorkingCopy: (objectUuid: string, ...args: any[]) => TWorkingCopy
 ): MergeableObjectStore<TSummary, TDetails, TWorkingCopy> {
 
     type TObjects = MergeableObjects<TSummary, TDetails, TWorkingCopy>;
@@ -25,12 +25,12 @@ export function useMergeableObjectStore<TSummary, TDetails extends ObjectDetails
     value.value = { summaries: [], details: {}, workingCopies: {} };
     const { ensureIsInitialized, read, update } = usePersistentStore(storageKey, value);
 
-    async function ensureWorkingCopy(objectUuid: string | undefined): Promise<TWorkingCopy> {
+    async function ensureWorkingCopy(objectUuid: string | undefined, ...args: any[]): Promise<TWorkingCopy> {
         let workingCopy: TWorkingCopy | undefined;
         if (objectUuid === undefined) {
             // A completely new object must be created.
             // This is the case when something is being added (e.g. a new definition).
-            workingCopy = createWorkingCopy();
+            workingCopy = createWorkingCopy(...args);
         } else {
             workingCopy = readWorkingCopy(objectUuid);
             const existingObject = value.value.details[objectUuid];
@@ -53,7 +53,7 @@ export function useMergeableObjectStore<TSummary, TDetails extends ObjectDetails
             // 4) The object is going to be edited now, but its working copy is stale,
             //    since existing object timestamp is greater than working copy one:
             //    therefore, working copy must be created again from received object. 
-            workingCopy = mapToWorkingCopy(objectUuid);
+            workingCopy = mapToWorkingCopy(objectUuid, ...args);
         }
         await update({ workingCopies: { [workingCopy.uuid]: workingCopy } }, (v, u) => {
             return <TObjects>{ ...v, workingCopies: { ...v?.workingCopies, ...u.workingCopies } };

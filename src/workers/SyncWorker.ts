@@ -2,7 +2,7 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-import { BroadcastChannelName, ChangeStatus, DefinitionLocalChange, Definitions, GenericWorkerMessageType, LockName, MergeableObject, MergeableObjects, StorageKey, SubmissionLocalChange, Submissions, SyncWorkerMessageType, WorkerMessage, updateChangeStatus } from "@/models";
+import { BroadcastChannelName, ChangeStatus, DefinitionWorkingCopy, Definitions, GenericWorkerMessageType, LockName, MergeableObjects, StorageKey, SubmissionWorkingCopy, Submissions, SyncWorkerMessageType, WorkerMessage, WorkingCopy, updateChangeStatus } from "@/models";
 import { ChecklistsApiClient, DefinitionChange, DefinitionDetails, DefinitionSummary, DefinitionSummaryPagedResult, SubmissionChange, SubmissionDetails, SubmissionSummary, SubmissionSummaryPagedResult } from "@/apiClients";
 import { createBroadcastChannel, getCurrentUser, readFromStorage, updateStorage } from "@/infrastructure";
 import { fireAndForget, getRecordValues, newUuid } from "@/helpers";
@@ -237,7 +237,7 @@ async function _mergeChangeset() {
     }
 }
 
-function _mapDefinitionWorkingCopiesToChanges(workingCopies: Record<string, DefinitionLocalChange> | undefined): DefinitionChange[] {
+function _mapDefinitionWorkingCopiesToChanges(workingCopies: Record<string, DefinitionWorkingCopy> | undefined): DefinitionChange[] {
     return getRecordValues(workingCopies ?? {})
         .filter(x => x.changeStatus > ChangeStatus.Unchanged /* Not Unchanged and not internal negative statuses */)
         .map(x => <DefinitionChange>{
@@ -248,7 +248,7 @@ function _mapDefinitionWorkingCopiesToChanges(workingCopies: Record<string, Defi
         });
 }
 
-function _mapSubmissionWorkingCopiesToChanges(workingCopies: Record<string, SubmissionLocalChange> | undefined): SubmissionChange[] {
+function _mapSubmissionWorkingCopiesToChanges(workingCopies: Record<string, SubmissionWorkingCopy> | undefined): SubmissionChange[] {
     return getRecordValues(workingCopies ?? {})
         .filter(x => x.changeStatus > ChangeStatus.Unchanged /* Not Unchanged and not internal negative statuses */)
         .map(x => <SubmissionChange>{
@@ -260,7 +260,7 @@ function _mapSubmissionWorkingCopiesToChanges(workingCopies: Record<string, Subm
         });
 }
 
-async function _resetChangeStatus<TWorkingCopy extends MergeableObject>(key: StorageKey, changes: TWorkingCopy[]) {
+async function _resetChangeStatus<TWorkingCopy extends WorkingCopy>(key: StorageKey, changes: TWorkingCopy[]) {
     for (const change of changes) {
         const storedObjects = await readFromStorage<MergeableObjects<any, any, TWorkingCopy>>(key);
         if (storedObjects === undefined) {

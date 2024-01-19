@@ -2,53 +2,60 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-import { ChangeStatus, StorageKey, SubmissionLocalChange, Submissions, updateChangeStatus } from "@/models";
-import { PersistentStore, definePersistentStore, usePersistentStore } from "@/infrastructure";
+import { ChangeStatus, StorageKey, SubmissionWorkingCopy, Submissions, updateChangeStatus } from "@/models";
+import { DefinitionDetails, SubmissionDetails, SubmissionSummary } from "@/apiClients";
+import { MergeableObjectStore, useMergeableObjectStore } from "./shared";
+import { Ref, ref } from "vue";
 import { getCurrentDate, newUuid, unrefType } from "@/helpers";
-import { DefinitionDetails } from "@/apiClients";
-import { ref } from "vue";
+import { definePersistentStore } from "@/infrastructure";
 
-export interface SubmissionStore extends PersistentStore<Submissions> {
-    createWorkingCopy(definition: DefinitionDetails): Promise<SubmissionLocalChange>;
-    readWorkingCopy(submissionUuid: string): SubmissionLocalChange | undefined;
-    updateWorkingCopy(submissionDraft: SubmissionLocalChange): Promise<void>;
-    deleteWorkingCopy(submissionUuid: string): Promise<void>;
+export interface SubmissionStore extends MergeableObjectStore<SubmissionSummary, SubmissionDetails, SubmissionWorkingCopy> {
 }
 
 export function useSubmissionStore(): SubmissionStore {
     const storageKey = StorageKey.Submissions;
     return definePersistentStore<SubmissionStore, Submissions>(storageKey, () => {
-        const value = ref<Submissions>({ summaries: [], details: {}, workingCopies: {} });
 
-        const { ensureIsInitialized: _ensureIsInitialized, read, update } = usePersistentStore(storageKey, value);
+        function _createWorkingCopy(definition: DefinitionDetails): SubmissionWorkingCopy {
+            return {
+                uuid: newUuid(),
+                definition: definition,
+                contents: "{}",
+                timestamp: getCurrentDate(),
+                changeStatus: ChangeStatus.Placeholder,
+                currentPageNumber: 0,
+            };
+        }
+
+        function _mapToWorkingCopy(submissionUuid: string, definition: DefinitionDetails): SubmissionWorkingCopy {
+            const submission = readByUuid(submissionUuid);
+            if (submission === undefined) {
+                throw new Error(`Submission with UUID ${submissionUuid} does not exist`);
+            }
+            return {
+                uuid: submission.uuid,
+                definition: definition,
+                contents: submission.contents,
+                timestamp: submission.timestamp,
+                changeStatus: ChangeStatus.Placeholder,
+                currentPageNumber: 0,
+            };
+        }
+
+        const value = ref() as Ref<Submissions>;
+        const {
+            ensureIsInitialized: _ensureIsInitialized, read, update,
+            ensureWorkingCopy, readWorkingCopy, updateWorkingCopy
+        } = useMergeableObjectStore(
+            storageKey, value, _createWorkingCopy, _mapToWorkingCopy
+        );
 
         async function ensureIsInitialized() {
             await _ensureIsInitialized();
         }
 
-        async function createWorkingCopy(definition: DefinitionDetails): Promise<SubmissionLocalChange> {
-            const workingCopy = <SubmissionLocalChange>{
-                uuid: newUuid(),
-                definition: definition,
-                contents: "{}",
-                timestamp: getCurrentDate(),
-                changeStatus: ChangeStatus.Updated,
-                currentPageNumber: 0,
-            };
-            await update({ workingCopies: { ...value.value.workingCopies, [workingCopy.uuid]: workingCopy } });
-            return workingCopy;
-        }
-
-        function readWorkingCopy(submissionUuid: string): SubmissionLocalChange | undefined {
-            return value.value.workingCopies[submissionUuid];
-        }
-
-        async function updateWorkingCopy(submissionDraft: SubmissionLocalChange): Promise<void> {
-            const submissions = value.value.workingCopies;
-            submissionDraft.timestamp = getCurrentDate();
-            updateChangeStatus(submissionDraft, ChangeStatus.Updated);
-            submissions[submissionDraft.uuid] = submissionDraft;
-            await update({ workingCopies: submissions });
+        function readByUuid(submissionUuid: string): SubmissionDetails | undefined {
+            return value.value.details[submissionUuid];
         }
 
         async function deleteWorkingCopy(submissionUuid: string): Promise<void> {
@@ -65,7 +72,7 @@ export function useSubmissionStore(): SubmissionStore {
 
         return {
             value: unrefType(value), ensureIsInitialized, read, update,
-            createWorkingCopy, readWorkingCopy, updateWorkingCopy, deleteWorkingCopy
+            ensureWorkingCopy, readWorkingCopy, updateWorkingCopy, deleteWorkingCopy
         };
     });
 }

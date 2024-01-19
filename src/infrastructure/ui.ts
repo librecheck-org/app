@@ -43,10 +43,10 @@ export const useCommand = (canExecute: CanExecuteFunc, execute: ExecuteFunc): Co
     const canExecuteWrapper = (...args: any[]) => !isExecutingRef.value && canExecute(args);
 
     const executeWrapper = async (...args: any[]) => {
-        if (canExecuteWrapper(args)) {
+        if (canExecuteWrapper(...args)) {
             try {
                 isExecutingRef.value = true;
-                await execute(args);
+                await execute(...args);
             } finally {
                 isExecutingRef.value = false;
             }

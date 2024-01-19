@@ -79,13 +79,13 @@ export interface ObjectDetails {
     timestamp: Date;
 }
 
-export interface MergeableObject {
+export interface WorkingCopy {
     uuid: string;
     timestamp: Date;
     changeStatus: ChangeStatus;
 }
 
-export function updateChangeStatus(obj: MergeableObject, newStatus: ChangeStatus): void {
+export function updateChangeStatus(obj: WorkingCopy, newStatus: ChangeStatus): void {
     switch (obj.changeStatus) {
         case ChangeStatus.Deleted:
             throw new Error("A deleted object cannot be updated");
@@ -96,21 +96,21 @@ export function updateChangeStatus(obj: MergeableObject, newStatus: ChangeStatus
     }
 }
 
-export interface MergeableObjects<TSummary, TDetails extends ObjectDetails, TWorkingCopy extends MergeableObject> {
+export interface MergeableObjects<TSummary, TDetails extends ObjectDetails, TWorkingCopy extends WorkingCopy> {
     get summaries(): TSummary[];
     get details(): Record<string, TDetails>;
     get workingCopies(): Record<string, TWorkingCopy>;
 }
 
-export type Definitions = MergeableObjects<DefinitionSummary, DefinitionDetails, DefinitionLocalChange>;
+export type Definitions = MergeableObjects<DefinitionSummary, DefinitionDetails, DefinitionWorkingCopy>;
 
-export type Submissions = MergeableObjects<SubmissionSummary, SubmissionDetails, SubmissionLocalChange>;
+export type Submissions = MergeableObjects<SubmissionSummary, SubmissionDetails, SubmissionWorkingCopy>;
 
-export interface DefinitionLocalChange extends DefinitionDetails, MergeableObject {
+export interface DefinitionWorkingCopy extends DefinitionDetails, WorkingCopy {
     changeStatus: ChangeStatus;
 }
 
-export interface SubmissionLocalChange extends SubmissionDetails, MergeableObject {
+export interface SubmissionWorkingCopy extends SubmissionDetails, WorkingCopy {
     changeStatus: ChangeStatus;
     currentPageNumber: number;
 }
