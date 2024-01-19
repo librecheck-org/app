@@ -12,7 +12,7 @@ import { useMergeableObjectStore } from "./shared";
 export interface DefinitionStore extends PersistentStore<Definitions> {
     readByUuid(definitionUuid: string): DefinitionDetails | undefined;
 
-    createWorkingCopy(definitionUuid: string | undefined): Promise<DefinitionLocalChange>;
+    ensureWorkingCopy(definitionUuid: string | undefined): Promise<DefinitionLocalChange>;
     readWorkingCopy(definitionUuid: string): DefinitionLocalChange | undefined;
     updateWorkingCopy(workingCopy: DefinitionLocalChange): Promise<void>;
 }
@@ -21,7 +21,7 @@ export function useDefinitionStore(): DefinitionStore {
     const storageKey = StorageKey.Definitions;
     return definePersistentStore<DefinitionStore, Definitions>(storageKey, () => {
 
-        function _createNewWorkingCopy(): DefinitionLocalChange {
+        function _createWorkingCopy(): DefinitionLocalChange {
             return {
                 uuid: newUuid(),
                 title: "New definition",
@@ -48,9 +48,9 @@ export function useDefinitionStore(): DefinitionStore {
         const value = ref() as Ref<Definitions>;
         const {
             ensureIsInitialized: _ensureIsInitialized, read, update,
-            createWorkingCopy, readWorkingCopy, updateWorkingCopy: _updateWorkingCopy
+            ensureWorkingCopy, readWorkingCopy, updateWorkingCopy: _updateWorkingCopy
         } = useMergeableObjectStore(
-            storageKey, value, _createNewWorkingCopy, _mapToWorkingCopy
+            storageKey, value, _createWorkingCopy, _mapToWorkingCopy
         );
 
         async function ensureIsInitialized() {
@@ -86,7 +86,7 @@ export function useDefinitionStore(): DefinitionStore {
         return {
             value: unrefType(value), ensureIsInitialized, read, update,
             readByUuid,
-            createWorkingCopy, readWorkingCopy, updateWorkingCopy
+            ensureWorkingCopy, readWorkingCopy, updateWorkingCopy
         };
     });
 }

@@ -95,7 +95,7 @@ export function useDefinitionListViewModel(): ViewModel<DefinitionListViewData, 
     }
 
     async function _add(): Promise<void> {
-        const workingCopy = await _definitionStore.createWorkingCopy(undefined);
+        const workingCopy = await _definitionStore.ensureWorkingCopy(undefined);
         _ionRouter.push("/definitions/" + workingCopy.uuid);
     }
 
@@ -104,7 +104,7 @@ export function useDefinitionListViewModel(): ViewModel<DefinitionListViewData, 
     }
 
     async function _edit(definitionUuid: string): Promise<void> {
-        const workingCopy = await _definitionStore.createWorkingCopy(definitionUuid);
+        const workingCopy = await _definitionStore.ensureWorkingCopy(definitionUuid);
         _ionRouter.push("/definitions/" + workingCopy.uuid);
     }
 

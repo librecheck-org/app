@@ -15,12 +15,13 @@ describe("useMergeableObjectStore", () => {
     function useMockPersistentStore(usePersistentStore) {
         const read = vi.fn();
         const update = vi.fn();
-        const mocks = { read, update };
-        usePersistentStore.mockReturnValue(mocks);
-        return mocks;
+        const mockPersistentStore = { read, update };
+        usePersistentStore.mockReturnValue(mockPersistentStore);
+        vi.spyOn(mockPersistentStore, "update");
+        return mockPersistentStore;
     }
 
-    test("when createWorkingCopy is invoked with undefined, a new working copy should be created", async () => {
+    test("when ensureWorkingCopy is invoked with undefined, a new working copy should be created", async () => {
         // Arrange
         vi.mock("@/infrastructure");
         const { usePersistentStore } = await import("@/infrastructure");
@@ -28,16 +29,51 @@ describe("useMergeableObjectStore", () => {
 
         const mockPersistentStore = useMockPersistentStore(usePersistentStore);
 
+        const newObjectUuid = newUuid();
+
         const value = ref();
-        const createNewWorkingCopy = vi.fn().mockReturnValue({ uuid: newUuid() });
+        const createWorkingCopy = vi.fn().mockReturnValue({ uuid: newObjectUuid });
         const mapToWorkingCopy = vi.fn();
-        const store = useMergeableObjectStore(StorageKey.Submissions, value, createNewWorkingCopy, mapToWorkingCopy);
+        const store = useMergeableObjectStore(StorageKey.Submissions, value, createWorkingCopy, mapToWorkingCopy);
 
         // Act
-        await store.createWorkingCopy(undefined);
+        await store.ensureWorkingCopy(undefined);
 
         // Assert
-        expect(createNewWorkingCopy).toBeCalledTimes(1);
+        expect(createWorkingCopy).toBeCalledTimes(1);
         expect(mockPersistentStore.update).toBeCalledTimes(1);
+
+        const updates = mockPersistentStore.update.mock.lastCall[0];
+        const newWorkingCopy = updates.workingCopies[newObjectUuid];
+        expect(newWorkingCopy).toBeDefined();
+        expect(newWorkingCopy.uuid).toBe(newObjectUuid);
+    });
+
+    test("when ensureWorkingCopy is invoked with a UUID, and its working copy does not exist, a new working copy should be created from existing object", async () => {
+        // Arrange
+        vi.mock("@/infrastructure");
+        const { usePersistentStore } = await import("@/infrastructure");
+        const { useMergeableObjectStore } = await import("@/stores/shared");
+
+        const mockPersistentStore = useMockPersistentStore(usePersistentStore);
+
+        const existingObjectUuid = newUuid();
+
+        const value = ref();
+        const createWorkingCopy = vi.fn();
+        const mapToWorkingCopy = vi.fn().mockReturnValue({ uuid: existingObjectUuid });
+        const store = useMergeableObjectStore(StorageKey.Submissions, value, createWorkingCopy, mapToWorkingCopy);
+
+        // Act
+        await store.ensureWorkingCopy(existingObjectUuid);
+
+        // Assert
+        expect(mapToWorkingCopy).toBeCalledTimes(1);
+        expect(mockPersistentStore.update).toBeCalledTimes(1);
+
+        const updates = mockPersistentStore.update.mock.lastCall[0];
+        const newWorkingCopy = updates.workingCopies[existingObjectUuid];
+        expect(newWorkingCopy).toBeDefined();
+        expect(newWorkingCopy.uuid).toBe(existingObjectUuid);
     });
 });

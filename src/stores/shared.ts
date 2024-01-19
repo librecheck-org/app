@@ -8,7 +8,7 @@ import { getCurrentDate, getRecordValues } from "@/helpers";
 import { Ref } from "vue";
 
 export interface MergeableObjectStore<TSummary, TDetails, TWorkingCopy extends MergeableObject> extends PersistentStore<MergeableObjects<TSummary, TDetails, TWorkingCopy>> {
-    createWorkingCopy(objectUuid: string | undefined): Promise<TWorkingCopy>;
+    ensureWorkingCopy(objectUuid: string | undefined): Promise<TWorkingCopy>;
     readWorkingCopy(objectUuid: string): TWorkingCopy | undefined;
     updateWorkingCopy(workingCopy: TWorkingCopy): Promise<void>;
 }
@@ -16,7 +16,7 @@ export interface MergeableObjectStore<TSummary, TDetails, TWorkingCopy extends M
 export function useMergeableObjectStore<TSummary, TDetails, TWorkingCopy extends MergeableObject>(
     storageKey: StorageKey,
     value: Ref<MergeableObjects<TSummary, TDetails, TWorkingCopy>>,
-    createNewWorkingCopy: () => TWorkingCopy,
+    createWorkingCopy: () => TWorkingCopy,
     mapToWorkingCopy: (objectUuid: string) => TWorkingCopy
 ): MergeableObjectStore<TSummary, TDetails, TWorkingCopy> {
 
@@ -25,11 +25,11 @@ export function useMergeableObjectStore<TSummary, TDetails, TWorkingCopy extends
     value.value = { summaries: [], details: {}, workingCopies: {} };
     const { ensureIsInitialized, read, update } = usePersistentStore(storageKey, value);
 
-    async function createWorkingCopy(definitionUuid: string | undefined): Promise<TWorkingCopy> {
+    async function ensureWorkingCopy(definitionUuid: string | undefined): Promise<TWorkingCopy> {
         let workingCopy: TWorkingCopy | undefined;
         if (definitionUuid === undefined) {
-            // A completely new object.
-            workingCopy = createNewWorkingCopy();
+            // A completely new object must be created.
+            workingCopy = createWorkingCopy();
         } else {
             workingCopy = readWorkingCopy(definitionUuid);
             if (workingCopy !== undefined) {
@@ -60,6 +60,6 @@ export function useMergeableObjectStore<TSummary, TDetails, TWorkingCopy extends
 
     return {
         value: unrefType(value), ensureIsInitialized, read, update,
-        createWorkingCopy, readWorkingCopy, updateWorkingCopy
+        ensureWorkingCopy, readWorkingCopy, updateWorkingCopy
     };
 }
