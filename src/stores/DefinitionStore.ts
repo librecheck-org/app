@@ -27,11 +27,7 @@ export function useDefinitionStore(): DefinitionStore {
             };
         }
 
-        function _mapToWorkingCopy(definitionUuid: string): DefinitionWorkingCopy {
-            const definition = readByUuid(definitionUuid);
-            if (definition === undefined) {
-                throw new Error(`Definition with UUID ${definitionUuid} does not exist`);
-            }
+        function _mapDetailsToWorkingCopy(definition: DefinitionDetails): DefinitionWorkingCopy {
             return {
                 uuid: definition.uuid,
                 title: definition.title,
@@ -41,33 +37,26 @@ export function useDefinitionStore(): DefinitionStore {
             };
         }
 
+        function _mapWorkingCopyToDetails(workingCopy: DefinitionWorkingCopy): DefinitionDetails {
+            return {
+                uuid: workingCopy.uuid,
+                title: workingCopy.title,
+                contents: workingCopy.contents,
+                timestamp: workingCopy.timestamp,
+            };
+        }
+
         const value = ref() as Ref<Definitions>;
         const {
             ensureIsInitialized: _ensureIsInitialized, read, update,
-            ensureWorkingCopy, readWorkingCopy, updateWorkingCopy: _updateWorkingCopy
+            ensureWorkingCopy, readWorkingCopy, updateWorkingCopy: _updateWorkingCopy,
+            readByUuid
         } = useMergeableObjectStore(
-            storageKey, value, _createWorkingCopy, _mapToWorkingCopy
+            storageKey, value, _createWorkingCopy, _mapDetailsToWorkingCopy, _mapWorkingCopyToDetails
         );
 
         async function ensureIsInitialized() {
             await _ensureIsInitialized();
-        }
-
-        function readByUuid(definitionUuid: string): DefinitionDetails | undefined {
-            const details = value.value.details[definitionUuid];
-            if (details !== undefined) {
-                return details;
-            }
-            const workingCopy = readWorkingCopy(definitionUuid);
-            if (workingCopy !== undefined) {
-                return <DefinitionDetails>{
-                    uuid: workingCopy.uuid,
-                    title: workingCopy.title,
-                    contents: workingCopy.contents,
-                    timestamp: workingCopy.timestamp,
-                };
-            }
-            return undefined;
         }
 
         async function updateWorkingCopy(workingCopy: DefinitionWorkingCopy): Promise<void> {
@@ -81,8 +70,8 @@ export function useDefinitionStore(): DefinitionStore {
 
         return {
             value: unrefType(value), ensureIsInitialized, read, update,
+            ensureWorkingCopy, readWorkingCopy, updateWorkingCopy,
             readByUuid,
-            ensureWorkingCopy, readWorkingCopy, updateWorkingCopy
         };
     });
 }

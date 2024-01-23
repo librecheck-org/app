@@ -27,11 +27,7 @@ export function useSubmissionStore(): SubmissionStore {
             };
         }
 
-        function _mapToWorkingCopy(submissionUuid: string, definition: DefinitionDetails): SubmissionWorkingCopy {
-            const submission = readByUuid(submissionUuid);
-            if (submission === undefined) {
-                throw new Error(`Submission with UUID ${submissionUuid} does not exist`);
-            }
+        function _mapDetailsToWorkingCopy(submission: SubmissionDetails, definition: DefinitionDetails): SubmissionWorkingCopy {
             return {
                 uuid: submission.uuid,
                 definition: definition,
@@ -42,20 +38,26 @@ export function useSubmissionStore(): SubmissionStore {
             };
         }
 
+        function _mapWorkingCopyToDetails(workingCopy: SubmissionWorkingCopy): SubmissionDetails {
+            return {
+                uuid: workingCopy.uuid,
+                definition: workingCopy.definition,
+                contents: workingCopy.contents,
+                timestamp: workingCopy.timestamp,
+            };
+        }
+
         const value = ref() as Ref<Submissions>;
         const {
             ensureIsInitialized: _ensureIsInitialized, read, update,
-            ensureWorkingCopy, readWorkingCopy, updateWorkingCopy
+            ensureWorkingCopy, readWorkingCopy, updateWorkingCopy,
+            readByUuid
         } = useMergeableObjectStore(
-            storageKey, value, _createWorkingCopy, _mapToWorkingCopy
+            storageKey, value, _createWorkingCopy, _mapDetailsToWorkingCopy, _mapWorkingCopyToDetails
         );
 
         async function ensureIsInitialized() {
             await _ensureIsInitialized();
-        }
-
-        function readByUuid(submissionUuid: string): SubmissionDetails | undefined {
-            return value.value.details[submissionUuid];
         }
 
         async function deleteWorkingCopy(submissionUuid: string): Promise<void> {
@@ -72,7 +74,8 @@ export function useSubmissionStore(): SubmissionStore {
 
         return {
             value: unrefType(value), ensureIsInitialized, read, update,
-            ensureWorkingCopy, readWorkingCopy, updateWorkingCopy, deleteWorkingCopy
+            ensureWorkingCopy, readWorkingCopy, updateWorkingCopy, deleteWorkingCopy,
+            readByUuid
         };
     });
 }

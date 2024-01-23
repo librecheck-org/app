@@ -3,38 +3,53 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 import { ChangeStatus, StorageKey } from "@/models";
-import { afterEach, describe, expect, test, vi } from "vitest";
+import { Mock, afterEach, describe, expect, test, vi } from "vitest";
+import { Ref, ref } from "vue";
 import { newUuid } from "@/helpers";
-import { ref } from "vue";
 
 describe("useMergeableObjectStore", () => {
     afterEach(() => {
         vi.restoreAllMocks();
     });
 
-    function useMockPersistentStore(usePersistentStore) {
+    async function useMockPersistentStore() {
+        const { usePersistentStore } = await import("@/infrastructure");
+
         const ensureIsInitialized = vi.fn();
         const read = vi.fn();
         const update = vi.fn();
+
         const mockPersistentStore = { ensureIsInitialized, read, update };
         usePersistentStore.mockReturnValue(mockPersistentStore);
         return mockPersistentStore;
     }
 
+    async function useMockMergeableObjectStore(
+        value: Ref,
+        createWorkingCopy: Mock | undefined = undefined,
+        mapDetailsToWorkingCopy: Mock | undefined = undefined,
+        mapWorkingCopyToDetails: Mock | undefined = undefined
+    ) {
+        const { useMergeableObjectStore } = await import("@/stores/shared");
+
+        createWorkingCopy ??= vi.fn();
+        mapDetailsToWorkingCopy ??= vi.fn();
+        mapWorkingCopyToDetails ??= vi.fn();
+
+        return useMergeableObjectStore(StorageKey.Submissions, value, createWorkingCopy, mapDetailsToWorkingCopy, mapWorkingCopyToDetails);
+    }
+
     test("when ensureWorkingCopy is invoked with undefined, a new working copy should be created", async () => {
         // Arrange
         vi.mock("@/infrastructure");
-        const { usePersistentStore } = await import("@/infrastructure");
-        const { useMergeableObjectStore } = await import("@/stores/shared");
 
-        const mockPersistentStore = useMockPersistentStore(usePersistentStore);
+        const mockPersistentStore = await useMockPersistentStore();
 
         const newObjectUuid = newUuid();
 
         const value = ref();
         const createWorkingCopy = vi.fn().mockReturnValue({ uuid: newObjectUuid });
-        const mapToWorkingCopy = vi.fn();
-        const store = useMergeableObjectStore(StorageKey.Submissions, value, createWorkingCopy, mapToWorkingCopy);
+        const store = await useMockMergeableObjectStore(value, createWorkingCopy);
 
         // Act
         await store.ensureWorkingCopy(undefined);
@@ -52,23 +67,25 @@ describe("useMergeableObjectStore", () => {
     test("when ensureWorkingCopy is invoked with a UUID, and its working copy does not exist, a new working copy should be created from existing object", async () => {
         // Arrange
         vi.mock("@/infrastructure");
-        const { usePersistentStore } = await import("@/infrastructure");
-        const { useMergeableObjectStore } = await import("@/stores/shared");
 
-        const mockPersistentStore = useMockPersistentStore(usePersistentStore);
+        const mockPersistentStore = await useMockPersistentStore();
 
         const existingObjectUuid = newUuid();
 
         const value = ref();
-        const createWorkingCopy = vi.fn();
-        const mapToWorkingCopy = vi.fn().mockReturnValue({ uuid: existingObjectUuid });
-        const store = useMergeableObjectStore(StorageKey.Submissions, value, createWorkingCopy, mapToWorkingCopy);
+        const mapDetailsToWorkingCopy = vi.fn().mockReturnValue({ uuid: existingObjectUuid });
+        const store = await useMockMergeableObjectStore(value, undefined, mapDetailsToWorkingCopy);
+
+        value.value.details[existingObjectUuid] = {
+            uuid: existingObjectUuid,
+            timestamp: new Date(),
+        };
 
         // Act
         await store.ensureWorkingCopy(existingObjectUuid);
 
         // Assert
-        expect(mapToWorkingCopy).toBeCalledTimes(1);
+        expect(mapDetailsToWorkingCopy).toBeCalledTimes(1);
         expect(mockPersistentStore.update).toBeCalledTimes(1);
 
         const updates = mockPersistentStore.update.mock.lastCall[0];
@@ -80,18 +97,15 @@ describe("useMergeableObjectStore", () => {
     test("when ensureWorkingCopy is invoked with a UUID, and its working copy exists but it is stale, a new working copy should be created from existing object", async () => {
         // Arrange
         vi.mock("@/infrastructure");
-        const { usePersistentStore } = await import("@/infrastructure");
-        const { useMergeableObjectStore } = await import("@/stores/shared");
 
-        const mockPersistentStore = useMockPersistentStore(usePersistentStore);
+        const mockPersistentStore = await useMockPersistentStore();
 
         const existingObjectUuid = newUuid();
         const existingObjectTimestamp = new Date();
 
         const value = ref();
-        const createWorkingCopy = vi.fn();
-        const mapToWorkingCopy = vi.fn().mockReturnValue({ uuid: existingObjectUuid, timestamp: existingObjectTimestamp });
-        const store = useMergeableObjectStore(StorageKey.Submissions, value, createWorkingCopy, mapToWorkingCopy);
+        const mapDetailsToWorkingCopy = vi.fn().mockReturnValue({ uuid: existingObjectUuid, timestamp: existingObjectTimestamp });
+        const store = await useMockMergeableObjectStore(value, undefined, mapDetailsToWorkingCopy);
 
         value.value.workingCopies[existingObjectUuid] = {
             uuid: existingObjectUuid,
@@ -107,7 +121,7 @@ describe("useMergeableObjectStore", () => {
         await store.ensureWorkingCopy(existingObjectUuid);
 
         // Assert
-        expect(mapToWorkingCopy).toBeCalledTimes(1);
+        expect(mapDetailsToWorkingCopy).toBeCalledTimes(1);
         expect(mockPersistentStore.update).toBeCalledTimes(1);
 
         const updates = mockPersistentStore.update.mock.lastCall[0];
@@ -120,18 +134,15 @@ describe("useMergeableObjectStore", () => {
     test("when ensureWorkingCopy is invoked with a UUID, and its working copy exists and it has changes, the same working copy should be returned", async () => {
         // Arrange
         vi.mock("@/infrastructure");
-        const { usePersistentStore } = await import("@/infrastructure");
-        const { useMergeableObjectStore } = await import("@/stores/shared");
 
-        const mockPersistentStore = useMockPersistentStore(usePersistentStore);
+        const mockPersistentStore = await useMockPersistentStore();
 
         const existingObjectUuid = newUuid();
         const existingObjectTimestamp = new Date();
 
         const value = ref();
-        const createWorkingCopy = vi.fn();
-        const mapToWorkingCopy = vi.fn().mockReturnValue({ uuid: existingObjectUuid, timestamp: existingObjectTimestamp });
-        const store = useMergeableObjectStore(StorageKey.Submissions, value, createWorkingCopy, mapToWorkingCopy);
+        const mapDetailsToWorkingCopy = vi.fn().mockReturnValue({ uuid: existingObjectUuid, timestamp: existingObjectTimestamp });
+        const store = await useMockMergeableObjectStore(value, undefined, mapDetailsToWorkingCopy);
 
         value.value.workingCopies[existingObjectUuid] = {
             uuid: existingObjectUuid,
@@ -148,7 +159,7 @@ describe("useMergeableObjectStore", () => {
         const result = await store.ensureWorkingCopy(existingObjectUuid);
 
         // Assert
-        expect(mapToWorkingCopy).toBeCalledTimes(0);
+        expect(mapDetailsToWorkingCopy).toBeCalledTimes(0);
         expect(mockPersistentStore.update).toBeCalledTimes(0);
         expect(result).toBe(value.value.workingCopies[existingObjectUuid]);
     });

@@ -76,7 +76,8 @@ class DefinitionListViewCommands {
     constructor(
         public add: Command,
         public edit: Command,
-        public fill: Command) {
+        public fill: Command,
+        public del: Command) {
     }
 }
 
@@ -120,10 +121,19 @@ export function useDefinitionListViewModel(): ViewModel<DefinitionListViewData, 
         }
     }
 
+    function _canDelete(): boolean {
+        return true;
+    }
+
+    async function _delete(): Promise<void> {
+        // const definition = _definitionStore.readByUuid(definitionUuid);
+    }
+
     const _addCommand = useCommand(_canAdd, _add);
     const _editCommand = useCommand(_canEdit, _edit);
     const _fillCommand = useCommand(_canFill, _fill);
-    const commands = new DefinitionListViewCommands(_addCommand, _editCommand, _fillCommand);
+    const _deleteCommand = useCommand(_canDelete, _delete);
+    const commands = new DefinitionListViewCommands(_addCommand, _editCommand, _fillCommand, _deleteCommand);
 
     const events = new ViewEvents();
 

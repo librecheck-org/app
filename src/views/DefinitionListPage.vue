@@ -6,8 +6,7 @@
                     <ion-col v-for="def in data.definitions" v-bind:key="def.uuid" size="12" size-sm="6" size-md="4"
                         size-lg="3">
                         <ion-card :id="getOpenActionSheetId(def.uuid)" class="ion-activatable lc-card">
-
-                            <ion-ripple-effect></ion-ripple-effect>
+                            <ion-ripple-effect />
 
                             <ion-card-header>
                                 <ion-card-title>{{ def.title }}</ion-card-title>
@@ -20,7 +19,6 @@
 
                             <ion-action-sheet :trigger="getOpenActionSheetId(def.uuid)" header="Actions"
                                 :buttons="getActionSheetButtons(def.uuid)" @didDismiss="onActionSheetDidDismiss($event)" />
-
                         </ion-card>
                     </ion-col>
                 </ion-row>
