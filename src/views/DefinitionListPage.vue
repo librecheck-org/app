@@ -5,7 +5,10 @@
                 <ion-row>
                     <ion-col v-for="def in data.definitions" v-bind:key="def.uuid" size="12" size-sm="6" size-md="4"
                         size-lg="3">
-                        <ion-card>
+                        <ion-card :id="getOpenActionSheetId(def.uuid)" class="ion-activatable lc-card">
+
+                            <ion-ripple-effect></ion-ripple-effect>
+
                             <ion-card-header>
                                 <ion-card-title>{{ def.title }}</ion-card-title>
                                 <ion-card-subtitle>Card Subtitle</ion-card-subtitle>
@@ -15,9 +18,9 @@
                                 Here's a small text description for the card content. Nothing more, nothing less.
                             </ion-card-content>
 
-                            <ion-button :id="getOpenActionSheetId(def.uuid)" fill="clear">More</ion-button>
                             <ion-action-sheet :trigger="getOpenActionSheetId(def.uuid)" header="Actions"
                                 :buttons="getActionSheetButtons(def.uuid)" @didDismiss="onActionSheetDidDismiss($event)" />
+
                         </ion-card>
                     </ion-col>
                 </ion-row>
@@ -33,7 +36,7 @@
 </template>
   
 <script setup lang="ts">
-import { ActionSheetButton, IonActionSheet, IonButton, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonCol, IonContent, IonFab, IonFabButton, IonGrid, IonIcon, IonPage, IonRow } from "@ionic/vue";
+import { ActionSheetButton, IonActionSheet, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonCol, IonContent, IonFab, IonFabButton, IonGrid, IonIcon, IonPage, IonRippleEffect, IonRow } from "@ionic/vue";
 import { getDefaultActionSheetButtons, onActionSheetDidDismiss } from "@/infrastructure";
 import { add } from "ionicons/icons";
 import { useDefinitionListViewModel } from "@/viewModels";
@@ -77,3 +80,31 @@ function getActionSheetButtons(definitionUuid: string): ActionSheetButton[] {
     return buttons;
 }
 </script>
+
+<style>
+.lc-card {
+    --background-hover-opacity: .04;
+    --transition: opacity 15ms linear, background-color 15ms linear;
+
+    cursor: pointer;
+    height: 15em;
+    position: relative;
+    overflow: hidden;
+}
+
+.lc-card::after {
+    /* Style copied from ion-item */
+    inset: 0px;
+    position: absolute;
+    content: "";
+    transition: var(--transition);
+    z-index: -1;
+    opacity: 0;
+}
+
+.lc-card:hover::after {
+    /* Style copied from ion-item */
+    background: currentColor;
+    opacity: var(--background-hover-opacity);
+}
+</style>
