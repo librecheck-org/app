@@ -38,22 +38,13 @@ export function useSubmissionStore(): SubmissionStore {
             };
         }
 
-        function _mapWorkingCopyToDetails(workingCopy: SubmissionWorkingCopy): SubmissionDetails {
-            return {
-                uuid: workingCopy.uuid,
-                definition: workingCopy.definition,
-                contents: workingCopy.contents,
-                timestamp: workingCopy.timestamp,
-            };
-        }
-
         const value = ref() as Ref<Submissions>;
         const {
             ensureIsInitialized: _ensureIsInitialized, read, update,
             ensureWorkingCopy, readWorkingCopy, updateWorkingCopy,
-            readByUuid
+            readDetails: readByUuid
         } = useMergeableObjectStore(
-            storageKey, value, _createWorkingCopy, _mapDetailsToWorkingCopy, _mapWorkingCopyToDetails
+            storageKey, value, _createWorkingCopy, _mapDetailsToWorkingCopy
         );
 
         async function ensureIsInitialized() {
@@ -75,7 +66,7 @@ export function useSubmissionStore(): SubmissionStore {
         return {
             value: unrefType(value), ensureIsInitialized, read, update,
             ensureWorkingCopy, readWorkingCopy, updateWorkingCopy, deleteWorkingCopy,
-            readByUuid
+            readDetails: readByUuid
         };
     });
 }

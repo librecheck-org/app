@@ -10,7 +10,7 @@ import { getCurrentDate, newUuid, unrefType } from "@/helpers";
 import { definePersistentStore } from "@/infrastructure";
 
 export interface DefinitionStore extends MergeableObjectStore<DefinitionSummary, DefinitionDetails, DefinitionWorkingCopy> {
-    readByUuid(definitionUuid: string): DefinitionDetails | undefined;
+    readDetails(definitionUuid: string): DefinitionDetails | undefined;
 }
 
 export function useDefinitionStore(): DefinitionStore {
@@ -37,22 +37,13 @@ export function useDefinitionStore(): DefinitionStore {
             };
         }
 
-        function _mapWorkingCopyToDetails(workingCopy: DefinitionWorkingCopy): DefinitionDetails {
-            return {
-                uuid: workingCopy.uuid,
-                title: workingCopy.title,
-                contents: workingCopy.contents,
-                timestamp: workingCopy.timestamp,
-            };
-        }
-
         const value = ref() as Ref<Definitions>;
         const {
             ensureIsInitialized: _ensureIsInitialized, read, update,
             ensureWorkingCopy, readWorkingCopy, updateWorkingCopy: _updateWorkingCopy,
-            readByUuid
+            readDetails: readByUuid
         } = useMergeableObjectStore(
-            storageKey, value, _createWorkingCopy, _mapDetailsToWorkingCopy, _mapWorkingCopyToDetails
+            storageKey, value, _createWorkingCopy, _mapDetailsToWorkingCopy
         );
 
         async function ensureIsInitialized() {
@@ -71,7 +62,7 @@ export function useDefinitionStore(): DefinitionStore {
         return {
             value: unrefType(value), ensureIsInitialized, read, update,
             ensureWorkingCopy, readWorkingCopy, updateWorkingCopy,
-            readByUuid,
+            readDetails: readByUuid,
         };
     });
 }

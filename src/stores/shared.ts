@@ -12,21 +12,24 @@ export interface MergeableObjectStore<TSummary, TDetails extends ObjectDetails, 
     readWorkingCopy(objectUuid: string): TWorkingCopy | undefined;
     updateWorkingCopy(workingCopy: TWorkingCopy): Promise<void>;
 
-    readByUuid(objectUuid: string): TDetails | undefined;
+    readDetails(objectUuid: string): TDetails | undefined;
 }
 
 export function useMergeableObjectStore<TSummary, TDetails extends ObjectDetails, TWorkingCopy extends WorkingCopy>(
     storageKey: StorageKey,
     value: Ref<MergeableObjects<TSummary, TDetails, TWorkingCopy>>,
     createWorkingCopy: (...args: any[]) => TWorkingCopy,
-    mapDetailsToWorkingCopy: (details: TDetails, ...args: any[]) => TWorkingCopy,
-    mapWorkingCopyToDetails: (workingCopy: TWorkingCopy) => TDetails
+    mapDetailsToWorkingCopy: (details: TDetails, ...args: any[]) => TWorkingCopy
 ): MergeableObjectStore<TSummary, TDetails, TWorkingCopy> {
 
     type TObjects = MergeableObjects<TSummary, TDetails, TWorkingCopy>;
 
     value.value = { summaries: [], details: {}, workingCopies: {} };
     const { ensureIsInitialized, read, update } = usePersistentStore(storageKey, value);
+
+    function _mapWorkingCopyToDetails(workingCopy: TWorkingCopy): TDetails {
+        return <TDetails><unknown>{ ...workingCopy };
+    }
 
     async function ensureWorkingCopy(objectUuid: string | undefined, ...args: any[]): Promise<TWorkingCopy> {
         let workingCopy: TWorkingCopy | undefined;
@@ -36,7 +39,10 @@ export function useMergeableObjectStore<TSummary, TDetails extends ObjectDetails
             workingCopy = createWorkingCopy(...args);
         } else {
             workingCopy = readWorkingCopy(objectUuid);
-            const details = _readDetails(objectUuid);
+            const details = _readDetailsInternal(objectUuid);
+            if (details === undefined) {
+                throw new Error(`Object with ${objectUuid} UUID does not have any details`);
+            }
             if (workingCopy !== undefined && (workingCopy.changeStatus > ChangeStatus.Unchanged || details.timestamp <= workingCopy.timestamp)) {
                 // A working copy already exists with changes. When working copy has changes
                 // and it is stale, that might be a conflict and a new working copy should not be created
@@ -77,22 +83,18 @@ export function useMergeableObjectStore<TSummary, TDetails extends ObjectDetails
         });
     }
 
-    function _readDetails(objectUuid: string): TDetails {
-        const details = value.value.details[objectUuid];
-        if (details === undefined) {
-            throw new Error(`Object with ${objectUuid} UUID does not have any details`);
-        }
-        return details;
+    function _readDetailsInternal(objectUuid: string): TDetails | undefined {
+        return value.value.details[objectUuid];
     }
 
-    function readByUuid(objectUuid: string): TDetails | undefined {
+    function readDetails(objectUuid: string): TDetails | undefined {
         const workingCopy = readWorkingCopy(objectUuid);
-        const details = _readDetails(objectUuid);
+        const details = _readDetailsInternal(objectUuid);
         if (workingCopy === undefined) {
             return details;
         }
         if (details === undefined || workingCopy.timestamp >= details.timestamp) {
-            return mapWorkingCopyToDetails(workingCopy);
+            return _mapWorkingCopyToDetails(workingCopy);
         }
         return details;
     }
@@ -100,6 +102,6 @@ export function useMergeableObjectStore<TSummary, TDetails extends ObjectDetails
     return {
         value: unrefType(value), ensureIsInitialized, read, update,
         ensureWorkingCopy, readWorkingCopy, updateWorkingCopy,
-        readByUuid
+        readDetails
     };
 }

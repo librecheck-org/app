@@ -163,4 +163,114 @@ describe("useMergeableObjectStore", () => {
         expect(mockPersistentStore.update).toBeCalledTimes(0);
         expect(result).toBe(value.value.workingCopies[existingObjectUuid]);
     });
+
+    test("when readDetails is invoked with a UUID, and its working copy does not exist, stored details should be returned", async () => {
+        // Arrange
+        vi.mock("@/infrastructure");
+
+        await useMockPersistentStore();
+
+        const objectUuid = newUuid();
+
+        const value = ref();
+        const store = await useMockMergeableObjectStore(value);
+
+        value.value.details[objectUuid] = {
+            uuid: objectUuid,
+        };
+
+        // Act
+        const result = await store.readDetails(objectUuid);
+
+        // Assert
+        expect(result).toBeTruthy();
+        expect(result.uuid).toBe(objectUuid);
+    });
+
+    test("when readDetails is invoked with a UUID, and its details do not exist, working copy should be returned", async () => {
+        // Arrange
+        vi.mock("@/infrastructure");
+
+        await useMockPersistentStore();
+
+        const objectUuid = newUuid();
+
+        const value = ref();
+        const store = await useMockMergeableObjectStore(value);
+
+        value.value.workingCopies[objectUuid] = {
+            uuid: objectUuid,
+        };
+
+        // Act
+        const result = await store.readDetails(objectUuid);
+
+        // Assert
+        expect(result).toBeTruthy();
+        expect(result.uuid).toBe(objectUuid);
+    });
+
+    test("when readDetails is invoked with a UUID, and working copy is newer than details, working copy should be returned", async () => {
+        // Arrange
+        vi.mock("@/infrastructure");
+
+        await useMockPersistentStore();
+
+        const objectUuid = newUuid();
+        const detailsTimestamp = new Date();
+        const workingCopyTimestamp = new Date(detailsTimestamp.getTime() + 1);
+
+        const value = ref();
+        const store = await useMockMergeableObjectStore(value);
+
+        value.value.details[objectUuid] = {
+            uuid: objectUuid,
+            timestamp: detailsTimestamp,
+        };
+
+        value.value.workingCopies[objectUuid] = {
+            uuid: objectUuid,
+            timestamp: workingCopyTimestamp,
+        };
+
+        // Act
+        const result = await store.readDetails(objectUuid);
+
+        // Assert
+        expect(result).toBeTruthy();
+        expect(result.uuid).toBe(objectUuid);
+        expect(result.timestamp).toBe(workingCopyTimestamp);
+    });
+
+    test("when readDetails is invoked with a UUID, and working copy is older than details, details should be returned", async () => {
+        // Arrange
+        vi.mock("@/infrastructure");
+
+        await useMockPersistentStore();
+
+        const objectUuid = newUuid();
+        const detailsTimestamp = new Date();
+        const workingCopyTimestamp = new Date(detailsTimestamp.getTime() - 1);
+
+        const value = ref();
+        const store = await useMockMergeableObjectStore(value);
+
+        value.value.details[objectUuid] = {
+            uuid: objectUuid,
+            timestamp: detailsTimestamp,
+        };
+
+        value.value.workingCopies[objectUuid] = {
+            uuid: objectUuid,
+            timestamp: workingCopyTimestamp,
+        };
+
+        // Act
+        const result = await store.readDetails(objectUuid);
+
+        // Assert
+        expect(result).toBeTruthy();
+        expect(result.uuid).toBe(objectUuid);
+        expect(result.timestamp).toBe(detailsTimestamp);
+    });
 });

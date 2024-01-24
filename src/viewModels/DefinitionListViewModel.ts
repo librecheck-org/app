@@ -114,7 +114,7 @@ export function useDefinitionListViewModel(): ViewModel<DefinitionListViewData, 
     }
 
     async function _fill(definitionUuid: string): Promise<void> {
-        const definition = _definitionStore.readByUuid(definitionUuid);
+        const definition = _definitionStore.readDetails(definitionUuid);
         if (definition !== undefined) {
             const workingCopy = await _submissionStore.ensureWorkingCopy(undefined, definition);
             _ionRouter.push("/submissions/" + workingCopy.uuid);
