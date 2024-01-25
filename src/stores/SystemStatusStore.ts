@@ -8,11 +8,6 @@ import { computed, ref } from "vue";
 import { AppInfoApiClient } from "@/apiClients";
 import { unrefType } from "@/helpers";
 
-async function _getClientVersion(): Promise<string> {
-    const { version } = await (await fetch("/version.json")).json();
-    return version;
-}
-
 async function _getServerVersion(): Promise<string> {
     const appInfoApiClient = new AppInfoApiClient();
     const { version } = (await appInfoApiClient.getAppVersion());
@@ -51,7 +46,7 @@ export function useSystemStatusStore(): SystemStatusStore {
             await _ensureIsInitialized();
 
             try {
-                const clientVersion = await _getClientVersion();
+                const clientVersion = APP_VERSION;
                 const serverVersion = await _getServerVersion();
                 await update({ clientVersion, serverVersion });
             }
