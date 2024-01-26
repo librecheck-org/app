@@ -79,7 +79,7 @@ function getActionSheetButtons(definitionUuid: string): ActionSheetButton[] {
 }
 </script>
 
-<style>
+<style scoped>
 .lc-card {
     --background-hover-opacity: .04;
     --transition: opacity 15ms linear, background-color 15ms linear;

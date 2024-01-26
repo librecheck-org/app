@@ -5,18 +5,8 @@
 import { BroadcastChannelName, ChecklistsSyncStatus, GenericWorkerMessageType, SyncWorkerMessageType, SystemStatusWorkerMessageType, WorkerMessage, WorkerName } from "@/models";
 import { createBroadcastChannel, setWorkerRef } from "@/infrastructure";
 import { useDefinitionStore as useDefinitionStore, useSubmissionStore, useSystemStatusStore } from "@/stores";
-import SyncWorker from "@/workers/SyncWorker?worker";
-import SystemStatusWorker from "@/workers/SystemStatusWorker?worker";
 import { fireAndForget } from "@/helpers";
 import { registerSW } from "virtual:pwa-register";
-
-// Monaco Editor
-import "monaco-editor/esm/vs/language/json/monaco.contribution";
-import "monaco-editor/esm/vs/language/typescript/monaco.contribution";
-import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
-import EditorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
-import JsonWorker from "monaco-editor/esm/vs/language/json/json.worker?worker";
-import TsWorker from "monaco-editor/esm/vs/language/typescript/ts.worker?worker";
 
 export function registerServiceWorker() {
     const updateSW = registerSW({
@@ -33,24 +23,33 @@ export function registerServiceWorker() {
     });
 }
 
-export function registerMonacoWorkers() {
+export async function registerMonacoWorkers() {
+    await import ("monaco-editor/esm/vs/language/json/monaco.contribution");
+    await import ("monaco-editor/esm/vs/language/typescript/monaco.contribution");
+    const monaco = await import("monaco-editor/esm/vs/editor/editor.api");
+    const EditorWorker = await import("monaco-editor/esm/vs/editor/editor.worker?worker");
+    const JsonWorker = await import("monaco-editor/esm/vs/language/json/json.worker?worker");
+    const TsWorker = await import("monaco-editor/esm/vs/language/typescript/ts.worker?worker");
+
     self.MonacoEnvironment = {
         getWorker(_: any, label: string) {
             if (label === "json") {
-                return new JsonWorker();
+                return new JsonWorker.default();
             }
             if (label === "typescript" || label === "javascript") {
-                return new TsWorker();
+                return new TsWorker.default();
             }
-            return new EditorWorker();
+            return new EditorWorker.default();
         }
     };
 
     monaco.languages.typescript.typescriptDefaults.setEagerModelSync(true);
 }
 
-export function startSystemStatusWorker() {
-    const systemStatusWorker = new SystemStatusWorker();
+export async function startSystemStatusWorker() {
+    const SystemStatusWorker = await import("@/workers/SystemStatusWorker?worker");
+
+    const systemStatusWorker = new SystemStatusWorker.default();
     const systemStatusStore = useSystemStatusStore();
 
     systemStatusWorker.addEventListener("message", (ev) => {
@@ -71,8 +70,10 @@ export function startSystemStatusWorker() {
     systemStatusWorker.postMessage(new WorkerMessage(GenericWorkerMessageType.Initialize, {}));
 }
 
-export function startSyncWorker() {
-    const syncWorker = new SyncWorker();
+export async function startSyncWorker() {
+    const SyncWorker = await import("@/workers/SyncWorker?worker");
+
+    const syncWorker = new SyncWorker.default();    
     const definitionStore = useDefinitionStore();
     const submissionStore = useSubmissionStore();
     const systemStatusStore = useSystemStatusStore();

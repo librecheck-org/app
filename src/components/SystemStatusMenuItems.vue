@@ -61,7 +61,7 @@ async function updateClient() {
 onMounted(async () => await systemStatusStore.ensureIsInitialized());
 </script>
 
-<style>
+<style scoped>
 .lc-icon-spin {
     animation-name: lc-icon-spin-animation;
     animation-duration: 1500ms;

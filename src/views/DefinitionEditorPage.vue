@@ -48,7 +48,7 @@ onBeforeMount(() => {
 });
 </script>
 
-<style>
+<style scoped>
 #lc-json-editor {
     width: 100%;
     height: 100%;

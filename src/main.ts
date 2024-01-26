@@ -1,3 +1,6 @@
+// Copyright (c) LibreCheck Team and Contributors <hello@librecheck.io>. All rights reserved.
+//
+// Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 import App from "./App.vue";
 import { IonicVue } from "@ionic/vue";
@@ -45,11 +48,11 @@ const app = createApp(App)
 
 router.isReady().then(async () => {
     await initializeApiModule();
+    await registerMonacoWorkers();
 
     app.mount("#app");
 
     registerServiceWorker();
-    registerMonacoWorkers();
-    startSystemStatusWorker();
-    startSyncWorker();
+    await startSystemStatusWorker();
+    await startSyncWorker();
 });

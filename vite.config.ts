@@ -40,14 +40,11 @@ export default defineConfig({
                 ]
             },
             workbox: {
+                maximumFileSizeToCacheInBytes: 10000000 /* Almost 10 MB */,
                 runtimeCaching: [
                     {
                         urlPattern: /\/env\.json/,
                         handler: "NetworkFirst",
-                    },
-                    {
-                        urlPattern: /\/version\.json/,
-                        handler: "StaleWhileRevalidate",
                     }
                 ]
             },
