@@ -4,6 +4,13 @@
 
 import { Ref, onMounted, ref } from "vue";
 import { ActionSheetButton } from "@ionic/vue";
+import { newUuid } from "@/helpers";
+
+export function getComponentId(prefix: string) {
+    const uuid = newUuid();
+    const firstUuidPart = uuid.substring(0, 8);
+    return `${prefix}-${firstUuidPart}`;
+}
 
 export class ViewEvents {
     onInitialized: (() => Promise<void>) | undefined;
