@@ -29,8 +29,9 @@ import { getDefaultActionSheetButtons } from "@/infrastructure";
 import { useSubmissionListViewModel } from "@/viewModels";
 
 const { data, commands } = useSubmissionListViewModel();
-const { canExecute: canFill } = commands.editSubmissionDraft;
-const { canExecute: canDelete } = commands.deleteSubmissionDraft;
+const { canExecute: canFill } = commands.fill;
+const { canExecute: canDeleteObject } = commands.deleteObject;
+const { canExecute: canDeleteWorkingCopy } = commands.deleteWorkingCopy;
 
 function getActionSheetButtons(submissionUuid: string): ActionSheetButton[] {
     const buttons = getDefaultActionSheetButtons();
@@ -38,17 +39,27 @@ function getActionSheetButtons(submissionUuid: string): ActionSheetButton[] {
         buttons.push({
             text: "Fill",
             data: {
-                command: commands.editSubmissionDraft,
+                command: commands.fill,
                 args: [submissionUuid]
             },
         });
     }
-    if (canDelete(submissionUuid)) {
+    if (canDeleteWorkingCopy(submissionUuid)) {
         buttons.push({
-            text: "Delete",
+            text: "Delete working copy",
             role: "destructive",
             data: {
-                command: commands.deleteSubmissionDraft,
+                command: commands.deleteWorkingCopy,
+                args: [submissionUuid]
+            },
+        });
+    }
+    if (canDeleteObject(submissionUuid)) {
+        buttons.push({
+            text: "Delete object",
+            role: "destructive",
+            data: {
+                command: commands.deleteObject,
                 args: [submissionUuid]
             },
         });

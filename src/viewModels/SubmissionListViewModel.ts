@@ -73,8 +73,9 @@ class SubmissionListViewDataImpl implements SubmissionListViewData {
 
 class SubmissionListViewCommands {
     constructor(
-        public editSubmissionDraft: Command,
-        public deleteSubmissionDraft: Command) {
+        public fill: Command,
+        public deleteObject: Command,
+        public deleteWorkingCopy: Command) {
     }
 }
 
@@ -87,25 +88,38 @@ export function useSubmissionListViewModel(): ViewModel<SubmissionListViewData, 
     async function initialize() {
     }
 
-    function _canEditSubmissionDraft(): boolean {
+    function _canFill(): boolean {
         return true;
     }
 
-    async function _editSubmissionDraft(submissionUuid: string): Promise<void> {
+    async function _fill(submissionUuid: string): Promise<void> {
+        const submission = _submissionStore.readObject(submissionUuid);
+        await _submissionStore.ensureWorkingCopy(submissionUuid, submission?.definition);
         _ionRouter.push("/submissions/" + submissionUuid);
     }
 
-    function _canDeleteSubmissionDraft(): boolean {
-        return true;
+    function _canDeleteObject(submissionUuid: string): boolean {
+        const submission = _submissionStore.readObject(submissionUuid);
+        return submission?.uuid != null;
     }
 
-    async function _deleteSubmissionDraft(submissionUuid: string): Promise<void> {
+    async function _deleteObject(submissionUuid: string): Promise<void> {
         await _submissionStore.deleteWorkingCopy(submissionUuid);
     }
 
-    const _editSubmissionDraftCommand = useCommand(_canEditSubmissionDraft, _editSubmissionDraft);
-    const _deleteSubmissionDraftCommand = useCommand(_canDeleteSubmissionDraft, _deleteSubmissionDraft);
-    const commands = new SubmissionListViewCommands(_editSubmissionDraftCommand, _deleteSubmissionDraftCommand);
+    function _canDeleteWorkingCopy(submissionUuid: string): boolean {
+        const workingCopy = _submissionStore.readWorkingCopy(submissionUuid);
+        return workingCopy !== undefined;
+    }
+
+    async function _deleteWorkingCopy(submissionUuid: string): Promise<void> {
+        await _submissionStore.deleteWorkingCopy(submissionUuid);
+    }
+
+    const _fillCommand = useCommand(_canFill, _fill);
+    const _deleteObjectCommand = useCommand(_canDeleteObject, _deleteObject);
+    const _deleteWorkingCopyCommand = useCommand(_canDeleteWorkingCopy, _deleteWorkingCopy);
+    const commands = new SubmissionListViewCommands(_fillCommand, _deleteObjectCommand, _deleteWorkingCopyCommand);
 
     const events = new ViewEvents();
 

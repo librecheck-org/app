@@ -4,15 +4,16 @@
 
 import { ChangeStatus, MergeableObjects, ObjectDetails, StorageKey, WorkingCopy, updateChangeStatus } from "@/models";
 import { PersistentStore, usePersistentStore } from "@/infrastructure";
-import { getCurrentDate, getRecordValues, unrefType } from "@/helpers";
+import { getCurrentDate, getRecordPairs, getRecordValues, unrefType } from "@/helpers";
 import { Ref } from "vue";
 
 export interface MergeableObjectStore<TSummary, TDetails extends ObjectDetails, TWorkingCopy extends WorkingCopy> extends PersistentStore<MergeableObjects<TSummary, TDetails, TWorkingCopy>> {
     ensureWorkingCopy(objectUuid: string | undefined, ...args: any[]): Promise<TWorkingCopy>;
     readWorkingCopy(objectUuid: string): TWorkingCopy | undefined;
     updateWorkingCopy(workingCopy: TWorkingCopy): Promise<void>;
+    deleteWorkingCopy(objectUuid: string): Promise<void>;
 
-    readDetails(objectUuid: string): TDetails | undefined;
+    readObject(objectUuid: string): TDetails | undefined;
 }
 
 export function useMergeableObjectStore<TSummary, TDetails extends ObjectDetails, TWorkingCopy extends WorkingCopy>(
@@ -31,6 +32,16 @@ export function useMergeableObjectStore<TSummary, TDetails extends ObjectDetails
         return <TDetails><unknown>{ ...workingCopy };
     }
 
+    function _readDetails(objectUuid: string): TDetails | undefined {
+        return value.value.details[objectUuid];
+    }
+
+    /**
+     * Ensures that a working copy for given object is available and it is fresh.
+     * @param objectUuid Object UUID.
+     * @param args Additional arguments that will be passed to creation and mapping functions.
+     * @returns A fresh working copy.
+     */
     async function ensureWorkingCopy(objectUuid: string | undefined, ...args: any[]): Promise<TWorkingCopy> {
         let workingCopy: TWorkingCopy | undefined;
         if (objectUuid === undefined) {
@@ -39,7 +50,7 @@ export function useMergeableObjectStore<TSummary, TDetails extends ObjectDetails
             workingCopy = createWorkingCopy(...args);
         } else {
             workingCopy = readWorkingCopy(objectUuid);
-            const details = _readDetailsInternal(objectUuid);
+            const details = _readDetails(objectUuid);
             if (details === undefined) {
                 throw new Error(`Object with ${objectUuid} UUID does not have any details`);
             }
@@ -70,10 +81,19 @@ export function useMergeableObjectStore<TSummary, TDetails extends ObjectDetails
         return workingCopy;
     }
 
+    /**
+     * Reads the working copy related to object with given UUID.
+     * @param objectUuid Object UUID.
+     * @returns The working copy, if it exists.
+     */
     function readWorkingCopy(objectUuid: string): TWorkingCopy | undefined {
         return value.value.workingCopies[objectUuid];
     }
 
+    /**
+     * Replaces the stored working copy with given new working copy.
+     * @param workingCopy New working copy.
+     */
     async function updateWorkingCopy(workingCopy: TWorkingCopy): Promise<void> {
         await update({ workingCopies: { [workingCopy.uuid]: workingCopy } }, (v, u) => {
             const wc = getRecordValues(u.workingCopies!)[0];
@@ -83,13 +103,32 @@ export function useMergeableObjectStore<TSummary, TDetails extends ObjectDetails
         });
     }
 
-    function _readDetailsInternal(objectUuid: string): TDetails | undefined {
-        return value.value.details[objectUuid];
+    /**
+     * Deletes the working copy related to object with given UUID.
+     * Generally, this does not imply that object is deleted: only its working copy is.
+     * However, if object has not been synchronized yet, working copy deletion
+     * also implies object deletion, since it does exist server-side.
+     * @param objectUuid Object UUID.
+     */
+    async function deleteWorkingCopy(objectUuid: string): Promise<void> {
+        await update({ workingCopies: { [objectUuid]: <TWorkingCopy>{} } }, (v, u) => {
+            const wc = getRecordPairs(u.workingCopies!)[0];
+            delete v.workingCopies[wc.key];
+            return <TObjects>{ ...v };
+        });
     }
 
-    function readDetails(objectUuid: string): TDetails | undefined {
+    /**
+     * Reads the details related to given object UUID.
+     * If a working copy exists and it is newer than stored details,
+     * then working copy is mapped to details and it is returned.
+     * Otherwise, stored details are returned, if available.
+     * @param objectUuid Object UUID.
+     * @returns Object details.
+     */
+    function readObject(objectUuid: string): TDetails | undefined {
         const workingCopy = readWorkingCopy(objectUuid);
-        const details = _readDetailsInternal(objectUuid);
+        const details = _readDetails(objectUuid);
         if (workingCopy === undefined) {
             return details;
         }
@@ -101,7 +140,7 @@ export function useMergeableObjectStore<TSummary, TDetails extends ObjectDetails
 
     return {
         value: unrefType(value), ensureIsInitialized, read, update,
-        ensureWorkingCopy, readWorkingCopy, updateWorkingCopy,
-        readDetails
+        ensureWorkingCopy, readWorkingCopy, updateWorkingCopy, deleteWorkingCopy,
+        readObject
     };
 }

@@ -42,7 +42,7 @@ export function useSubmissionStore(): SubmissionStore {
         const {
             ensureIsInitialized: _ensureIsInitialized, read, update,
             ensureWorkingCopy, readWorkingCopy, updateWorkingCopy,
-            readDetails: readByUuid
+            readObject
         } = useMergeableObjectStore(
             storageKey, value, _createWorkingCopy, _mapDetailsToWorkingCopy
         );
@@ -66,7 +66,7 @@ export function useSubmissionStore(): SubmissionStore {
         return {
             value: unrefType(value), ensureIsInitialized, read, update,
             ensureWorkingCopy, readWorkingCopy, updateWorkingCopy, deleteWorkingCopy,
-            readDetails: readByUuid
+            readObject
         };
     });
 }

@@ -10,7 +10,6 @@ import { getCurrentDate, newUuid, unrefType } from "@/helpers";
 import { definePersistentStore } from "@/infrastructure";
 
 export interface DefinitionStore extends MergeableObjectStore<DefinitionSummary, DefinitionDetails, DefinitionWorkingCopy> {
-    readDetails(definitionUuid: string): DefinitionDetails | undefined;
 }
 
 export function useDefinitionStore(): DefinitionStore {
@@ -41,7 +40,7 @@ export function useDefinitionStore(): DefinitionStore {
         const {
             ensureIsInitialized: _ensureIsInitialized, read, update,
             ensureWorkingCopy, readWorkingCopy, updateWorkingCopy: _updateWorkingCopy,
-            readDetails: readByUuid
+            readObject
         } = useMergeableObjectStore(
             storageKey, value, _createWorkingCopy, _mapDetailsToWorkingCopy
         );
@@ -62,7 +61,7 @@ export function useDefinitionStore(): DefinitionStore {
         return {
             value: unrefType(value), ensureIsInitialized, read, update,
             ensureWorkingCopy, readWorkingCopy, updateWorkingCopy,
-            readDetails: readByUuid,
+            readObject,
         };
     });
 }
