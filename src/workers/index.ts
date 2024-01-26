@@ -6,9 +6,10 @@ import { BroadcastChannelName, ChecklistsSyncStatus, GenericWorkerMessageType, S
 import { createBroadcastChannel, setWorkerRef } from "@/infrastructure";
 import { useDefinitionStore as useDefinitionStore, useSubmissionStore, useSystemStatusStore } from "@/stores";
 import { fireAndForget } from "@/helpers";
-import { registerSW } from "virtual:pwa-register";
 
-export function registerServiceWorker() {
+export async function registerServiceWorker() {
+    const { registerSW } = await import("virtual:pwa-register");
+
     const updateSW = registerSW({
         onNeedRefresh() {
             console.info("App should be refreshed to apply updates");
@@ -24,8 +25,8 @@ export function registerServiceWorker() {
 }
 
 export async function registerMonacoWorkers() {
-    await import ("monaco-editor/esm/vs/language/json/monaco.contribution");
-    await import ("monaco-editor/esm/vs/language/typescript/monaco.contribution");
+    await import("monaco-editor/esm/vs/language/json/monaco.contribution");
+    await import("monaco-editor/esm/vs/language/typescript/monaco.contribution");
     const monaco = await import("monaco-editor/esm/vs/editor/editor.api");
     const EditorWorker = await import("monaco-editor/esm/vs/editor/editor.worker?worker");
     const JsonWorker = await import("monaco-editor/esm/vs/language/json/json.worker?worker");
@@ -73,7 +74,7 @@ export async function startSystemStatusWorker() {
 export async function startSyncWorker() {
     const SyncWorker = await import("@/workers/SyncWorker?worker");
 
-    const syncWorker = new SyncWorker.default();    
+    const syncWorker = new SyncWorker.default();
     const definitionStore = useDefinitionStore();
     const submissionStore = useSubmissionStore();
     const systemStatusStore = useSystemStatusStore();

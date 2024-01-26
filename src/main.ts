@@ -52,7 +52,7 @@ router.isReady().then(async () => {
 
     app.mount("#app");
 
-    registerServiceWorker();
+    await registerServiceWorker();
     await startSystemStatusWorker();
     await startSyncWorker();
 });
