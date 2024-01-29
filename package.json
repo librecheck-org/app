@@ -18,7 +18,7 @@
     "generate-pwa-assets": "pwa-assets-generator --preset minimal public/images/logo.svg"
   },
   "dependencies": {
-    "@capacitor/app": "5.0.6",
+    "@capacitor/app": "5.0.7",
     "@capacitor/core": "5.6.0",
     "@capacitor/haptics": "5.0.6",
     "@capacitor/keyboard": "5.0.7",
