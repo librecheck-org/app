@@ -33,7 +33,7 @@
     "lodash": "4.17.21",
     "monaco-editor": "^0.45.0",
     "pinia": "2.1.7",
-    "survey-vue3-ui": "1.9.127",
+    "survey-vue3-ui": "1.9.128",
     "vue": "3.4.15",
     "vue-router": "4.2.5"
   },
