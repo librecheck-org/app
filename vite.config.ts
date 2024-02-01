@@ -45,6 +45,10 @@ export default defineConfig({
                     {
                         urlPattern: /\/env\.json/,
                         handler: "NetworkFirst",
+                    },
+                    {
+                        urlPattern: ({ url }) => url.origin === "https://gravatar.com",
+                        handler: "StaleWhileRevalidate",
                     }
                 ]
             },

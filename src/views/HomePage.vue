@@ -11,7 +11,7 @@
                     <ion-list v-if="currentUserStore.value">
                         <ion-item>
                             <ion-avatar slot="start">
-                                <img :alt="currentUserStore.value.fullName" :src="gravatarUrl" />
+                                <img :alt="currentUserStore.value.fullName" :src="gravatarUrl" crossorigin="anonymous" />
                             </ion-avatar>
                             <ion-label>
                                 <h2>{{ currentUserStore.value.fullName }}</h2>
@@ -74,7 +74,6 @@ onMounted(async () => {
     await currentUserStore.refresh();
 
     const emailAddressHash = await sha256(currentUserStore.value!.emailAddress);
-    console.log("hash", emailAddressHash);
     gravatarUrl.value += `${emailAddressHash}`;
 });
 
