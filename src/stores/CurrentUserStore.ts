@@ -2,14 +2,16 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
+import { IamApiClient, UserDetails } from "@/apiClients";
 import { PersistentStore, definePersistentStore, usePersistentStore } from "@/infrastructure";
 import { computed, ref } from "vue";
 import { StorageKey } from "@/models";
-import { UserDetails } from "@/apiClients";
 import { unrefType } from "@/helpers";
 
 export interface CurrentUserStore extends PersistentStore<UserDetails | undefined> {
     get isAuthenticated(): boolean;
+
+    refresh(): Promise<void>;
 }
 
 export function useCurrentUserStore(): CurrentUserStore {
@@ -20,9 +22,22 @@ export function useCurrentUserStore(): CurrentUserStore {
 
         const { ensureIsInitialized, read, update } = usePersistentStore(storageKey, value);
 
+        async function refresh(): Promise<void> {
+            try {
+                if (isAuthenticated.value) {
+                    const iamApiClient = new IamApiClient();
+                    const currentUser = await iamApiClient.getCurrentUserV1();
+                    await update(currentUser);
+                }
+            }
+            catch {
+                console.warn("A non-blocking error occurred while refreshing current user details");
+            }
+        }
+
         return {
             value: unrefType(value), ensureIsInitialized, read, update,
-            isAuthenticated: unrefType(isAuthenticated)
+            isAuthenticated: unrefType(isAuthenticated), refresh
         };
     });
 }
