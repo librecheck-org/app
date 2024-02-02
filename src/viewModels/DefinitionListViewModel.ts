@@ -30,7 +30,7 @@ interface DefinitionListViewData {
 }
 
 class DefinitionListViewDataImpl implements DefinitionListViewData {
-    constructor(private _definitionStore: DefinitionStore) {
+    constructor(private readonly _definitionStore: DefinitionStore) {
     }
 
     state: DefinitionListViewState = DefinitionListViewState.None;

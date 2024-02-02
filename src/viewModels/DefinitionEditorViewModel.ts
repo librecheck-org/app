@@ -17,12 +17,10 @@ interface DefinitionEditorViewData {
 }
 
 class DefinitionEditorViewDataImpl implements DefinitionEditorViewData {
-    constructor(private _workingCopy: DefinitionWorkingCopy | undefined) {
-        this.workingCopy = _workingCopy;
+    constructor(public readonly workingCopy: DefinitionWorkingCopy | undefined) {
     }
 
     state: DefinitionEditorViewState = DefinitionEditorViewState.None;
-    workingCopy: DefinitionWorkingCopy | undefined;
 }
 
 class DefinitionEditorViewCommands {

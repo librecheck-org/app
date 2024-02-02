@@ -29,7 +29,7 @@ interface SubmissionListViewData {
 }
 
 class SubmissionListViewDataImpl implements SubmissionListViewData {
-    constructor(private _submissionStore: SubmissionStore) {
+    constructor(private readonly _submissionStore: SubmissionStore) {
     }
 
     state: SubmissionListViewState = SubmissionListViewState.None;
