@@ -77,7 +77,8 @@ class DefinitionListViewCommands {
         public add: Command,
         public edit: Command,
         public fill: Command,
-        public del: Command) {
+        public deleteObject: Command,
+        public deleteWorkingCopy: Command) {
     }
 }
 
@@ -121,19 +122,30 @@ export function useDefinitionListViewModel(): ViewModel<DefinitionListViewData, 
         }
     }
 
-    function _canDelete(): boolean {
-        return true;
+    function _canDeleteObject(definitionUuid: string): boolean {
+        const definition = _definitionStore.readObject(definitionUuid);
+        return definition?.uuid != null;
     }
 
-    async function _delete(): Promise<void> {
-        // const definition = _definitionStore.readByUuid(definitionUuid);
+    async function _deleteObject(definitionUuid: string): Promise<void> {
+        await _definitionStore.deleteObject(definitionUuid);
+    }
+
+    function _canDeleteWorkingCopy(definitionUuid: string): boolean {
+        const workingCopy = _definitionStore.readWorkingCopy(definitionUuid);
+        return workingCopy !== undefined;
+    }
+
+    async function _deleteWorkingCopy(definitionUuid: string): Promise<void> {
+        await _definitionStore.deleteWorkingCopy(definitionUuid);
     }
 
     const _addCommand = useCommand(_canAdd, _add);
     const _editCommand = useCommand(_canEdit, _edit);
     const _fillCommand = useCommand(_canFill, _fill);
-    const _deleteCommand = useCommand(_canDelete, _delete);
-    const commands = new DefinitionListViewCommands(_addCommand, _editCommand, _fillCommand, _deleteCommand);
+    const _deleteObjectCommand = useCommand(_canDeleteObject, _deleteObject);
+    const _deleteWorkingCopyCommand = useCommand(_canDeleteWorkingCopy, _deleteWorkingCopy);
+    const commands = new DefinitionListViewCommands(_addCommand, _editCommand, _fillCommand, _deleteObjectCommand, _deleteWorkingCopyCommand);
 
     const events = new ViewEvents();
 

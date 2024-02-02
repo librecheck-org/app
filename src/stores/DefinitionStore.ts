@@ -39,8 +39,8 @@ export function useDefinitionStore(): DefinitionStore {
         const value = ref() as Ref<Definitions>;
         const {
             ensureIsInitialized: _ensureIsInitialized, read, update,
-            ensureWorkingCopy, readWorkingCopy, updateWorkingCopy: _updateWorkingCopy,
-            readObject
+            ensureWorkingCopy, readWorkingCopy, updateWorkingCopy: _updateWorkingCopy, deleteWorkingCopy,
+            readObject, deleteObject
         } = useMergeableObjectStore(
             storageKey, value, _createWorkingCopy, _mapDetailsToWorkingCopy
         );
@@ -60,8 +60,8 @@ export function useDefinitionStore(): DefinitionStore {
 
         return {
             value: unrefType(value), ensureIsInitialized, read, update,
-            ensureWorkingCopy, readWorkingCopy, updateWorkingCopy,
-            readObject,
+            ensureWorkingCopy, readWorkingCopy, updateWorkingCopy, deleteWorkingCopy,
+            readObject, deleteObject
         };
     });
 }

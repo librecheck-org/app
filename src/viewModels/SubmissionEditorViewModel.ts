@@ -67,10 +67,12 @@ export function useSubmissionEditorViewModel(submissionUuid: string): ViewModel<
     }
 
     async function initialize() {
-        const submissionDraft = _submissionStore.readWorkingCopy(submissionUuid);
-        if (submissionDraft !== undefined) {
-            data.survey = _initializeSurvey(submissionDraft);
+        await _submissionStore.ensureIsInitialized();
+        const workingCopy = _submissionStore.readWorkingCopy(submissionUuid);
+        if (workingCopy === undefined) {
+            throw new Error("Given submission UUID does not have a working copy");
         }
+        data.survey = _initializeSurvey(workingCopy);
     }
 
     function _canCreateSubmissionDraft(): boolean {

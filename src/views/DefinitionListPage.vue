@@ -37,6 +37,8 @@ import { useDefinitionListViewModel } from "@/viewModels";
 const { data, commands } = useDefinitionListViewModel();
 const { canExecute: canEdit } = commands.edit;
 const { canExecute: canFill } = commands.fill;
+const { canExecute: canDeleteObject } = commands.deleteObject;
+const { canExecute: canDeleteWorkingCopy } = commands.deleteWorkingCopy;
 
 function getActionSheetButtons(definitionUuid: string): ActionSheetButton[] {
     const buttons = getDefaultActionSheetButtons();
@@ -58,10 +60,26 @@ function getActionSheetButtons(definitionUuid: string): ActionSheetButton[] {
             },
         });
     }
-    buttons.push({
-        text: "Delete",
-        role: "destructive",
-    });
+    if (canDeleteWorkingCopy(definitionUuid)) {
+        buttons.push({
+            text: "Delete working copy",
+            role: "destructive",
+            data: {
+                command: commands.deleteWorkingCopy,
+                args: [definitionUuid]
+            },
+        });
+    }
+    if (canDeleteObject(definitionUuid)) {
+        buttons.push({
+            text: "Delete object",
+            role: "destructive",
+            data: {
+                command: commands.deleteObject,
+                args: [definitionUuid]
+            },
+        });
+    }
     return buttons;
 }
 </script>

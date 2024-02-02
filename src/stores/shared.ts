@@ -14,6 +14,7 @@ export interface MergeableObjectStore<TSummary, TDetails extends ObjectDetails, 
     deleteWorkingCopy(objectUuid: string): Promise<void>;
 
     readObject(objectUuid: string): TDetails | undefined;
+    deleteObject(objectUuid: string): Promise<void>;
 }
 
 export function useMergeableObjectStore<TSummary, TDetails extends ObjectDetails, TWorkingCopy extends WorkingCopy>(
@@ -95,12 +96,7 @@ export function useMergeableObjectStore<TSummary, TDetails extends ObjectDetails
      * @param workingCopy New working copy.
      */
     async function updateWorkingCopy(workingCopy: TWorkingCopy): Promise<void> {
-        await update({ workingCopies: { [workingCopy.uuid]: workingCopy } }, (v, u) => {
-            const wc = getRecordValues(u.workingCopies!)[0];
-            wc.timestamp = getCurrentDate();
-            updateChangeStatus(wc, ChangeStatus.Updated);
-            return <TObjects>{ ...v, workingCopies: { ...v?.workingCopies, ...u.workingCopies } };
-        });
+        update({ workingCopies: { [workingCopy.uuid]: workingCopy } }, (v, u) => updateWorkingCopyCore(v, u, ChangeStatus.Updated));
     }
 
     /**
@@ -111,11 +107,7 @@ export function useMergeableObjectStore<TSummary, TDetails extends ObjectDetails
      * @param objectUuid Object UUID.
      */
     async function deleteWorkingCopy(objectUuid: string): Promise<void> {
-        await update({ workingCopies: { [objectUuid]: <TWorkingCopy>{} } }, (v, u) => {
-            const wc = getRecordPairs(u.workingCopies!)[0];
-            delete v.workingCopies[wc.key];
-            return <TObjects>{ ...v };
-        });
+        await update({ workingCopies: { [objectUuid]: <TWorkingCopy>{} } }, deleteWorkingCopyCore);
     }
 
     /**
@@ -138,9 +130,34 @@ export function useMergeableObjectStore<TSummary, TDetails extends ObjectDetails
         return details;
     }
 
+    async function deleteObject(objectUuid: string): Promise<void> {
+        const workingCopy = await ensureWorkingCopy(objectUuid);
+        update({ workingCopies: { [workingCopy.uuid]: workingCopy } }, (v, u) => updateWorkingCopyCore(v, u, ChangeStatus.Deleted));
+    }
+
     return {
         value: unrefType(value), ensureIsInitialized, read, update,
         ensureWorkingCopy, readWorkingCopy, updateWorkingCopy, deleteWorkingCopy,
-        readObject
+        readObject, deleteObject
     };
+}
+
+export function updateWorkingCopyCore<TWorkingCopy extends WorkingCopy>(
+    v: MergeableObjects<any, any, TWorkingCopy>,
+    u: Partial<MergeableObjects<any, any, TWorkingCopy>>,
+    changeStatus: ChangeStatus
+): MergeableObjects<any, any, TWorkingCopy> {
+    const wc = getRecordValues(u.workingCopies!)[0];
+    wc.timestamp = getCurrentDate();
+    updateChangeStatus(wc, changeStatus);
+    return { ...v, workingCopies: { ...v?.workingCopies, ...u.workingCopies } };
+}
+
+export function deleteWorkingCopyCore<TWorkingCopy extends WorkingCopy>(
+    v: MergeableObjects<any, any, TWorkingCopy>,
+    u: Partial<MergeableObjects<any, any, TWorkingCopy>>
+): MergeableObjects<any, any, TWorkingCopy> {
+    const wc = getRecordPairs(u.workingCopies!)[0];
+    delete v.workingCopies[wc.key];
+    return { ...v };
 }

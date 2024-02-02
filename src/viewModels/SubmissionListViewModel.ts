@@ -104,7 +104,7 @@ export function useSubmissionListViewModel(): ViewModel<SubmissionListViewData, 
     }
 
     async function _deleteObject(submissionUuid: string): Promise<void> {
-        await _submissionStore.deleteWorkingCopy(submissionUuid);
+        await _submissionStore.deleteObject(submissionUuid);
     }
 
     function _canDeleteWorkingCopy(submissionUuid: string): boolean {

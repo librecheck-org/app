@@ -2,9 +2,10 @@
 //
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-import { BroadcastChannelName, ChangeStatus, DefinitionWorkingCopy, Definitions, GenericWorkerMessageType, LockName, MergeableObjects, StorageKey, SubmissionWorkingCopy, Submissions, SyncWorkerMessageType, WorkerMessage, WorkingCopy, updateChangeStatus } from "@/models";
+import { BroadcastChannelName, ChangeStatus, DefinitionWorkingCopy, Definitions, GenericWorkerMessageType, LockName, MergeableObjects, StorageKey, SubmissionWorkingCopy, Submissions, SyncWorkerMessageType, WorkerMessage, WorkingCopy } from "@/models";
 import { ChecklistsApiClient, DefinitionChange, DefinitionDetails, DefinitionSummary, DefinitionSummaryPagedResult, SubmissionChange, SubmissionDetails, SubmissionSummary, SubmissionSummaryPagedResult } from "@/apiClients";
 import { createBroadcastChannel, getCurrentUser, readFromStorage, updateStorage } from "@/infrastructure";
+import { deleteWorkingCopyCore, updateWorkingCopyCore } from "@/stores/shared";
 import { fireAndForget, getRecordValues, newUuid } from "@/helpers";
 import { initializeWorker, scheduleNextExecution } from "./shared";
 import { isEqual as areDatesEqual } from "date-fns";
@@ -261,18 +262,24 @@ function _mapSubmissionWorkingCopiesToChanges(workingCopies: Record<string, Subm
 }
 
 async function _resetChangeStatus<TWorkingCopy extends WorkingCopy>(key: StorageKey, changes: TWorkingCopy[]) {
+    const storedObjects = await readFromStorage<MergeableObjects<any, any, TWorkingCopy>>(key);
+    if (storedObjects === undefined) {
+        return;
+    }
+
     for (const change of changes) {
-        const storedObjects = await readFromStorage<MergeableObjects<any, any, TWorkingCopy>>(key);
-        if (storedObjects === undefined) {
-            return;
-        }
         const workingCopy = storedObjects.workingCopies[change.uuid];
         if (areDatesEqual(workingCopy.timestamp, change.timestamp)) {
-            await updateStorage<MergeableObjects<any, any, TWorkingCopy>>(key, { workingCopies: { [workingCopy.uuid]: workingCopy } }, (v, u) => {
-                const wc = getRecordValues(u.workingCopies!)[0];
-                updateChangeStatus(wc, ChangeStatus.Unchanged);
-                return <MergeableObjects<any, any, TWorkingCopy>>{ ...v, workingCopies: { ...v?.workingCopies, ...u.workingCopies } };
-            });
+            const updates = { workingCopies: { [workingCopy.uuid]: workingCopy } };
+            if (workingCopy.changeStatus == ChangeStatus.Deleted) {
+                await updateStorage<MergeableObjects<any, any, TWorkingCopy>>(
+                    key, updates, deleteWorkingCopyCore);
+            }
+            else {
+                await updateStorage<MergeableObjects<any, any, TWorkingCopy>>(
+                    key, updates, (v, u) => updateWorkingCopyCore(v, u, ChangeStatus.Unchanged));
+            }
         }
     }
 }
+
