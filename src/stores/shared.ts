@@ -159,5 +159,5 @@ export function deleteWorkingCopyCore<TWorkingCopy extends WorkingCopy>(
 ): MergeableObjects<any, any, TWorkingCopy> {
     const wc = getRecordPairs(u.workingCopies!)[0];
     delete v.workingCopies[wc.key];
-    return { ...v };
+    return v;
 }

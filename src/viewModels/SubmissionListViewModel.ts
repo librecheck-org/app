@@ -39,6 +39,7 @@ class SubmissionListViewDataImpl implements SubmissionListViewData {
 
         const mappedSummaries = new Map<string, Submission>(
             storedSubmissions.summaries
+                .filter(x => storedSubmissions.workingCopies[x.uuid]?.changeStatus != ChangeStatus.Deleted)
                 .map(x => <Submission>{
                     uuid: x.uuid,
                     timestamp: x.timestamp,
@@ -50,7 +51,7 @@ class SubmissionListViewDataImpl implements SubmissionListViewData {
 
         const mappedWorkingCopies = new Map<string, Submission>(
             getRecordValues(storedSubmissions.workingCopies)
-                .filter(x => x.changeStatus != ChangeStatus.Deleted)
+                .filter(x => x.changeStatus > ChangeStatus.Unchanged && x.changeStatus != ChangeStatus.Deleted)
                 .map(x => <Submission>{
                     uuid: x.uuid,
                     timestamp: x.timestamp,

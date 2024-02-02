@@ -40,6 +40,7 @@ class DefinitionListViewDataImpl implements DefinitionListViewData {
 
         const mappedSummaries = new Map<string, Definition>(
             storedDefinitions.summaries
+                .filter(x => storedDefinitions.workingCopies[x.uuid]?.changeStatus != ChangeStatus.Deleted)
                 .map(x => <Definition>{
                     uuid: x.uuid,
                     timestamp: x.timestamp,
@@ -51,7 +52,7 @@ class DefinitionListViewDataImpl implements DefinitionListViewData {
 
         const mappedWorkingCopies = new Map<string, Definition>(
             getRecordValues(storedDefinitions.workingCopies)
-                .filter(x => x.changeStatus >= ChangeStatus.Unchanged && x.changeStatus != ChangeStatus.Deleted)
+                .filter(x => x.changeStatus > ChangeStatus.Unchanged && x.changeStatus != ChangeStatus.Deleted)
                 .map(x => <Definition>{
                     uuid: x.uuid,
                     timestamp: x.timestamp,

@@ -4,11 +4,11 @@
 
 import { BroadcastChannelName, ChangeStatus, DefinitionWorkingCopy, Definitions, GenericWorkerMessageType, LockName, MergeableObjects, StorageKey, SubmissionWorkingCopy, Submissions, SyncWorkerMessageType, WorkerMessage, WorkingCopy } from "@/models";
 import { ChecklistsApiClient, DefinitionChange, DefinitionDetails, DefinitionSummary, DefinitionSummaryPagedResult, SubmissionChange, SubmissionDetails, SubmissionSummary, SubmissionSummaryPagedResult } from "@/apiClients";
+import { isEqual as areDatesEqual, compareAsc as compareDatesAsc, subDays } from "date-fns";
 import { createBroadcastChannel, getCurrentUser, readFromStorage, updateStorage } from "@/infrastructure";
 import { deleteWorkingCopyCore, updateWorkingCopyCore } from "@/stores/shared";
 import { fireAndForget, getRecordValues, newUuid } from "@/helpers";
 import { initializeWorker, scheduleNextExecution } from "./shared";
-import { isEqual as areDatesEqual } from "date-fns";
 
 addEventListener("message", (ev) => {
     const msg = ev.data as WorkerMessage;
@@ -51,6 +51,7 @@ async function _syncChecklistsDataCore() {
         _triggerSyncStartedEvent();
         await _readChecklistsData();
         await _updateChecklistsData();
+        await _deleteAllStaleChecklistsWorkingCopies();
         _triggerSyncCompletedEvent();
     });
 }
@@ -70,16 +71,8 @@ async function _readChecklistsData() {
     await _readSubmissions();
 }
 
-let _readingDefinitions = false;
-let _readingSubmissions = false;
-
 async function _readDefinitions() {
-    if (_readingDefinitions) {
-        return;
-    }
     try {
-        _readingDefinitions = true;
-
         const currentUser = await getCurrentUser();
         if (currentUser === undefined) {
             console.debug("User is not authenticated, definitions cannot be read");
@@ -126,18 +119,10 @@ async function _readDefinitions() {
     catch (err) {
         console.warn("An error occurred while reading definitions", err);
     }
-    finally {
-        _readingDefinitions = false;
-    }
 }
 
 async function _readSubmissions() {
-    if (_readingSubmissions) {
-        return;
-    }
     try {
-        _readingSubmissions = true;
-
         const currentUser = await getCurrentUser();
         if (currentUser === undefined) {
             console.debug("User is not authenticated, submissions cannot be read");
@@ -184,16 +169,9 @@ async function _readSubmissions() {
     catch (err) {
         console.warn("An error occurred while reading submissions", err);
     }
-    finally {
-        _readingSubmissions = false;
-    }
 }
 
 async function _updateChecklistsData() {
-    await _mergeChangeset();
-}
-
-async function _mergeChangeset() {
     try {
         const currentUser = await getCurrentUser();
         if (currentUser === undefined) {
@@ -262,24 +240,49 @@ function _mapSubmissionWorkingCopiesToChanges(workingCopies: Record<string, Subm
 }
 
 async function _resetChangeStatus<TWorkingCopy extends WorkingCopy>(key: StorageKey, changes: TWorkingCopy[]) {
-    const storedObjects = await readFromStorage<MergeableObjects<any, any, TWorkingCopy>>(key);
-    if (storedObjects === undefined) {
-        return;
-    }
+    const updates = { workingCopies: Object.fromEntries(changes.map(c => [c.uuid, c])) };
+    await updateStorage<MergeableObjects<any, any, TWorkingCopy>>(key, updates, _resetChangeStatusCore);
+}
 
+export function _resetChangeStatusCore<TWorkingCopy extends WorkingCopy>(
+    v: MergeableObjects<any, any, TWorkingCopy>,
+    u: Partial<MergeableObjects<any, any, TWorkingCopy>>
+): MergeableObjects<any, any, TWorkingCopy> {
+    const changes = getRecordValues(u.workingCopies!);
     for (const change of changes) {
-        const workingCopy = storedObjects.workingCopies[change.uuid];
+        const workingCopy = v.workingCopies[change.uuid];
         if (areDatesEqual(workingCopy.timestamp, change.timestamp)) {
             const updates = { workingCopies: { [workingCopy.uuid]: workingCopy } };
             if (workingCopy.changeStatus == ChangeStatus.Deleted) {
-                await updateStorage<MergeableObjects<any, any, TWorkingCopy>>(
-                    key, updates, deleteWorkingCopyCore);
+                v = deleteWorkingCopyCore(v, updates);
             }
             else {
-                await updateStorage<MergeableObjects<any, any, TWorkingCopy>>(
-                    key, updates, (v, u) => updateWorkingCopyCore(v, u, ChangeStatus.Unchanged));
+                v = updateWorkingCopyCore(v, updates, ChangeStatus.Unchanged);
             }
         }
     }
+    return v;
 }
 
+async function _deleteAllStaleChecklistsWorkingCopies() {
+    await _deleteStaleChecklistsWorkingCopies<DefinitionWorkingCopy>(StorageKey.Definitions);
+    await _deleteStaleChecklistsWorkingCopies<SubmissionWorkingCopy>(StorageKey.Submissions);
+}
+
+async function _deleteStaleChecklistsWorkingCopies<TWorkingCopy extends WorkingCopy>(key: StorageKey) {
+    await updateStorage<MergeableObjects<any, any, TWorkingCopy>>(key, {}, _deleteStaleChecklistsWorkingCopiesCore);
+}
+
+function _deleteStaleChecklistsWorkingCopiesCore<TWorkingCopy extends WorkingCopy>(
+    v: MergeableObjects<any, any, TWorkingCopy>
+): MergeableObjects<any, any, TWorkingCopy> {
+    const workingCopies = getRecordValues(v.workingCopies);
+    const threshold = subDays(new Date(), 1);
+    for (const workingCopy of workingCopies) {
+        if (workingCopy.changeStatus <= ChangeStatus.Unchanged && compareDatesAsc(workingCopy.timestamp, threshold) == -1) {
+            const updates = { workingCopies: { [workingCopy.uuid]: workingCopy } };
+            v = deleteWorkingCopyCore(v, updates);
+        }
+    }
+    return v;
+}
