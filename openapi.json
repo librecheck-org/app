@@ -11,7 +11,7 @@
       "name": "AGPLv3+",
       "url": "https://www.gnu.org/licenses/"
     },
-    "version": "0.556+c0267cc6"
+    "version": "0.559+e6531977"
   },
   "paths": {
     "/health": {
@@ -1099,6 +1099,7 @@
       },
       "UserDetails": {
         "required": [
+          "avatarUrl",
           "emailAddress",
           "familyName",
           "fullName",
@@ -1132,6 +1133,10 @@
           },
           "isInstanceAdmin": {
             "type": "boolean"
+          },
+          "avatarUrl": {
+            "type": "string",
+            "format": "uri"
           },
           "tenants": {
             "type": "array",

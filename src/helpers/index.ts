@@ -38,17 +38,3 @@ export function fireAndForget(action: () => Promise<void>): Promise<void> {
 export function unrefType<T>(r: Ref<T> | ComputedRef<T>): T {
     return r as T;
 }
-
-export async function sha256(message: string): Promise<string> {
-    // Encode as UTF-8.
-    const msgBuffer = new TextEncoder().encode(message);
-
-    // Hash the message.
-    const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
-
-    // Convert ArrayBuffer to Array.
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-
-    // Convert bytes to hex string.
-    return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
-}

@@ -8,14 +8,15 @@
                     </ion-toolbar>
                 </ion-header>
                 <ion-content>
-                    <ion-list v-if="currentUserStore.value">
+                    <ion-list v-if="data.currentUser">
                         <ion-item>
                             <ion-avatar slot="start">
-                                <img :alt="currentUserStore.value.fullName" :src="gravatarUrl" crossorigin="anonymous" />
+                                <img :alt="data.currentUser.fullName" :src="data.currentUser.avatarUrl"
+                                    crossorigin="anonymous" />
                             </ion-avatar>
                             <ion-label>
-                                <h2>{{ currentUserStore.value.fullName }}</h2>
-                                <p>{{ currentUserStore.value.emailAddress }}</p>
+                                <h2>{{ data.currentUser.fullName }}</h2>
+                                <p>{{ data.currentUser.emailAddress }}</p>
                             </ion-label>
                         </ion-item>
 
@@ -57,26 +58,14 @@
   
 <script setup lang="ts">
 import { IonAvatar, IonButtons, IonContent, IonHeader, IonItem, IonItemDivider, IonItemGroup, IonLabel, IonList, IonMenu, IonMenuButton, IonPage, IonRouterOutlet, IonSplitPane, IonTitle, IonToolbar } from "@ionic/vue";
-import { onMounted, ref } from "vue";
 import SystemStatusMenuItems from "@/components/SystemStatusMenuItems.vue";
+import { ref } from "vue";
 import router from "@/router";
-import { sha256 } from "@/helpers";
-import { useCurrentUserStore } from "@/stores";
 import { useHomeViewModel } from "@/viewModels";
 
 const mainMenu = ref<InstanceType<typeof IonMenu> | null>(null);
 
-const { commands } = useHomeViewModel();
-const currentUserStore = useCurrentUserStore();
-
-const gravatarUrl = ref("https://gravatar.com/avatar/");
-onMounted(async () => {
-    await currentUserStore.refresh();
-
-    const emailAddressHash = await sha256(currentUserStore.value!.emailAddress);
-    gravatarUrl.value += `${emailAddressHash}`;
-});
-
+const { data, commands } = useHomeViewModel();
 
 async function closeMainMenu() {
     if (mainMenu.value !== null) {

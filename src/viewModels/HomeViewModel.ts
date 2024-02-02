@@ -3,15 +3,19 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 import { Command, ViewEvents, ViewModel, useCommand, useViewModel } from "@/infrastructure";
+import { useCurrentUserStore, useSystemStatusStore } from "@/stores";
 import { ChecklistsSyncStatus } from "@/models";
+import { UserDetails } from "@/apiClients";
 import { reactive } from "vue";
-import { useSystemStatusStore } from "@/stores";
 
 export enum HomeViewState {
     None
 }
 
 class HomeViewData {
+    constructor(public readonly currentUser: UserDetails | undefined) {
+    }
+
     state: HomeViewState = HomeViewState.None;
 }
 
@@ -23,11 +27,13 @@ class HomeViewCommands {
 }
 
 export function useHomeViewModel(): ViewModel<HomeViewData, HomeViewCommands, ViewEvents> {
+    const _currentUserStore = useCurrentUserStore();
     const _systemStatusStore = useSystemStatusStore();
 
-    const data = reactive(new HomeViewData());
+    const data = reactive(new HomeViewData(_currentUserStore.value));
 
     async function initialize() {
+        await _currentUserStore.refresh();
     }
 
     function _canUpdateApp(): boolean {
