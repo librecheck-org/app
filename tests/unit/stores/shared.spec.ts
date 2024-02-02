@@ -313,4 +313,30 @@ describe("useMergeableObjectStore", () => {
         expect(result.uuid).toBe(objectUuid);
         expect(result.timestamp).toBe(detailsTimestamp);
     });
+
+    test("when deleteObject is invoked, a working copy with deleted change status should exist", async () => {
+        // Arrange
+        vi.mock("@/infrastructure");
+
+        const value = ref();
+        await useMockPersistentStore(value);
+
+        const objectUuid = newUuid();
+
+        const mapDetailsToWorkingCopy = vi.fn().mockReturnValue({ uuid: objectUuid });
+        const store = await useMockMergeableObjectStore(value, undefined, mapDetailsToWorkingCopy);
+
+        value.value.details[objectUuid] = {
+            uuid: objectUuid,
+        };
+
+        // Act
+        await store.deleteObject(objectUuid);
+
+        // Assert
+        const workingCopy = value.value.workingCopies[objectUuid];
+        expect(workingCopy).toBeDefined();
+        expect(workingCopy.uuid).toBe(objectUuid);
+        expect(workingCopy.changeStatus).toBe(ChangeStatus.Deleted);
+    });
 });
