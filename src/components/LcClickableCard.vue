@@ -23,6 +23,7 @@ const componentId = getComponentId("lc-clickable-card");
 ion-card {
   --background-hover-opacity: .04;
   --transition: opacity 15ms linear, background-color 15ms linear;
+  --ion-item-background: transparent;
 
   cursor: pointer;
   height: 15em;

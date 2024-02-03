@@ -11,7 +11,12 @@
                                 <ion-card-subtitle>Card Subtitle</ion-card-subtitle>
                             </ion-card-header>
                             <ion-card-content>
-                                Here's a small text description for the card content. Nothing more, nothing less.
+                                <ion-list>
+                                    <ion-item>
+                                        <ion-icon aria-hidden="true" :icon="time" slot="start"></ion-icon>
+                                        <ion-label color="medium">{{ intlFormat(def.timestamp) }}</ion-label>
+                                    </ion-item>
+                                </ion-list>
                             </ion-card-content>
                         </lc-clickable-card>
                     </ion-col>
@@ -28,10 +33,11 @@
 </template>
   
 <script setup lang="ts">
-import { ActionSheetButton, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonCol, IonContent, IonFab, IonFabButton, IonGrid, IonIcon, IonPage, IonRow } from "@ionic/vue";
+import { ActionSheetButton, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonCol, IonContent, IonFab, IonFabButton, IonGrid, IonIcon, IonItem, IonLabel, IonList, IonPage, IonRow } from "@ionic/vue";
+import { add, time } from "ionicons/icons";
 import LcClickableCard from "@/components/LcClickableCard.vue";
-import { add } from "ionicons/icons";
 import { getDefaultActionSheetButtons } from "@/infrastructure";
+import { intlFormat } from "date-fns";
 import { useDefinitionListViewModel } from "@/viewModels";
 
 const { data, commands } = useDefinitionListViewModel();
@@ -83,3 +89,10 @@ function getActionSheetButtons(definitionUuid: string): ActionSheetButton[] {
     return buttons;
 }
 </script>
+
+<style scoped>
+ion-card ion-item {
+    --padding-start: 0;
+    --inner-padding-end: 0;
+}
+</style>
