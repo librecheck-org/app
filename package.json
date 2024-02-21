@@ -25,7 +25,7 @@
     "@capacitor/status-bar": "5.0.7",
     "@ionic/pwa-elements": "3.2.2",
     "@ionic/storage": "4.0.0",
-    "@ionic/vue": "7.7.2",
+    "@ionic/vue": "7.7.3",
     "@ionic/vue-router": "7.7.2",
     "date-fns": "3.3.1",
     "email-validator": "2.0.4",
