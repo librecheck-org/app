@@ -29,7 +29,7 @@
     "@ionic/vue-router": "7.8.1",
     "date-fns": "3.6.0",
     "email-validator": "2.0.4",
-    "ionicons": "7.2.2",
+    "ionicons": "7.3.0",
     "lodash": "4.17.21",
     "monaco-editor": "^0.47.0",
     "pinia": "2.1.7",
