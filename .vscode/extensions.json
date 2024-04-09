@@ -1,7 +1,6 @@
 {
     "recommendations": [
         "ionic.ionic",
-        "vue.vscode-typescript-vue-plugin",
         "dbaeumer.vscode-eslint"
     ]
 }
