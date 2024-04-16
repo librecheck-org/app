@@ -34,7 +34,7 @@
     "monaco-editor": "^0.47.0",
     "pinia": "2.1.7",
     "survey-vue3-ui": "1.9.138",
-    "vue": "3.4.22",
+    "vue": "3.4.23",
     "vue-router": "4.3.0"
   },
   "devDependencies": {
@@ -61,6 +61,6 @@
     "vue-tsc": "2.0.13"
   },
   "overrides": {
-    "vue": "3.4.22"
+    "vue": "3.4.23"
   }
 }
