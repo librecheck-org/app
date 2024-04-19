@@ -1,12 +1,9 @@
-import { CapacitorConfig } from "@capacitor/cli";
+import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
   appId: "io.librecheck.app",
   appName: "LibreCheck",
-  webDir: "dist",
-  server: {
-    androidScheme: "https"
-  }
+  webDir: "dist"
 };
 
 export default config;

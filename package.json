@@ -12,7 +12,7 @@
     "preview": "vite preview",
     "test:e2e": "cypress run",
     "test:unit": "vitest",
-    "lint": "eslint",
+    "lint": "eslint .",
     "generate-api-clients": "openapi-generator-cli generate",
     "list-openapi-generator-versions": "openapi-generator-cli version-manager list",
     "generate-pwa-assets": "pwa-assets-generator --preset minimal public/images/logo.svg"
@@ -54,6 +54,7 @@
     "eslint-plugin-vue": "9.25.0",
     "husky": "9.0.11",
     "jsdom": "24.0.0",
+    "terser": "5.4.0",
     "typescript": "5.4.5",
     "vite": "5.2.9",
     "vite-plugin-pwa": "0.19.8",
