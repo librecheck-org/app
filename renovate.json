@@ -5,5 +5,13 @@
     ":assignee(pomma89)"
   ],
   "automerge": true,
-  "gitLabAutomerge": true
+  "gitLabAutomerge": true,
+  "packageRules": [
+    {
+      "matchPackagePatterns": [
+        "^@capacitor"
+      ],
+      "groupName": "Capacitor packages"
+    }
+  ]
 }
