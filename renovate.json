@@ -6,6 +6,9 @@
   ],
   "automerge": true,
   "gitLabAutomerge": true,
+  "ignoreDeps": [
+    "survey-vue3-ui"
+  ],
   "packageRules": [
     {
       "matchPackagePatterns": [
