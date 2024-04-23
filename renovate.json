@@ -6,15 +6,18 @@
   ],
   "automerge": true,
   "gitLabAutomerge": true,
-  "ignoreDeps": [
-    "survey-vue3-ui"
-  ],
   "packageRules": [
     {
       "matchPackagePatterns": [
         "^@capacitor/"
       ],
       "groupName": "Capacitor packages"
+    },
+    {
+      "matchPackagePatterns": [
+        "^survey-"
+      ],
+      "groupName": "Survey.js packages"
     }
   ]
 }
