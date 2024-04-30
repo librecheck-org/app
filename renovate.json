@@ -15,6 +15,12 @@
     },
     {
       "matchPackagePatterns": [
+        "^@ionic/vue"
+      ],
+      "groupName": "Ionic Vue packages"
+    },
+    {
+      "matchPackagePatterns": [
         "^survey-"
       ],
       "groupName": "Survey.js packages"

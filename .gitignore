@@ -167,3 +167,6 @@ dev-dist
 
 # Unit test execution report
 test-report.xml
+
+# JetBrains Rider
+.idea/
