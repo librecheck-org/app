@@ -52,14 +52,14 @@ export function useMergeableObjectStore<TSummary, TDetails extends ObjectDetails
         } else {
             workingCopy = readWorkingCopy(objectUuid);
             const details = _readDetails(objectUuid);
-            if (details === undefined) {
-                throw new Error(`Object with ${objectUuid} UUID does not have any details`);
-            }
-            if (workingCopy !== undefined && (workingCopy.changeStatus > ChangeStatus.Unchanged || details.timestamp <= workingCopy.timestamp)) {
-                // A working copy already exists with changes. When working copy has changes
+            if (workingCopy !== undefined && (workingCopy.changeStatus > ChangeStatus.Unchanged || details === undefined || details.timestamp <= workingCopy.timestamp)) {
+                // A working copy already exists with changes. When working copy has changes,
                 // and it is stale, that might be a conflict and a new working copy should not be created
                 // in order not to lose local changes.
                 return workingCopy;
+            }
+            if (details === undefined) {
+                throw new Error(`Object with UUID ${objectUuid} does not have any details`);
             }
             // A new working copy is created from an existing object. This case maps to two scenarios.
             //

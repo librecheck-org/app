@@ -21,7 +21,7 @@
     },
     {
       "matchPackagePatterns": [
-        "^survey-"
+        "^survey"
       ],
       "groupName": "Survey.js packages"
     }
