@@ -55,7 +55,7 @@
     "eslint-plugin-vue": "9.27.0",
     "husky": "9.0.11",
     "jsdom": "24.1.0",
-    "terser": "5.31.1",
+    "terser": "5.31.2",
     "typescript": "5.5.3",
     "vite": "5.3.3",
     "vite-plugin-pwa": "0.20.0",
