@@ -35,7 +35,7 @@
     "pinia": "2.1.7",
     "survey-core": "1.11.7",
     "survey-vue3-ui": "1.11.7",
-    "vue": "3.4.32",
+    "vue": "3.4.33",
     "vue-router": "4.4.0"
   },
   "devDependencies": {
@@ -63,6 +63,6 @@
     "vue-tsc": "2.0.26"
   },
   "overrides": {
-    "vue": "3.4.32"
+    "vue": "3.4.33"
   }
 }
