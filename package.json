@@ -36,7 +36,7 @@
     "survey-core": "1.11.9",
     "survey-vue3-ui": "1.11.9",
     "vue": "3.4.35",
-    "vue-router": "4.4.0"
+    "vue-router": "4.4.1"
   },
   "devDependencies": {
     "@capacitor/cli": "6.1.1",
