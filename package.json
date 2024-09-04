@@ -18,11 +18,11 @@
     "generate-pwa-assets": "pwa-assets-generator --preset minimal public/images/logo.svg"
   },
   "dependencies": {
-    "@capacitor/app": "6.0.0",
+    "@capacitor/app": "6.0.1",
     "@capacitor/core": "6.1.2",
-    "@capacitor/haptics": "6.0.0",
-    "@capacitor/keyboard": "6.0.1",
-    "@capacitor/status-bar": "6.0.0",
+    "@capacitor/haptics": "6.0.1",
+    "@capacitor/keyboard": "6.0.2",
+    "@capacitor/status-bar": "6.0.1",
     "@ionic/pwa-elements": "3.3.0",
     "@ionic/storage": "4.0.0",
     "@ionic/vue": "8.2.6",
