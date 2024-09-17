@@ -27,7 +27,7 @@
     "@ionic/storage": "4.0.0",
     "@ionic/vue": "8.3.0",
     "@ionic/vue-router": "8.3.0",
-    "date-fns": "4.0.0",
+    "date-fns": "4.1.0",
     "email-validator": "2.0.4",
     "ionicons": "7.4.0",
     "lodash": "4.17.21",
