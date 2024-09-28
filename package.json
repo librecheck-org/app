@@ -41,7 +41,7 @@
   "devDependencies": {
     "@capacitor/cli": "6.1.2",
     "@ionic/cli": "7.2.0",
-    "@openapitools/openapi-generator-cli": "2.13.11",
+    "@openapitools/openapi-generator-cli": "2.13.12",
     "@rushstack/eslint-patch": "1.10.4",
     "@types/lodash": "4.17.9",
     "@vite-pwa/assets-generator": "0.2.6",
