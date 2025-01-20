@@ -18,11 +18,11 @@
     "generate-pwa-assets": "pwa-assets-generator --preset minimal public/images/logo.svg"
   },
   "dependencies": {
-    "@capacitor/app": "6.0.2",
-    "@capacitor/core": "6.2.0",
-    "@capacitor/haptics": "6.0.2",
-    "@capacitor/keyboard": "6.0.3",
-    "@capacitor/status-bar": "6.0.2",
+    "@capacitor/app": "7.0.0",
+    "@capacitor/core": "7.0.0",
+    "@capacitor/haptics": "7.0.0",
+    "@capacitor/keyboard": "7.0.0",
+    "@capacitor/status-bar": "7.0.0",
     "@ionic/pwa-elements": "3.3.0",
     "@ionic/storage": "4.0.0",
     "@ionic/vue": "8.4.1",
@@ -39,7 +39,7 @@
     "vue-router": "4.5.0"
   },
   "devDependencies": {
-    "@capacitor/cli": "6.2.0",
+    "@capacitor/cli": "7.0.0",
     "@ionic/cli": "7.2.0",
     "@openapitools/openapi-generator-cli": "2.15.3",
     "@rushstack/eslint-patch": "1.10.5",
