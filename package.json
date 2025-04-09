@@ -32,7 +32,7 @@
     "ionicons": "7.4.0",
     "lodash": "4.17.21",
     "monaco-editor": "^0.52.0",
-    "pinia": "3.0.1",
+    "pinia": "3.0.2",
     "survey-core": "1.12.31",
     "survey-vue3-ui": "1.12.31",
     "vue": "3.5.13",
